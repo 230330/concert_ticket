@@ -1,0 +1,63 @@
+package com.concert.dto.response;
+
+import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+/**
+ * 演唱会列表响应
+ */
+@Data
+public class ConcertListResponse {
+
+    /**
+     * 演唱会ID
+     */
+    private Long id;
+
+    /**
+     * 演唱会名称
+     */
+    private String name;
+
+    /**
+     * 演唱会海报
+     */
+    private String poster;
+
+    /**
+     * 状态：0-未开始，1-进行中，2-已结束，3-已取消
+     */
+    private Integer status;
+
+    /**
+     * 艺人名称列表
+     */
+    private List<String> artistNames;
+
+    /**
+     * 最低票价
+     */
+    private String minPrice;
+
+    /**
+     * 城市
+     */
+    private String city;
+
+    /**
+     * 场馆名称
+     */
+    private String venueName;
+
+    /**
+     * 最近场次时间
+     */
+    private LocalDateTime nearestShowTime;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createTime;
+}
