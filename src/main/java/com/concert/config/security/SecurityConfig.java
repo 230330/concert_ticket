@@ -88,6 +88,8 @@ public class SecurityConfig {
                         "/api/concert/**",
                         "/api/show/**"
                 ).permitAll()
+                // 管理端接口：需要 ADMIN 角色
+                .antMatchers("/api/admin/**").hasRole("ADMIN")
                 // 其他所有请求需要认证
                 .anyRequest().authenticated()
                 .and()

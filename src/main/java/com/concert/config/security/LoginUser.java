@@ -2,10 +2,13 @@ package com.concert.config.security;
 
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 登录用户信息
@@ -35,20 +38,44 @@ public class LoginUser implements UserDetails {
      */
     private Integer status;
 
+    /**
+     * 权限编码列表
+     */
+    private List<String> permissions;
+
+    /**
+     * 角色编码列表
+     */
+    private List<String> roles;
+
     public LoginUser() {
     }
 
-    public LoginUser(Long id, String phone, String password, Integer status) {
+    public LoginUser(Long id, String phone, String password, Integer status, List<String> permissions, List<String> roles) {
         this.id = id;
         this.phone = phone;
         this.password = password;
         this.status = status;
+        this.permissions = permissions;
+        this.roles = roles;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // 暂时返回空权限集合，后续可扩展
-        return Collections.emptyList();
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        // 添加权限编码（如 concert:add）
+        if (permissions != null) {
+            authorities.addAll(permissions.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList()));
+        }
+        // 添加角色编码（如 ROLE_ADMIN）
+        if (roles != null) {
+            authorities.addAll(roles.stream()
+                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                    .collect(Collectors.toList()));
+        }
+        return authorities;
     }
 
     @Override
@@ -92,5 +119,25 @@ public class LoginUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.status != null && this.status == 1;
+    }
+
+    /**
+     * 判断用户是否拥有指定角色
+     *
+     * @param roleCode 角色编码
+     * @return 是否拥有
+     */
+    public boolean hasRole(String roleCode) {
+        return roles != null && roles.contains(roleCode);
+    }
+
+    /**
+     * 判断用户是否拥有指定权限
+     *
+     * @param permissionCode 权限编码
+     * @return 是否拥有
+     */
+    public boolean hasPermission(String permissionCode) {
+        return permissions != null && permissions.contains(permissionCode);
     }
 }
