@@ -8,11 +8,14 @@ import com.concert.dto.response.ConcertListResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.*;
 import com.concert.service.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -121,6 +124,145 @@ public class ConcertController {
         concertService.page(concertPage, queryWrapper);
 
         // 转换为响应对象
+        List<ConcertListResponse> responseList = convertToConcertListResponse(concertPage.getRecords());
+
+        PageResponse<ConcertListResponse> pageResponse = new PageResponse<>(
+                concertPage.getCurrent(),
+                concertPage.getSize(),
+                concertPage.getTotal(),
+                responseList
+        );
+
+        return Result.success(pageResponse);
+    }
+
+    /**
+     * 搜索演唱会（支持关键词、城市、艺人、日期范围筛选）
+     *
+     * @param keyword   关键词（模糊匹配演唱会名称）
+     * @param city      城市（精确匹配场馆所在城市）
+     * @param artistName 艺人名称（模糊匹配）
+     * @param startDate  场次开始日期（可选，yyyy-MM-dd）
+     * @param endDate    场次结束日期（可选，yyyy-MM-dd）
+     * @param page       页码
+     * @param size       每页条数
+     */
+    @GetMapping("/search")
+    public Result<PageResponse<ConcertListResponse>> searchConcerts(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String artistName,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+
+        // 1. 基础条件：只查状态为未开始或进行中的演唱会
+        LambdaQueryWrapper<Concert> concertQuery = new LambdaQueryWrapper<>();
+        concertQuery.in(Concert::getStatus, 0, 1);
+
+        // 2. 关键词模糊匹配演唱会名称
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            concertQuery.like(Concert::getName, keyword.trim());
+        }
+
+        // 3. 按艺人名称筛选：先查出匹配的艺人ID，再查出关联的演唱会ID
+        if (artistName != null && !artistName.trim().isEmpty()) {
+            LambdaQueryWrapper<Artist> artistQuery = new LambdaQueryWrapper<>();
+            artistQuery.like(Artist::getName, artistName.trim());
+            List<Artist> matchedArtists = artistService.list(artistQuery);
+
+            if (matchedArtists.isEmpty()) {
+                // 没有匹配的艺人，直接返回空
+                return Result.success(new PageResponse<>(1L, (long) size, 0L, Collections.emptyList()));
+            }
+
+            List<Long> artistIds = matchedArtists.stream()
+                    .map(Artist::getId)
+                    .collect(Collectors.toList());
+
+            LambdaQueryWrapper<ConcertArtist> caQuery = new LambdaQueryWrapper<>();
+            caQuery.in(ConcertArtist::getArtistId, artistIds);
+            List<ConcertArtist> concertArtists = concertArtistService.list(caQuery);
+
+            List<Long> concertIdsByArtist = concertArtists.stream()
+                    .map(ConcertArtist::getConcertId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            if (concertIdsByArtist.isEmpty()) {
+                return Result.success(new PageResponse<>(1L, (long) size, 0L, Collections.emptyList()));
+            }
+
+            concertQuery.in(Concert::getId, concertIdsByArtist);
+        }
+
+        // 4. 按城市或日期范围筛选：需要通过场次表关联
+        //    先查出符合条件的场次对应的演唱会ID，再与主查询取交集
+        boolean needShowFilter = (city != null && !city.trim().isEmpty())
+                || startDate != null || endDate != null;
+
+        if (needShowFilter) {
+            LambdaQueryWrapper<Show> showQuery = new LambdaQueryWrapper<>();
+            showQuery.in(Show::getStatus, 0, 1); // 有效场次
+
+            // 日期范围筛选
+            if (startDate != null) {
+                showQuery.ge(Show::getShowTime, startDate.atStartOfDay());
+            }
+            if (endDate != null) {
+                showQuery.le(Show::getShowTime, endDate.atTime(LocalTime.MAX));
+            }
+
+            List<Show> shows = showService.list(showQuery);
+
+            if (shows.isEmpty()) {
+                return Result.success(new PageResponse<>(1L, (long) size, 0L, Collections.emptyList()));
+            }
+
+            // 按城市筛选：查询场馆
+            if (city != null && !city.trim().isEmpty()) {
+                List<Long> venueIds = shows.stream()
+                        .map(Show::getVenueId)
+                        .distinct()
+                        .collect(Collectors.toList());
+
+                LambdaQueryWrapper<Venue> venueQuery = new LambdaQueryWrapper<>();
+                venueQuery.in(Venue::getId, venueIds)
+                        .eq(Venue::getCity, city.trim());
+                List<Venue> matchedVenues = venueService.list(venueQuery);
+
+                if (matchedVenues.isEmpty()) {
+                    return Result.success(new PageResponse<>(1L, (long) size, 0L, Collections.emptyList()));
+                }
+
+                Set<Long> matchedVenueIds = matchedVenues.stream()
+                        .map(Venue::getId)
+                        .collect(Collectors.toSet());
+
+                shows = shows.stream()
+                        .filter(show -> matchedVenueIds.contains(show.getVenueId()))
+                        .collect(Collectors.toList());
+
+                if (shows.isEmpty()) {
+                    return Result.success(new PageResponse<>(1L, (long) size, 0L, Collections.emptyList()));
+                }
+            }
+
+            List<Long> concertIdsByShow = shows.stream()
+                    .map(Show::getConcertId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            concertQuery.in(Concert::getId, concertIdsByShow);
+        }
+
+        // 5. 分页查询
+        concertQuery.orderByDesc(Concert::getId);
+        Page<Concert> concertPage = new Page<>(page, size);
+        concertService.page(concertPage, concertQuery);
+
+        // 6. 转换为响应对象（复用已有方法）
         List<ConcertListResponse> responseList = convertToConcertListResponse(concertPage.getRecords());
 
         PageResponse<ConcertListResponse> pageResponse = new PageResponse<>(
