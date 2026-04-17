@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 管理端-数据看板控制器
+ * @description:    管理员仪表盘控制器
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @RestController
 @RequestMapping("/api/admin/dashboard")

@@ -4,8 +4,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.concert.entity.SeatArea;
 
 /**
- * 座位区域服务接口
+ * @description:    座位区域服务接口
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 public interface SeatAreaService extends IService<SeatArea> {
 
 }

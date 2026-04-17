@@ -7,8 +7,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 场次列表响应
+ * @description:    场次列表响应
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Data
 public class ShowListResponse {
 

@@ -6,8 +6,11 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 演唱会表实体类
+ * @description:    演唱会表实体类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Data
 @TableName("concert")
 public class Concert {

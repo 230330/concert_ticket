@@ -6,8 +6,11 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 场次表实体类
+ * @description:    场次表实体类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Data
 @TableName("show")
 public class Show {

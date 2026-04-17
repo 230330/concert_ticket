@@ -5,8 +5,11 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * 分页响应
+ * @description: 分页响应
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Data
 public class PageResponse<T> {
 

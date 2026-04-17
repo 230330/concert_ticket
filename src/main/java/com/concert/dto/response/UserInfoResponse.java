@@ -5,8 +5,11 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 用户信息响应
+ * @description:    用户信息响应
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Data
 public class UserInfoResponse {
 

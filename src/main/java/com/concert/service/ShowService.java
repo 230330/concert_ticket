@@ -9,8 +9,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * 场次服务接口
+ * @description:    演出服务接口
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 public interface ShowService extends IService<Show> {
 
     /**

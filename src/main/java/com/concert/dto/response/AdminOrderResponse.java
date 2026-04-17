@@ -7,7 +7,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 管理端-订单详情响应（含用户信息）
+ * @description:    管理端-订单详情响应（含用户信息）
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class AdminOrderResponse {

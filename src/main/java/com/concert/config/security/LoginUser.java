@@ -11,7 +11,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 登录用户信息
+ * @description: 登录用户信息
+ * @author: hzf
+ * @date: 2026-04-17 15:26
  */
 @Data
 public class LoginUser implements UserDetails {

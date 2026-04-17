@@ -12,7 +12,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * 场次控制器
+ * @description:    场次相关接口
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @RestController
 @RequestMapping("/api/show")

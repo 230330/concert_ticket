@@ -5,7 +5,9 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 /**
- * 取消订单请求
+ * @description:    取消订单请求参数
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class CancelOrderRequest {

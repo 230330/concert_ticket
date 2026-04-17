@@ -1,9 +1,11 @@
 package com.concert.exception;
 
 /**
- * 业务异常（参数校验失败、状态异常、操作不允许等）
- * 对应 HTTP 400 级别的客户端错误
+ * @description:    业务异常类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 public class BusinessException extends BaseException {
 
     private static final long serialVersionUID = 1L;

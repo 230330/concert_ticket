@@ -7,8 +7,11 @@ import com.concert.dto.response.PageResponse;
 import com.concert.entity.Order;
 
 /**
- * 订单服务接口
+ * @description:    订单服务接口
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 public interface OrderService extends IService<Order> {
 
     /**

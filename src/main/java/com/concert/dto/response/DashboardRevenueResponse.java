@@ -5,7 +5,9 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 /**
- * 数据看板-收入报表响应（按日期维度）
+ * @description:    管理端-数据看板-收入报表响应（按日期维度）
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class DashboardRevenueResponse {

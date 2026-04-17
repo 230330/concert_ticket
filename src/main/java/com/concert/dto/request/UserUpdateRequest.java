@@ -6,7 +6,9 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
 
 /**
- * 用户信息更新请求
+ * @description:    用户信息更新请求参数
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class UserUpdateRequest {

@@ -6,7 +6,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 演唱会详情响应
+ * @description:    管理端-用户信息响应
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class ConcertDetailResponse {

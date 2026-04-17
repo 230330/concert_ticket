@@ -7,7 +7,9 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 /**
- * 用户注册请求
+ * @description:    用户注册请求参数
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class RegisterRequest {

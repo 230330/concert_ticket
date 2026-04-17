@@ -5,9 +5,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- * 分页参数校验工具
- * 限制分页参数在合理范围内，防止恶意大查询拖垮数据库
+ * @description:    分页参数校验工具
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
+
 @Component
 public class PageUtil {
 

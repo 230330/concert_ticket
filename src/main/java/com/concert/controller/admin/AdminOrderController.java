@@ -19,7 +19,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 管理端-订单查询与处理控制器
+ * @description:    管理员订单管理
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @RestController
 @RequestMapping("/api/admin/order")

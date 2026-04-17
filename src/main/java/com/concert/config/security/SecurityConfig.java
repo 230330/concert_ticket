@@ -20,7 +20,9 @@ import javax.annotation.Resource;
 import java.util.Arrays;
 
 /**
- * Spring Security 配置类
+ * 安全配置类
+ * @author :hzf
+ * @date :2026/04/17
  */
 @Configuration
 @EnableWebSecurity

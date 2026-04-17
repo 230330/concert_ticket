@@ -6,7 +6,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 /**
- * 艺人创建/更新请求
+ * @description:    艺人请求参数
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class ArtistRequest {

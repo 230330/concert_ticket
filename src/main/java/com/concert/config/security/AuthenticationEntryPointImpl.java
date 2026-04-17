@@ -10,14 +10,23 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
 /**
- * 认证失败处理类
- * 当用户未登录或 Token 无效时返回 JSON 格式错误信息
+**
+ * @description:    自定义认证失败处理类
+ * @author: hzf
+ * @date: 2026-04-17 15:24
  */
 @Component
 public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
-
+    /**
+     * @description: 认证失败处理类
+     * @author: hzf
+     * @date: 2026-04-17 15:24
+     * @param request
+     * @param response
+     * @param authException
+     * @return: void
+     */
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,

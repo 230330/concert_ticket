@@ -1,8 +1,11 @@
 package com.concert.exception;
 
 /**
- * 基础异常类，所有自定义业务异常的父类
+ * @description:    基础异常类，所有自定义业务异常的父类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 public class BaseException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;

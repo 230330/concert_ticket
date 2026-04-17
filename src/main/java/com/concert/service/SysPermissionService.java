@@ -6,8 +6,11 @@ import com.concert.entity.SysPermission;
 import java.util.List;
 
 /**
- * 系统权限服务接口
+ * @description:    系统权限服务接口
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 public interface SysPermissionService extends IService<SysPermission> {
 
     /**

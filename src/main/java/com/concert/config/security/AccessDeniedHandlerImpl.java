@@ -12,8 +12,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * 访问拒绝处理类
- * 当用户无权访问资源时返回 JSON 格式错误信息
+ * @description: 自定义权限不足处理类
+ * @author: hzf
+ * @date: 2023/4/17 15:23
+ * @return:
  */
 @Component
 public class AccessDeniedHandlerImpl implements AccessDeniedHandler {

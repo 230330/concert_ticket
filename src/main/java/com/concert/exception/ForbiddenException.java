@@ -1,9 +1,11 @@
 package com.concert.exception;
 
 /**
- * 无权限异常（操作他人资源等）
- * 对应 HTTP 403
+ * @description:    无权限异常类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 public class ForbiddenException extends BaseException {
 
     private static final long serialVersionUID = 1L;

@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 
 /**
- * 管理端-艺人管理控制器
+ * @description: 艺人管理模块
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @RestController
 @RequestMapping("/api/admin/artist")

@@ -6,8 +6,11 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 角色-权限关联表实体类
+ * @description:    系统角色权限表实体类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Data
 @TableName("sys_role_permission")
 public class SysRolePermission {

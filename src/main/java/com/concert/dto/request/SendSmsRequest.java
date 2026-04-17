@@ -6,7 +6,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 /**
- * 发送短信验证码请求
+ * @description:    发送短信验证码请求参数
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class SendSmsRequest {

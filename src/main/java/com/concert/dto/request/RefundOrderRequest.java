@@ -5,7 +5,9 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 /**
- * 退款订单请求
+ * @description:    退款订单请求参数
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class RefundOrderRequest {

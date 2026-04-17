@@ -5,8 +5,11 @@ import com.concert.entity.Order;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 订单表 Mapper 接口
+ * @description:    订单表 Mapper 接口
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Mapper
 public interface OrderMapper extends BaseMapper<Order> {
 

@@ -7,7 +7,9 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
- * 创建订单请求
+ * @description:    创建订单请求参数
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class CreateOrderRequest {

@@ -15,8 +15,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * JWT 工具类
+ * @description:    JWT 工具类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Component
 public class JwtUtil {
 

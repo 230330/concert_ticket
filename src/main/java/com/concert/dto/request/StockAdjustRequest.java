@@ -5,7 +5,9 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 /**
- * 库存调整请求
+ * @description:    库存调整请求参数
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class StockAdjustRequest {

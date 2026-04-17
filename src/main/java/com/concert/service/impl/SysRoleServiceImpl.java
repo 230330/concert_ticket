@@ -15,8 +15,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 系统角色服务实现类
+ * @description:    角色服务实现类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Service
 public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> implements SysRoleService {
 

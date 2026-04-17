@@ -7,8 +7,11 @@ import com.concert.service.UserService;
 import org.springframework.stereotype.Service;
 
 /**
- * 用户服务实现类
+ * @description:    用户服务实现类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 

@@ -9,8 +9,11 @@ import com.concert.entity.Concert;
 import java.time.LocalDate;
 
 /**
- * 演唱会服务接口
+ * @description:    演唱会服务接口
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 public interface ConcertService extends IService<Concert> {
 
     /**

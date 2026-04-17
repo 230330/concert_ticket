@@ -18,7 +18,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 管理端-演唱会管理控制器
+ * @description:    管理员演唱会管理控制器
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @RestController
 @RequestMapping("/api/admin/concert")

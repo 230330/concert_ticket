@@ -7,8 +7,11 @@ import com.concert.service.ArtistService;
 import org.springframework.stereotype.Service;
 
 /**
- * 艺人服务实现类
+ * @description:    艺人服务实现类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Service
 public class ArtistServiceImpl extends ServiceImpl<ArtistMapper, Artist> implements ArtistService {
 

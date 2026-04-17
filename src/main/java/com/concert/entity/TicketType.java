@@ -7,8 +7,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 票档表实体类
+ * @description:    系统用户角色表实体类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Data
 @TableName("ticket_type")
 public class TicketType {

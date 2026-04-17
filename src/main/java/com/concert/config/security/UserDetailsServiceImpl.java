@@ -16,10 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * UserDetailsService 实现类
- * 根据手机号加载用户信息（含 RBAC 权限）
- */
+
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 

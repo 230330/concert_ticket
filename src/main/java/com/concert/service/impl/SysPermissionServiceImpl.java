@@ -19,8 +19,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 系统权限服务实现类
+ * @description: 权限服务实现类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Service
 public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, SysPermission> implements SysPermissionService {
 

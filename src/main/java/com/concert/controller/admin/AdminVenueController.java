@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 
 /**
- * 管理端-场馆管理控制器
+ * @description:    管理员场馆管理控制器
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @RestController
 @RequestMapping("/api/admin/venue")

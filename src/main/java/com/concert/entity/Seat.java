@@ -6,8 +6,11 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 座位表实体类
+ * @description:    座位表实体类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Data
 @TableName("seat")
 public class Seat {

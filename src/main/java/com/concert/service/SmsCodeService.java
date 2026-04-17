@@ -1,8 +1,11 @@
 package com.concert.service;
 
 /**
- * 短信验证码服务接口
+ * @description:    短信验证码服务接口
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 public interface SmsCodeService {
 
     /**

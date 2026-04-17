@@ -13,7 +13,9 @@ import javax.annotation.Resource;
 import java.time.LocalDate;
 
 /**
- * 演唱会控制器
+ * @description: 演出相关接口
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @RestController
 @RequestMapping("/api/concert")

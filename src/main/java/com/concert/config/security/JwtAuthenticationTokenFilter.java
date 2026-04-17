@@ -18,8 +18,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * JWT 认证过滤器
- * 从请求头中提取 Token，解析并设置 Spring Security 上下文
+ * @description: JWT 认证过滤器
+ * @author: hzf
+ * @date: 2026-04-17 15:24
  */
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {

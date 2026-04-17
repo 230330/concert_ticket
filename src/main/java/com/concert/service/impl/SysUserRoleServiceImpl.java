@@ -7,8 +7,11 @@ import com.concert.service.SysUserRoleService;
 import org.springframework.stereotype.Service;
 
 /**
- * 用户-角色关联服务实现类
+ * @description:    用户-角色关联服务实现类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Service
 public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUserRole> implements SysUserRoleService {
 

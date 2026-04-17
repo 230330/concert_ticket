@@ -21,8 +21,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 演唱会服务实现类
+ * @description:    演出信息服务实现类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Service
 public class ConcertServiceImpl extends ServiceImpl<ConcertMapper, Concert> implements ConcertService {
 

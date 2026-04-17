@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 管理端-用户管理控制器
+ * @description:    管理员用户管理
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @RestController
 @RequestMapping("/api/admin/user")

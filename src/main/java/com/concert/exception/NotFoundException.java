@@ -1,9 +1,11 @@
 package com.concert.exception;
 
 /**
- * 资源未找到异常（查询的实体不存在）
- * 对应 HTTP 404
+ * @description:    未找到异常
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 public class NotFoundException extends BaseException {
 
     private static final long serialVersionUID = 1L;

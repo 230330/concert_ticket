@@ -5,8 +5,12 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 统一响应结果
- */
+ * @description: 统一响应结果
+ * @author: hzf
+ * @date: 2026-04-17 15:21
+ * @return:
+ *
+ * */
 @Data
 public class Result<T> implements Serializable {
 

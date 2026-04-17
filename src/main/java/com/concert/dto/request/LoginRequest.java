@@ -6,7 +6,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 /**
- * 用户登录请求
+ * @description:    用户登录请求参数
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class LoginRequest {

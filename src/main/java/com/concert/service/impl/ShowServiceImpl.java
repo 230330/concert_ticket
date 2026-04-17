@@ -18,8 +18,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 场次服务实现类
+ * @description:    场次服务实现
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Service
 public class ShowServiceImpl extends ServiceImpl<ShowMapper, Show> implements ShowService {
 

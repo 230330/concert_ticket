@@ -7,7 +7,9 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
- * 票种创建/更新请求
+ * @description:    票种创建/更新请求参数
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class TicketTypeRequest {

@@ -7,8 +7,11 @@ import com.concert.service.SysRolePermissionService;
 import org.springframework.stereotype.Service;
 
 /**
- * 角色-权限关联服务实现类
+ * @description:    角色权限服务实现类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Service
 public class SysRolePermissionServiceImpl extends ServiceImpl<SysRolePermissionMapper, SysRolePermission> implements SysRolePermissionService {
 

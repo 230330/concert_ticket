@@ -5,8 +5,11 @@ import com.concert.entity.Concert;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 演唱会表 Mapper 接口
+ * @description:    演唱会表 Mapper 接口
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Mapper
 public interface ConcertMapper extends BaseMapper<Concert> {
 

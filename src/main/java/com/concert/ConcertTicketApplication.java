@@ -5,8 +5,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * 演唱会订票系统启动类
+ * @description:    演唱会订票系统启动类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @SpringBootApplication
 @EnableScheduling
 public class ConcertTicketApplication {

@@ -3,7 +3,9 @@ package com.concert.dto.response;
 import lombok.Data;
 
 /**
- * 登录响应
+ * @description:    登录响应
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class LoginResponse {

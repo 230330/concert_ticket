@@ -7,7 +7,9 @@ import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
- * 演唱会创建/更新请求
+ * @description:    演唱会请求参数
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Data
 public class ConcertRequest {

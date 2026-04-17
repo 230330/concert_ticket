@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.stream.Collectors;
 
 /**
- * 全局异常处理器
- * 统一捕获各类异常并转换为标准 Result 响应，避免向前端泄露内部堆栈信息
+ * @description:    全局异常处理器
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

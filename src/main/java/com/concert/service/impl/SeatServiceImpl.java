@@ -7,8 +7,11 @@ import com.concert.service.SeatService;
 import org.springframework.stereotype.Service;
 
 /**
- * 座位服务实现类
+ * @description:    座席区域服务实现类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Service
 public class SeatServiceImpl extends ServiceImpl<SeatMapper, Seat> implements SeatService {
 

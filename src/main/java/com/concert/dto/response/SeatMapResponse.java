@@ -6,8 +6,11 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * 座位图响应
+ * @description:    座位图响应
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
+
 @Data
 public class SeatMapResponse {
 

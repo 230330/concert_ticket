@@ -11,7 +11,9 @@ import org.springframework.context.annotation.Configuration;
 import java.time.LocalDateTime;
 
 /**
- * MyBatis-Plus 配置类
+ * @description: MyBatis-Plus 配置类
+ * @author: hzf
+ * @date: 2026-04-17 15:30
  */
 @Configuration
 public class MybatisPlusConfig {
