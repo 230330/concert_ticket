@@ -1,5 +1,7 @@
 package com.concert.dto.response;
 
+import com.concert.enums.ConcertStatus;
+import com.concert.enums.ShowStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -34,9 +36,9 @@ public class ConcertDetailResponse {
     private String description;
 
     /**
-     * 状态：0-未开始，1-进行中，2-已结束，3-已取消
+     * 状态
      */
-    private Integer status;
+    private ConcertStatus status;
 
     /**
      * 创建时间
@@ -73,7 +75,7 @@ public class ConcertDetailResponse {
         private LocalDateTime showTime;
         private LocalDateTime saleStartTime;
         private LocalDateTime saleEndTime;
-        private Integer status;
+        private ShowStatus status;
         private String venueName;
         private String city;
         private String address;

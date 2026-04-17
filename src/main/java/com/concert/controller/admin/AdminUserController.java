@@ -8,6 +8,7 @@ import com.concert.dto.response.AdminUserResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.SysRole;
 import com.concert.entity.User;
+import com.concert.enums.UserStatus;
 import com.concert.exception.BusinessException;
 import com.concert.exception.NotFoundException;
 import com.concert.service.OrderService;
@@ -144,8 +145,8 @@ public class AdminUserController {
      */
     @PutMapping("/ban")
     public Result<Void> banUser(@RequestBody @Validated UserStatusRequest request) {
-        if (request.getStatus() != 0) {
-            throw new BusinessException("封禁操作目标状态必须为0");
+        if (request.getStatus() != UserStatus.DISABLED) {
+            throw new BusinessException("封禁操作目标状态必须为禁用");
         }
         updateUserStatus(request);
         return Result.success();
@@ -156,8 +157,8 @@ public class AdminUserController {
      */
     @PutMapping("/unban")
     public Result<Void> unbanUser(@RequestBody @Validated UserStatusRequest request) {
-        if (request.getStatus() != 1) {
-            throw new BusinessException("解封操作目标状态必须为1");
+        if (request.getStatus() != UserStatus.NORMAL) {
+            throw new BusinessException("解封操作目标状态必须为正常");
         }
         updateUserStatus(request);
         return Result.success();

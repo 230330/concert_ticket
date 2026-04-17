@@ -7,6 +7,8 @@ import com.concert.dto.response.ConcertDetailResponse;
 import com.concert.dto.response.ConcertListResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.*;
+import com.concert.enums.ConcertStatus;
+import com.concert.enums.ShowStatus;
 import com.concert.exception.NotFoundException;
 import com.concert.mapper.ConcertMapper;
 import com.concert.service.*;
@@ -48,7 +50,7 @@ public class ConcertServiceImpl extends ServiceImpl<ConcertMapper, Concert> impl
     public PageResponse<ConcertListResponse> getHotConcerts(Integer page, Integer size, String sort) {
         Page<Concert> concertPage = new Page<>(page, size);
         LambdaQueryWrapper<Concert> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Concert::getStatus, 0, 1);
+        queryWrapper.in(Concert::getStatus, ConcertStatus.NOT_STARTED, ConcertStatus.IN_PROGRESS);
 
         if ("time".equals(sort)) {
             queryWrapper.orderByDesc(Concert::getCreateTime);
@@ -70,7 +72,7 @@ public class ConcertServiceImpl extends ServiceImpl<ConcertMapper, Concert> impl
         // 查询即将开始的场次
         LambdaQueryWrapper<Show> showQuery = new LambdaQueryWrapper<>();
         showQuery.gt(Show::getShowTime, now)
-                .in(Show::getStatus, 0, 1)
+                .in(Show::getStatus, ShowStatus.NOT_ON_SALE, ShowStatus.ON_SALE)
                 .orderByAsc(Show::getShowTime);
         List<Show> upcomingShows = showService.list(showQuery);
 
@@ -86,7 +88,7 @@ public class ConcertServiceImpl extends ServiceImpl<ConcertMapper, Concert> impl
         Page<Concert> concertPage = new Page<>(page, size);
         LambdaQueryWrapper<Concert> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(Concert::getId, concertIds)
-                .in(Concert::getStatus, 0, 1);
+                .in(Concert::getStatus, ConcertStatus.NOT_STARTED, ConcertStatus.IN_PROGRESS);
         this.page(concertPage, queryWrapper);
 
         List<ConcertListResponse> responseList = convertToConcertListResponse(concertPage.getRecords());
@@ -100,7 +102,7 @@ public class ConcertServiceImpl extends ServiceImpl<ConcertMapper, Concert> impl
                                                              Integer page, Integer size) {
         // 1. 基础条件
         LambdaQueryWrapper<Concert> concertQuery = new LambdaQueryWrapper<>();
-        concertQuery.in(Concert::getStatus, 0, 1);
+        concertQuery.in(Concert::getStatus, ConcertStatus.NOT_STARTED, ConcertStatus.IN_PROGRESS);
 
         // 2. 关键词模糊匹配
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -143,7 +145,7 @@ public class ConcertServiceImpl extends ServiceImpl<ConcertMapper, Concert> impl
 
         if (needShowFilter) {
             LambdaQueryWrapper<Show> showQuery = new LambdaQueryWrapper<>();
-            showQuery.in(Show::getStatus, 0, 1);
+            showQuery.in(Show::getStatus, ShowStatus.NOT_ON_SALE, ShowStatus.ON_SALE);
 
             if (startDate != null) {
                 showQuery.ge(Show::getShowTime, startDate.atStartOfDay());

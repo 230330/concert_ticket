@@ -7,6 +7,7 @@ import com.concert.dto.request.ConcertRequest;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.Concert;
 import com.concert.entity.ConcertArtist;
+import com.concert.enums.ConcertStatus;
 import com.concert.service.ConcertArtistService;
 import com.concert.service.ConcertService;
 import com.concert.utils.PageUtil;
@@ -93,7 +94,7 @@ public class AdminConcertController {
         concert.setName(request.getName());
         concert.setPoster(request.getPoster());
         concert.setDescription(request.getDescription());
-        concert.setStatus(request.getStatus() != null ? request.getStatus() : 0);
+        concert.setStatus(request.getStatus() != null ? request.getStatus() : ConcertStatus.NOT_STARTED);
 
         concertService.save(concert);
 

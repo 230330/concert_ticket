@@ -1,5 +1,6 @@
 package com.concert.config.security;
 
+import com.concert.enums.UserStatus;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -36,9 +37,9 @@ public class LoginUser implements UserDetails {
     private String password;
 
     /**
-     * 用户状态：0-禁用，1-正常
+     * 用户状态
      */
-    private Integer status;
+    private UserStatus status;
 
     /**
      * 权限编码列表
@@ -53,7 +54,7 @@ public class LoginUser implements UserDetails {
     public LoginUser() {
     }
 
-    public LoginUser(Long id, String phone, String password, Integer status, List<String> permissions, List<String> roles) {
+    public LoginUser(Long id, String phone, String password, UserStatus status, List<String> permissions, List<String> roles) {
         this.id = id;
         this.phone = phone;
         this.password = password;
@@ -116,11 +117,11 @@ public class LoginUser implements UserDetails {
     }
 
     /**
-     * 是否可用（状态为1时可用）
+     * 是否可用（状态为正常时可用）
      */
     @Override
     public boolean isEnabled() {
-        return this.status != null && this.status == 1;
+        return this.status != null && this.status == UserStatus.NORMAL;
     }
 
     /**

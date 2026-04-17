@@ -10,6 +10,7 @@ import com.concert.dto.request.UserUpdateRequest;
 import com.concert.dto.response.LoginResponse;
 import com.concert.dto.response.UserInfoResponse;
 import com.concert.entity.User;
+import com.concert.enums.UserStatus;
 import com.concert.exception.BusinessException;
 import com.concert.service.SmsCodeService;
 import com.concert.service.UserService;
@@ -77,7 +78,7 @@ public class UserController {
         user.setPhone(request.getPhone());
         user.setUsername(request.getPhone()); // 默认用户名为手机号
         user.setPassword(passwordEncoder.encode(request.getPassword())); // 密码加密
-        user.setStatus(1); // 默认启用
+        user.setStatus(UserStatus.NORMAL); // 默认启用
 
         // 4. 保存用户
         boolean saved = userService.save(user);

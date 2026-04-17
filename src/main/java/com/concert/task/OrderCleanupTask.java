@@ -2,6 +2,7 @@ package com.concert.task;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.concert.entity.Order;
+import com.concert.enums.OrderStatus;
 import com.concert.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ public class OrderCleanupTask {
 
         // 查询所有状态为待支付且已过期的订单
         LambdaQueryWrapper<Order> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Order::getStatus, 0) // 待支付
+        queryWrapper.eq(Order::getStatus, OrderStatus.PENDING) // 待支付
                 .lt(Order::getExpireTime, LocalDateTime.now()); // 已过期
 
         List<Order> expiredOrders = orderService.list(queryWrapper);

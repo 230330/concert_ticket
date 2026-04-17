@@ -6,6 +6,7 @@ import com.concert.common.Result;
 import com.concert.dto.request.ShowRequest;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.Show;
+import com.concert.enums.ShowStatus;
 import com.concert.service.ShowService;
 import com.concert.utils.PageUtil;
 import org.springframework.validation.annotation.Validated;
@@ -88,7 +89,7 @@ public class AdminShowController {
         show.setShowTime(request.getShowTime());
         show.setSaleStartTime(request.getSaleStartTime());
         show.setSaleEndTime(request.getSaleEndTime());
-        show.setStatus(request.getStatus() != null ? request.getStatus() : 0);
+        show.setStatus(request.getStatus() != null ? request.getStatus() : ShowStatus.NOT_ON_SALE);
 
         showService.save(show);
         return Result.success();

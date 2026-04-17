@@ -1,5 +1,6 @@
 package com.concert.dto.response;
 
+import com.concert.enums.ShowStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -66,9 +67,9 @@ public class ShowListResponse {
     private LocalDateTime saleEndTime;
 
     /**
-     * 状态：0-未开售，1-售票中，2-已售罄，3-已结束，4-已取消
+     * 状态
      */
-    private Integer status;
+    private ShowStatus status;
 
     /**
      * 票档列表

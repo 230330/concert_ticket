@@ -1,6 +1,7 @@
 package com.concert.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.concert.enums.OrderStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -47,10 +48,10 @@ public class Order {
     private BigDecimal totalAmount;
 
     /**
-     * 订单状态：0-待支付，1-已支付，2-已取消，3-已退款，4-已完成
+     * 订单状态
      */
     @TableField("status")
-    private Integer status;
+    private OrderStatus status;
 
     /**
      * 支付时间

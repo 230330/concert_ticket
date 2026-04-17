@@ -7,6 +7,8 @@ import com.concert.dto.request.CreateOrderRequest;
 import com.concert.dto.response.OrderResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.*;
+import com.concert.enums.OrderStatus;
+import com.concert.enums.ShowStatus;
 import com.concert.exception.BusinessException;
 import com.concert.exception.ForbiddenException;
 import com.concert.exception.NotFoundException;
@@ -84,8 +86,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             throw new NotFoundException("场次不存在");
         }
 
-        // 检查场次状态（1-售票中）
-        if (show.getStatus() != 1) {
+        // 检查场次状态（售票中）
+        if (show.getStatus() != ShowStatus.ON_SALE) {
             throw new BusinessException("该场次暂未开放购票");
         }
 
@@ -132,7 +134,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         order.setUserId(userId);
         order.setShowId(request.getShowId());
         order.setTotalAmount(totalAmount);
-        order.setStatus(0); // 待支付
+        order.setStatus(OrderStatus.PENDING); // 待支付
         order.setExpireTime(LocalDateTime.now().plusMinutes(orderExpireMinutes));
 
         this.save(order);
@@ -185,7 +187,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
 
         // 2. 校验订单状态
-        if (order.getStatus() != 0) {
+        if (order.getStatus() != OrderStatus.PENDING) {
             throw new BusinessException("订单状态异常，无法支付");
         }
 
@@ -195,7 +197,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
 
         // 3. 更新订单状态
-        order.setStatus(1); // 已支付
+        order.setStatus(OrderStatus.PAID); // 已支付
         order.setPayTime(LocalDateTime.now());
         order.setPickupCode(generatePickupCode()); // 生成取票码
         this.updateById(order);
@@ -224,7 +226,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
 
         // 2. 校验订单状态（只有待支付的订单可以取消）
-        if (order.getStatus() != 0) {
+        if (order.getStatus() != OrderStatus.PENDING) {
             throw new BusinessException("订单状态异常，无法取消");
         }
 
@@ -238,7 +240,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Transactional(rollbackFor = Exception.class)
     public void cancelExpiredOrder(Long orderId) {
         Order order = this.getById(orderId);
-        if (order == null || order.getStatus() != 0) {
+        if (order == null || order.getStatus() != OrderStatus.PENDING) {
             return;
         }
 
@@ -274,7 +276,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
 
         // 4. 更新订单状态为已取消
-        order.setStatus(2);
+        order.setStatus(OrderStatus.CANCELLED);
         this.updateById(order);
     }
 
@@ -477,7 +479,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
 
         // 2. 校验订单状态（只有已支付的订单可以退款）
-        if (order.getStatus() != 1) {
+        if (order.getStatus() != OrderStatus.PAID) {
             throw new BusinessException("订单状态异常，无法退款");
         }
 
@@ -510,7 +512,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         // 1. 查询所有已结束场次（showTime < now 且状态未标记为已结束的）
         LambdaQueryWrapper<Show> showQuery = new LambdaQueryWrapper<>();
         showQuery.lt(Show::getShowTime, LocalDateTime.now())
-                .ne(Show::getStatus, 4); // 排除已取消的场次
+                .ne(Show::getStatus, ShowStatus.CANCELLED); // 排除已取消的场次
         List<Show> finishedShows = showService.list(showQuery);
 
         if (finishedShows.isEmpty()) {
@@ -524,7 +526,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         // 2. 查询这些场次中状态为"已支付"的订单
         LambdaQueryWrapper<Order> orderQuery = new LambdaQueryWrapper<>();
         orderQuery.in(Order::getShowId, finishedShowIds)
-                .eq(Order::getStatus, 1); // 已支付
+                .eq(Order::getStatus, OrderStatus.PAID); // 已支付
         List<Order> ordersToComplete = this.list(orderQuery);
 
         if (ordersToComplete.isEmpty()) {
@@ -536,7 +538,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         int successCount = 0;
         for (Order order : ordersToComplete) {
             try {
-                order.setStatus(4); // 已完成
+                order.setStatus(OrderStatus.COMPLETED); // 已完成
                 this.updateById(order);
                 successCount++;
             } catch (Exception e) {
@@ -544,10 +546,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             }
         }
 
-        // 3. 更新已结束场次的状态为"已结束"（3）
+        // 3. 更新已结束场次的状态为"已结束"
         for (Show show : finishedShows) {
-            if (show.getStatus() != 3) {
-                show.setStatus(3);
+            if (show.getStatus() != ShowStatus.ENDED) {
+                show.setStatus(ShowStatus.ENDED);
                 showService.updateById(show);
             }
         }
@@ -583,7 +585,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
 
         // 4. 更新订单状态为已退款
-        order.setStatus(3);
+        order.setStatus(OrderStatus.REFUNDED);
         this.updateById(order);
     }
 

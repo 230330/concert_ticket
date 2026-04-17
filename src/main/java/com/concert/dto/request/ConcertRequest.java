@@ -1,5 +1,6 @@
 package com.concert.dto.request;
 
+import com.concert.enums.ConcertStatus;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -32,9 +33,9 @@ public class ConcertRequest {
     private String description;
 
     /**
-     * 状态：0-未开始，1-进行中，2-已结束，3-已取消
+     * 状态
      */
-    private Integer status;
+    private ConcertStatus status;
 
     /**
      * 关联艺人ID列表

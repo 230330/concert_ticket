@@ -1,6 +1,7 @@
 package com.concert.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.concert.enums.UserStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -58,10 +59,10 @@ public class User {
     private String avatar;
 
     /**
-     * 状态：0-禁用，1-正常
+     * 状态
      */
     @TableField("status")
-    private Integer status;
+    private UserStatus status;
 
     /**
      * 创建时间

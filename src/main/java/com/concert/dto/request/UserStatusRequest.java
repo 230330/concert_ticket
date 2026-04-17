@@ -1,5 +1,6 @@
 package com.concert.dto.request;
 
+import com.concert.enums.UserStatus;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -19,10 +20,10 @@ public class UserStatusRequest {
     private Long userId;
 
     /**
-     * 目标状态：0-封禁，1-解封
+     * 目标状态
      */
     @NotNull(message = "目标状态不能为空")
-    private Integer status;
+    private UserStatus status;
 
     /**
      * 操作原因

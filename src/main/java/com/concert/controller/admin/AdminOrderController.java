@@ -6,6 +6,7 @@ import com.concert.common.Result;
 import com.concert.dto.response.AdminOrderResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.*;
+import com.concert.enums.OrderStatus;
 import com.concert.exception.BusinessException;
 import com.concert.exception.NotFoundException;
 import com.concert.service.*;
@@ -256,7 +257,7 @@ public class AdminOrderController {
         }
 
         // 只有已支付或已完成的订单可以退款
-        if (order.getStatus() != 1 && order.getStatus() != 4) {
+        if (order.getStatus() != OrderStatus.PAID && order.getStatus() != OrderStatus.COMPLETED) {
             throw new BusinessException("订单状态异常，无法退款");
         }
 
@@ -284,7 +285,7 @@ public class AdminOrderController {
         }
 
         // 更新订单状态为已退款
-        order.setStatus(3);
+        order.setStatus(OrderStatus.REFUNDED);
         orderService.updateById(order);
 
         return Result.success();
@@ -302,7 +303,7 @@ public class AdminOrderController {
             throw new NotFoundException("订单不存在");
         }
 
-        if (order.getStatus() != 0) {
+        if (order.getStatus() != OrderStatus.PENDING) {
             throw new BusinessException("只有待支付的订单可以取消");
         }
 

@@ -1,6 +1,7 @@
 package com.concert.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.concert.enums.ShowStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -52,10 +53,10 @@ public class Show {
     private LocalDateTime saleEndTime;
 
     /**
-     * 状态：0-未开售，1-售票中，2-已售罄，3-已结束，4-已取消
+     * 状态
      */
     @TableField("status")
-    private Integer status;
+    private ShowStatus status;
 
     /**
      * 创建时间

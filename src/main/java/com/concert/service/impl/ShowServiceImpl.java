@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.concert.dto.response.SeatMapResponse;
 import com.concert.dto.response.ShowListResponse;
 import com.concert.entity.*;
+import com.concert.enums.OrderStatus;
 import com.concert.exception.NotFoundException;
 import com.concert.mapper.ShowMapper;
 import com.concert.service.*;
@@ -269,7 +270,7 @@ public class ShowServiceImpl extends ServiceImpl<ShowMapper, Show> implements Sh
     private Set<Long> getSoldSeatIds(Long showId) {
         LambdaQueryWrapper<Order> orderQuery = new LambdaQueryWrapper<>();
         orderQuery.eq(Order::getShowId, showId)
-                .in(Order::getStatus, 0, 1, 4);
+                .in(Order::getStatus, OrderStatus.PENDING, OrderStatus.PAID, OrderStatus.COMPLETED);
         List<Order> orders = orderService.list(orderQuery);
 
         if (orders.isEmpty()) {

@@ -1,5 +1,6 @@
 package com.concert.dto.response;
 
+import com.concert.enums.ConcertStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -29,9 +30,9 @@ public class ConcertListResponse {
     private String poster;
 
     /**
-     * 状态：0-未开始，1-进行中，2-已结束，3-已取消
+     * 状态
      */
-    private Integer status;
+    private ConcertStatus status;
 
     /**
      * 艺人名称列表

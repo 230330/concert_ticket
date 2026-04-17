@@ -1,5 +1,6 @@
 package com.concert.dto.response;
 
+import com.concert.enums.OrderStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -56,9 +57,9 @@ public class OrderResponse {
     private BigDecimal totalAmount;
 
     /**
-     * 订单状态：0-待支付，1-已支付，2-已取消，3-已退款，4-已完成
+     * 订单状态
      */
-    private Integer status;
+    private OrderStatus status;
 
     /**
      * 状态描述
@@ -128,19 +129,6 @@ public class OrderResponse {
         if (status == null) {
             return "";
         }
-        switch (status) {
-            case 0:
-                return "待支付";
-            case 1:
-                return "已支付";
-            case 2:
-                return "已取消";
-            case 3:
-                return "已退款";
-            case 4:
-                return "已完成";
-            default:
-                return "未知";
-        }
+        return status.getDesc();
     }
 }

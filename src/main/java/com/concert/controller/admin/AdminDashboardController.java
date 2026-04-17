@@ -9,6 +9,9 @@ import com.concert.entity.Order;
 import com.concert.entity.OrderSeat;
 import com.concert.entity.Show;
 import com.concert.entity.User;
+import com.concert.enums.ConcertStatus;
+import com.concert.enums.OrderStatus;
+import com.concert.enums.ShowStatus;
 import com.concert.service.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -57,14 +60,14 @@ public class AdminDashboardController {
         response.setTotalOrders(orderService.count());
 
         // 各状态订单数
-        response.setPaidOrders(countByStatus(1));
-        response.setCancelledOrders(countByStatus(2));
-        response.setRefundedOrders(countByStatus(3));
-        response.setCompletedOrders(countByStatus(4));
+        response.setPaidOrders(countByStatus(OrderStatus.PAID));
+        response.setCancelledOrders(countByStatus(OrderStatus.CANCELLED));
+        response.setRefundedOrders(countByStatus(OrderStatus.REFUNDED));
+        response.setCompletedOrders(countByStatus(OrderStatus.COMPLETED));
 
         // 总销售额（已支付 + 已完成）
         LambdaQueryWrapper<Order> revenueQuery = new LambdaQueryWrapper<>();
-        revenueQuery.in(Order::getStatus, 1, 4);
+        revenueQuery.in(Order::getStatus, OrderStatus.PAID, OrderStatus.COMPLETED);
         List<Order> revenueOrders = orderService.list(revenueQuery);
         BigDecimal totalRevenue = revenueOrders.stream()
                 .map(Order::getTotalAmount)
@@ -73,7 +76,7 @@ public class AdminDashboardController {
 
         // 实际收入（已完成）
         LambdaQueryWrapper<Order> actualQuery = new LambdaQueryWrapper<>();
-        actualQuery.eq(Order::getStatus, 4);
+        actualQuery.eq(Order::getStatus, OrderStatus.COMPLETED);
         List<Order> actualOrders = orderService.list(actualQuery);
         BigDecimal actualRevenue = actualOrders.stream()
                 .map(Order::getTotalAmount)
@@ -82,7 +85,7 @@ public class AdminDashboardController {
 
         // 退款金额
         LambdaQueryWrapper<Order> refundQuery = new LambdaQueryWrapper<>();
-        refundQuery.eq(Order::getStatus, 3);
+        refundQuery.eq(Order::getStatus, OrderStatus.REFUNDED);
         List<Order> refundOrders = orderService.list(refundQuery);
         BigDecimal refundAmount = refundOrders.stream()
                 .map(Order::getTotalAmount)
@@ -94,12 +97,12 @@ public class AdminDashboardController {
 
         // 活跃演唱会数量（未开始+进行中）
         LambdaQueryWrapper<Concert> concertQuery = new LambdaQueryWrapper<>();
-        concertQuery.in(Concert::getStatus, 0, 1);
+        concertQuery.in(Concert::getStatus, ConcertStatus.NOT_STARTED, ConcertStatus.IN_PROGRESS);
         response.setActiveConcerts(concertService.count(concertQuery));
 
         // 活跃场次数量（未开售+售票中）
         LambdaQueryWrapper<Show> showQuery = new LambdaQueryWrapper<>();
-        showQuery.in(Show::getStatus, 0, 1);
+        showQuery.in(Show::getStatus, ShowStatus.NOT_ON_SALE, ShowStatus.ON_SALE);
         response.setActiveShows(showService.count(showQuery));
 
         // 注册用户数
@@ -127,12 +130,12 @@ public class AdminDashboardController {
 
         LambdaQueryWrapper<Order> orderQuery = new LambdaQueryWrapper<>();
         orderQuery.between(Order::getCreateTime, startDateTime, endDateTime)
-                .in(Order::getStatus, 1, 3, 4);
+                .in(Order::getStatus, OrderStatus.PAID, OrderStatus.REFUNDED, OrderStatus.COMPLETED);
         List<Order> orders = orderService.list(orderQuery);
 
         // 查询日期范围内的退款订单
         List<Order> refundedOrders = orders.stream()
-                .filter(o -> o.getStatus() == 3)
+                .filter(o -> o.getStatus() == OrderStatus.REFUNDED)
                 .collect(Collectors.toList());
 
         // 按日期分组统计
@@ -159,7 +162,7 @@ public class AdminDashboardController {
             dayResp.setOrderCount((long) dayOrders.size());
 
             BigDecimal dayRevenue = dayOrders.stream()
-                    .filter(o -> o.getStatus() == 1 || o.getStatus() == 4)
+                    .filter(o -> o.getStatus() == OrderStatus.PAID || o.getStatus() == OrderStatus.COMPLETED)
                     .map(Order::getTotalAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             dayResp.setRevenue(dayRevenue);
@@ -188,7 +191,7 @@ public class AdminDashboardController {
     /**
      * 按状态统计订单数
      */
-    private Long countByStatus(int status) {
+    private Long countByStatus(OrderStatus status) {
         LambdaQueryWrapper<Order> query = new LambdaQueryWrapper<>();
         query.eq(Order::getStatus, status);
         return orderService.count(query);

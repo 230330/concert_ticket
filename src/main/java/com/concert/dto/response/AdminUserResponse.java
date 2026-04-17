@@ -1,5 +1,6 @@
 package com.concert.dto.response;
 
+import com.concert.enums.UserStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -44,9 +45,9 @@ public class AdminUserResponse {
     private String avatar;
 
     /**
-     * 状态：0-禁用，1-正常
+     * 状态
      */
-    private Integer status;
+    private UserStatus status;
 
     /**
      * 角色列表

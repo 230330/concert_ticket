@@ -1,5 +1,6 @@
 package com.concert.dto.request;
 
+import com.concert.enums.ShowStatus;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -44,7 +45,7 @@ public class ShowRequest {
     private LocalDateTime saleEndTime;
 
     /**
-     * 状态：0-未开售，1-售票中，2-已售罄，3-已结束，4-已取消
+     * 状态
      */
-    private Integer status;
+    private ShowStatus status;
 }
