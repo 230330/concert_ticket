@@ -62,4 +62,19 @@ public interface OrderService extends IService<Order> {
      * @return 订单响应分页
      */
     PageResponse<OrderResponse> getMyOrders(Long userId, Integer status, Integer page, Integer size);
+
+    /**
+     * 退款订单
+     *
+     * @param userId  用户ID
+     * @param orderId 订单ID
+     * @return 订单响应
+     */
+    OrderResponse refundOrder(Long userId, Long orderId);
+
+    /**
+     * 自动完成已结束场次的订单（系统定时调用）
+     * 将演出时间已过且状态为"已支付"的订单标记为"已完成"
+     */
+    void completeFinishedOrders();
 }

@@ -5,6 +5,7 @@ import com.concert.config.security.LoginUser;
 import com.concert.dto.request.CancelOrderRequest;
 import com.concert.dto.request.CreateOrderRequest;
 import com.concert.dto.request.PayOrderRequest;
+import com.concert.dto.request.RefundOrderRequest;
 import com.concert.dto.response.OrderResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.service.OrderService;
@@ -65,6 +66,20 @@ public class OrderController {
 
         orderService.cancelOrder(userId, request.getOrderId());
         return Result.success();
+    }
+
+    /**
+     * 退款订单
+     */
+    @PutMapping("/refund")
+    public Result<OrderResponse> refundOrder(@RequestBody @Validated RefundOrderRequest request) {
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            return Result.unauthorized("请先登录");
+        }
+
+        OrderResponse response = orderService.refundOrder(userId, request.getOrderId());
+        return Result.success(response);
     }
 
     /**

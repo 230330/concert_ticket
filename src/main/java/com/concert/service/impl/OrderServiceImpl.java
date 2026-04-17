@@ -45,6 +45,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Value("${concert.order.max-tickets-per-order:4}")
     private int maxTicketsPerOrder;
 
+    /**
+     * 退款截止时间（演出前多少小时可退）
+     */
+    @Value("${concert.order.refund-before-hours:48}")
+    private int refundBeforeHours;
+
     @Resource
     private ShowService showService;
 
@@ -451,6 +457,131 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         return new PageResponse<>(orderPage.getCurrent(), orderPage.getSize(),
                 orderPage.getTotal(), responseList);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public OrderResponse refundOrder(Long userId, Long orderId) {
+        // 1. 查询订单
+        Order order = this.getById(orderId);
+        if (order == null) {
+            throw new NotFoundException("订单不存在");
+        }
+
+        // 验证订单归属
+        if (!order.getUserId().equals(userId)) {
+            throw new ForbiddenException("无权操作此订单");
+        }
+
+        // 2. 校验订单状态（只有已支付的订单可以退款）
+        if (order.getStatus() != 1) {
+            throw new BusinessException("订单状态异常，无法退款");
+        }
+
+        // 3. 校验退款时限：演出前 refundBeforeHours 小时可退
+        Show show = showService.getById(order.getShowId());
+        if (show == null) {
+            throw new NotFoundException("关联场次不存在");
+        }
+
+        LocalDateTime refundDeadline = show.getShowTime().minusHours(refundBeforeHours);
+        if (LocalDateTime.now().isAfter(refundDeadline)) {
+            throw new BusinessException("已超过退款截止时间（演出前" + refundBeforeHours + "小时），无法退款");
+        }
+
+        // 4. 回滚库存 + 释放座位
+        doRefund(order);
+
+        logger.info("订单退款成功，订单号：{}，用户ID：{}，退款金额：{}", order.getOrderNo(), userId, order.getTotalAmount());
+
+        // 5. 发送短信通知（模拟）
+        logger.info("【演唱会订票系统】短信通知：您的订单 {} 已退款成功，退款金额：{}元，预计1-3个工作日到账。",
+                order.getOrderNo(), order.getTotalAmount());
+
+        return getOrderDetail(orderId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void completeFinishedOrders() {
+        // 1. 查询所有已结束场次（showTime < now 且状态未标记为已结束的）
+        LambdaQueryWrapper<Show> showQuery = new LambdaQueryWrapper<>();
+        showQuery.lt(Show::getShowTime, LocalDateTime.now())
+                .ne(Show::getStatus, 4); // 排除已取消的场次
+        List<Show> finishedShows = showService.list(showQuery);
+
+        if (finishedShows.isEmpty()) {
+            return;
+        }
+
+        List<Long> finishedShowIds = finishedShows.stream()
+                .map(Show::getId)
+                .collect(Collectors.toList());
+
+        // 2. 查询这些场次中状态为"已支付"的订单
+        LambdaQueryWrapper<Order> orderQuery = new LambdaQueryWrapper<>();
+        orderQuery.in(Order::getShowId, finishedShowIds)
+                .eq(Order::getStatus, 1); // 已支付
+        List<Order> ordersToComplete = this.list(orderQuery);
+
+        if (ordersToComplete.isEmpty()) {
+            return;
+        }
+
+        logger.info("发现 {} 个已结束场次的已支付订单，开始标记为已完成...", ordersToComplete.size());
+
+        int successCount = 0;
+        for (Order order : ordersToComplete) {
+            try {
+                order.setStatus(4); // 已完成
+                this.updateById(order);
+                successCount++;
+            } catch (Exception e) {
+                logger.error("标记订单为已完成失败，订单ID：{}，错误：{}", order.getId(), e.getMessage());
+            }
+        }
+
+        // 3. 更新已结束场次的状态为"已结束"（3）
+        for (Show show : finishedShows) {
+            if (show.getStatus() != 3) {
+                show.setStatus(3);
+                showService.updateById(show);
+            }
+        }
+
+        logger.info("订单自动完成处理完毕，成功：{}/{}", successCount, ordersToComplete.size());
+    }
+
+    /**
+     * 执行退款逻辑：回滚库存 + 释放座位 + 更新订单状态
+     */
+    private void doRefund(Order order) {
+        // 1. 查询订单座位
+        LambdaQueryWrapper<OrderSeat> osQuery = new LambdaQueryWrapper<>();
+        osQuery.eq(OrderSeat::getOrderId, order.getId());
+        List<OrderSeat> orderSeats = orderSeatService.list(osQuery);
+
+        if (!orderSeats.isEmpty()) {
+            // 2. 按票档分组，回滚库存
+            Map<Long, Long> ticketTypeCountMap = orderSeats.stream()
+                    .collect(Collectors.groupingBy(OrderSeat::getTicketTypeId, Collectors.counting()));
+
+            for (Map.Entry<Long, Long> entry : ticketTypeCountMap.entrySet()) {
+                LambdaUpdateWrapper<TicketType> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.eq(TicketType::getId, entry.getKey())
+                        .setSql("available_stock = available_stock + " + entry.getValue());
+                ticketTypeService.update(updateWrapper);
+            }
+
+            // 3. 删除订单座位记录（释放座位）
+            LambdaQueryWrapper<OrderSeat> deleteWrapper = new LambdaQueryWrapper<>();
+            deleteWrapper.eq(OrderSeat::getOrderId, order.getId());
+            orderSeatService.remove(deleteWrapper);
+        }
+
+        // 4. 更新订单状态为已退款
+        order.setStatus(3);
+        this.updateById(order);
     }
 
     /**

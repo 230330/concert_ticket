@@ -59,4 +59,17 @@ public class OrderCleanupTask {
 
         logger.info("过期订单清理完成，成功：{}，失败：{}", successCount, failCount);
     }
+
+    /**
+     * 每小时执行一次，将演出时间已过的已支付订单自动标记为"已完成"
+     */
+    @Scheduled(cron = "0 0 */1 * * ?")
+    public void autoCompleteFinishedOrders() {
+        logger.info("开始执行订单自动完成任务...");
+        try {
+            orderService.completeFinishedOrders();
+        } catch (Exception e) {
+            logger.error("订单自动完成任务执行失败：{}", e.getMessage());
+        }
+    }
 }
