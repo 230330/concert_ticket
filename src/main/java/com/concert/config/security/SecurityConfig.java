@@ -85,10 +85,8 @@ public class SecurityConfig {
                         "/static/**",
                         "/favicon.ico",
                         // 演唱会查询（公开接口）
-                        "/concerts/**",
-                        "/shows/**",
-                        "/artists/**",
-                        "/venues/**"
+                        "/api/concert/**",
+                        "/api/show/**"
                 ).permitAll()
                 // 其他所有请求需要认证
                 .anyRequest().authenticated()

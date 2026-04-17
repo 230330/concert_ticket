@@ -3,6 +3,7 @@ package com.concert.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.concert.dto.request.CreateOrderRequest;
 import com.concert.dto.response.OrderResponse;
+import com.concert.dto.response.PageResponse;
 import com.concert.entity.Order;
 
 /**
@@ -50,4 +51,15 @@ public interface OrderService extends IService<Order> {
      * @return 订单响应
      */
     OrderResponse getOrderDetail(Long orderId);
+
+    /**
+     * 获取我的订单
+     *
+     * @param userId 用户ID
+     * @param status 订单状态
+     * @param page   页码
+     * @param size   每页大小
+     * @return 订单响应分页
+     */
+    PageResponse<OrderResponse> getMyOrders(Long userId, Integer status, Integer page, Integer size);
 }

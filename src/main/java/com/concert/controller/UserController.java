@@ -10,6 +10,7 @@ import com.concert.dto.request.UserUpdateRequest;
 import com.concert.dto.response.LoginResponse;
 import com.concert.dto.response.UserInfoResponse;
 import com.concert.entity.User;
+import com.concert.exception.BusinessException;
 import com.concert.service.SmsCodeService;
 import com.concert.service.UserService;
 import com.concert.utils.JwtUtil;
@@ -89,30 +90,25 @@ public class UserController {
      */
     @PostMapping("/login")
     public Result<LoginResponse> login(@RequestBody @Validated LoginRequest request) {
-        try {
-            // 1. 使用 AuthenticationManager 进行认证
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(request.getPhone(), request.getPassword());
-            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+        // 1. 使用 AuthenticationManager 进行认证
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(request.getPhone(), request.getPassword());
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
-            // 2. 认证成功，获取用户信息
-            LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+        // 2. 认证成功，获取用户信息
+        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
 
-            // 3. 检查用户状态
-            if (!loginUser.isEnabled()) {
-                return Result.error("账号已被禁用");
-            }
-
-            // 4. 生成 JWT Token
-            String token = jwtUtil.generateToken(loginUser.getId(), loginUser.getPhone());
-
-            // 5. 返回登录响应
-            LoginResponse response = new LoginResponse(token, jwtExpiration);
-            return Result.success(response);
-
-        } catch (Exception e) {
-            return Result.error("手机号或密码错误");
+        // 3. 检查用户状态
+        if (!loginUser.isEnabled()) {
+            throw new BusinessException("账号已被禁用");
         }
+
+        // 4. 生成 JWT Token
+        String token = jwtUtil.generateToken(loginUser.getId(), loginUser.getPhone());
+
+        // 5. 返回登录响应
+        LoginResponse response = new LoginResponse(token, jwtExpiration);
+        return Result.success(response);
     }
 
     /**

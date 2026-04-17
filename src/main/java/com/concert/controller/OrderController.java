@@ -6,6 +6,7 @@ import com.concert.dto.request.CancelOrderRequest;
 import com.concert.dto.request.CreateOrderRequest;
 import com.concert.dto.request.PayOrderRequest;
 import com.concert.dto.response.OrderResponse;
+import com.concert.dto.response.PageResponse;
 import com.concert.service.OrderService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,12 +35,8 @@ public class OrderController {
             return Result.unauthorized("请先登录");
         }
 
-        try {
-            OrderResponse response = orderService.createOrder(userId, request);
-            return Result.success(response);
-        } catch (RuntimeException e) {
-            return Result.error(e.getMessage());
-        }
+        OrderResponse response = orderService.createOrder(userId, request);
+        return Result.success(response);
     }
 
     /**
@@ -52,12 +49,8 @@ public class OrderController {
             return Result.unauthorized("请先登录");
         }
 
-        try {
-            OrderResponse response = orderService.payOrder(userId, request.getOrderId());
-            return Result.success(response);
-        } catch (RuntimeException e) {
-            return Result.error(e.getMessage());
-        }
+        OrderResponse response = orderService.payOrder(userId, request.getOrderId());
+        return Result.success(response);
     }
 
     /**
@@ -70,12 +63,8 @@ public class OrderController {
             return Result.unauthorized("请先登录");
         }
 
-        try {
-            orderService.cancelOrder(userId, request.getOrderId());
-            return Result.success();
-        } catch (RuntimeException e) {
-            return Result.error(e.getMessage());
-        }
+        orderService.cancelOrder(userId, request.getOrderId());
+        return Result.success();
     }
 
     /**
@@ -98,6 +87,27 @@ public class OrderController {
             return Result.error("无权查看此订单");
         }
 
+        return Result.success(response);
+    }
+
+    /**
+     * 我的订单列表（分页+状态筛选）
+     *
+     * @param status 订单状态（可选）：0-待支付，1-已支付，2-已取消，3-已退款，4-已完成
+     * @param page   页码（默认1）
+     * @param size   每页条数（默认10）
+     */
+    @GetMapping("/my")
+    public Result<PageResponse<OrderResponse>> getMyOrders(
+            @RequestParam(required = false) Integer status,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            return Result.unauthorized("请先登录");
+        }
+
+        PageResponse<OrderResponse> response = orderService.getMyOrders(userId, status, page, size);
         return Result.success(response);
     }
 

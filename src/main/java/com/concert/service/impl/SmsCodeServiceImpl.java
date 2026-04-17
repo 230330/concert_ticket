@@ -4,6 +4,7 @@ import com.concert.service.SmsCodeService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,8 @@ public class SmsCodeServiceImpl implements SmsCodeService {
     /**
      * 验证码有效期（分钟）
      */
-    private static final long CODE_EXPIRE_MINUTES = 5;
+    @Value("${concert.captcha.expire-minutes:5}")
+    private long captchaExpireMinutes;
 
     /**
      * 验证码长度
@@ -49,11 +51,11 @@ public class SmsCodeServiceImpl implements SmsCodeService {
 
         // 存入 Redis，设置5分钟有效期
         String redisKey = SMS_CODE_PREFIX + phone;
-        redisTemplate.opsForValue().set(redisKey, code, CODE_EXPIRE_MINUTES, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(redisKey, code, captchaExpireMinutes, TimeUnit.MINUTES);
 
         // TODO: 对接阿里云短信 SDK 发送短信
         // 目前先用日志输出验证码
-        logger.info("【演唱会订票系统】验证码发送成功，手机号：{}，验证码：{}，有效期：{}分钟", phone, code, CODE_EXPIRE_MINUTES);
+        logger.info("【演唱会订票系统】验证码发送成功，手机号：{}，验证码：{}，有效期：{}分钟", phone, code, captchaExpireMinutes);
 
         return true;
     }
