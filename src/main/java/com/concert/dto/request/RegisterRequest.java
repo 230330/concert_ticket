@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 /**
  * 用户注册请求
@@ -22,6 +23,8 @@ public class RegisterRequest {
      * 密码
      */
     @NotBlank(message = "密码不能为空")
+    @Size(min = 8, max = 32, message = "密码长度必须在8-32个字符之间")
+    @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d).+$", message = "密码必须包含字母和数字")
     private String password;
 
     /**

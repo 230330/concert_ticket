@@ -7,6 +7,7 @@ import com.concert.dto.request.VenueRequest;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.Venue;
 import com.concert.service.VenueService;
+import com.concert.utils.PageUtil;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,8 @@ public class AdminVenueController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String city) {
 
+        int[] params = PageUtil.validate(page, size);
+
         LambdaQueryWrapper<Venue> queryWrapper = new LambdaQueryWrapper<>();
         if (name != null && !name.trim().isEmpty()) {
             queryWrapper.like(Venue::getName, name.trim());
@@ -46,7 +49,7 @@ public class AdminVenueController {
         }
         queryWrapper.orderByDesc(Venue::getId);
 
-        Page<Venue> venuePage = new Page<>(page, size);
+        Page<Venue> venuePage = new Page<>(params[0], params[1]);
         venueService.page(venuePage, queryWrapper);
 
         PageResponse<Venue> pageResponse = new PageResponse<>(

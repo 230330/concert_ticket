@@ -7,6 +7,7 @@ import com.concert.dto.request.ShowRequest;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.Show;
 import com.concert.service.ShowService;
+import com.concert.utils.PageUtil;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,8 @@ public class AdminShowController {
             @RequestParam(required = false) Long concertId,
             @RequestParam(required = false) Integer status) {
 
+        int[] params = PageUtil.validate(page, size);
+
         LambdaQueryWrapper<Show> queryWrapper = new LambdaQueryWrapper<>();
         if (concertId != null) {
             queryWrapper.eq(Show::getConcertId, concertId);
@@ -46,7 +49,7 @@ public class AdminShowController {
         }
         queryWrapper.orderByDesc(Show::getId);
 
-        Page<Show> showPage = new Page<>(page, size);
+        Page<Show> showPage = new Page<>(params[0], params[1]);
         showService.page(showPage, queryWrapper);
 
         PageResponse<Show> pageResponse = new PageResponse<>(

@@ -13,6 +13,7 @@ import com.concert.exception.NotFoundException;
 import com.concert.service.OrderService;
 import com.concert.service.SysRoleService;
 import com.concert.service.UserService;
+import com.concert.utils.PageUtil;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,6 +53,8 @@ public class AdminUserController {
             @RequestParam(required = false) String phone,
             @RequestParam(required = false) Integer status) {
 
+        int[] params = PageUtil.validate(page, size);
+
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         if (phone != null && !phone.trim().isEmpty()) {
             queryWrapper.like(User::getPhone, phone.trim());
@@ -61,7 +64,7 @@ public class AdminUserController {
         }
         queryWrapper.orderByDesc(User::getId);
 
-        Page<User> userPage = new Page<>(page, size);
+        Page<User> userPage = new Page<>(params[0], params[1]);
         userService.page(userPage, queryWrapper);
 
         List<User> users = userPage.getRecords();

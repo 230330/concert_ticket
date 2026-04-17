@@ -11,6 +11,7 @@ import com.concert.entity.TicketType;
 import com.concert.exception.BusinessException;
 import com.concert.exception.NotFoundException;
 import com.concert.service.TicketTypeService;
+import com.concert.utils.PageUtil;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,13 +40,15 @@ public class AdminTicketTypeController {
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) Long showId) {
 
+        int[] params = PageUtil.validate(page, size);
+
         LambdaQueryWrapper<TicketType> queryWrapper = new LambdaQueryWrapper<>();
         if (showId != null) {
             queryWrapper.eq(TicketType::getShowId, showId);
         }
         queryWrapper.orderByDesc(TicketType::getId);
 
-        Page<TicketType> ticketTypePage = new Page<>(page, size);
+        Page<TicketType> ticketTypePage = new Page<>(params[0], params[1]);
         ticketTypeService.page(ticketTypePage, queryWrapper);
 
         PageResponse<TicketType> pageResponse = new PageResponse<>(

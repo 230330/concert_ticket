@@ -153,7 +153,7 @@ public class UserController {
      * 更新用户信息
      */
     @PutMapping("/update")
-    public Result<Void> updateUserInfo(@RequestBody UserUpdateRequest request) {
+    public Result<Void> updateUserInfo(@RequestBody @Validated UserUpdateRequest request) {
         // 从 Security 上下文获取当前登录用户
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {

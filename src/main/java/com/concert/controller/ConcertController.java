@@ -5,6 +5,7 @@ import com.concert.dto.response.ConcertDetailResponse;
 import com.concert.dto.response.ConcertListResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.service.ConcertService;
+import com.concert.utils.PageUtil;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +35,8 @@ public class ConcertController {
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(defaultValue = "default") String sort) {
 
-        PageResponse<ConcertListResponse> pageResponse = concertService.getHotConcerts(page, size, sort);
+        int[] params = PageUtil.validate(page, size);
+        PageResponse<ConcertListResponse> pageResponse = concertService.getHotConcerts(params[0], params[1], sort);
         return Result.success(pageResponse);
     }
 
@@ -49,7 +51,8 @@ public class ConcertController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
 
-        PageResponse<ConcertListResponse> pageResponse = concertService.getUpcomingConcerts(page, size);
+        int[] params = PageUtil.validate(page, size);
+        PageResponse<ConcertListResponse> pageResponse = concertService.getUpcomingConcerts(params[0], params[1]);
         return Result.success(pageResponse);
     }
 
@@ -74,8 +77,9 @@ public class ConcertController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
 
+        int[] params = PageUtil.validate(page, size);
         PageResponse<ConcertListResponse> pageResponse = concertService.searchConcerts(
-                keyword, city, artistName, startDate, endDate, page, size);
+                keyword, city, artistName, startDate, endDate, params[0], params[1]);
         return Result.success(pageResponse);
     }
 

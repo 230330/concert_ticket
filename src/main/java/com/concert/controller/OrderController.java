@@ -9,6 +9,7 @@ import com.concert.dto.request.RefundOrderRequest;
 import com.concert.dto.response.OrderResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.service.OrderService;
+import com.concert.utils.PageUtil;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -122,7 +123,8 @@ public class OrderController {
             return Result.unauthorized("请先登录");
         }
 
-        PageResponse<OrderResponse> response = orderService.getMyOrders(userId, status, page, size);
+        int[] params = PageUtil.validate(page, size);
+        PageResponse<OrderResponse> response = orderService.getMyOrders(userId, status, params[0], params[1]);
         return Result.success(response);
     }
 

@@ -100,3 +100,7 @@ concert:
   # 验证码配置
   captcha:
     expire-minutes: 5  # 验证码过期时间（分钟）
+  # 分页配置
+  page:
+    max-size: 100  # 分页大小上限
+    default-size: 10  # 分页大小默认值

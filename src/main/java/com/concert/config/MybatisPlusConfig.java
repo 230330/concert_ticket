@@ -17,12 +17,15 @@ import java.time.LocalDateTime;
 public class MybatisPlusConfig {
 
     /**
-     * 分页插件
+     * 分页插件（设置全局分页上限，防止恶意大查询拖垮数据库）
      */
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        PaginationInnerInterceptor paginationInterceptor = new PaginationInnerInterceptor(DbType.MYSQL);
+        // 全局分页上限：即使 Controller/Service 未校验，框架也会自动截断
+        paginationInterceptor.setMaxLimit(100L);
+        interceptor.addInnerInterceptor(paginationInterceptor);
         return interceptor;
     }
 

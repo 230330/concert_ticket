@@ -9,6 +9,7 @@ import com.concert.entity.*;
 import com.concert.exception.BusinessException;
 import com.concert.exception.NotFoundException;
 import com.concert.service.*;
+import com.concert.utils.PageUtil;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -68,6 +69,8 @@ public class AdminOrderController {
             @RequestParam(required = false) String orderNo,
             @RequestParam(required = false) Long userId) {
 
+        int[] params = PageUtil.validate(page, size);
+
         LambdaQueryWrapper<Order> queryWrapper = new LambdaQueryWrapper<>();
         if (status != null) {
             queryWrapper.eq(Order::getStatus, status);
@@ -80,7 +83,7 @@ public class AdminOrderController {
         }
         queryWrapper.orderByDesc(Order::getId);
 
-        Page<Order> orderPage = new Page<>(page, size);
+        Page<Order> orderPage = new Page<>(params[0], params[1]);
         orderService.page(orderPage, queryWrapper);
 
         List<Order> orders = orderPage.getRecords();

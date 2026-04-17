@@ -9,6 +9,7 @@ import com.concert.entity.Concert;
 import com.concert.entity.ConcertArtist;
 import com.concert.service.ConcertArtistService;
 import com.concert.service.ConcertService;
+import com.concert.utils.PageUtil;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +45,8 @@ public class AdminConcertController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Integer status) {
 
+        int[] params = PageUtil.validate(page, size);
+
         LambdaQueryWrapper<Concert> queryWrapper = new LambdaQueryWrapper<>();
         if (name != null && !name.trim().isEmpty()) {
             queryWrapper.like(Concert::getName, name.trim());
@@ -53,7 +56,7 @@ public class AdminConcertController {
         }
         queryWrapper.orderByDesc(Concert::getId);
 
-        Page<Concert> concertPage = new Page<>(page, size);
+        Page<Concert> concertPage = new Page<>(params[0], params[1]);
         concertService.page(concertPage, queryWrapper);
 
         PageResponse<Concert> pageResponse = new PageResponse<>(
