@@ -17,6 +17,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
+/**
+ * <p>
+ * 用户详情服务实现
+ * </p>
+ * @author hzf
+ * @date 2023/4/17 15:23
+ */
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 

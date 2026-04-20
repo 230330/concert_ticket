@@ -81,6 +81,13 @@ public class Result<T> implements Serializable {
     }
 
     /**
+     * 失败（带状态码，消息，数据）
+     */
+    public static <T> Result<T> error(Integer code, String message, T data) {
+        return new Result<>(code, message, data);
+    }
+
+    /**
      * 未认证
      */
     public static <T> Result<T> unauthorized(String message) {
