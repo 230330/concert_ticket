@@ -1,3 +1,4 @@
+> 这里是一个 concert ticket frontend 前端项目的README.md
 ---------------项目结构------------------
 src/
 ├── api/                    # 接口请求
@@ -20,3 +21,5 @@ src/
 │       └── Register.vue    # 注册页
 ├── router/                 # 路由配置
 └── store/                  # 状态管理（Vuex）
+
+

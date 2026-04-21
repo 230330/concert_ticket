@@ -108,7 +108,7 @@ export const constantRoutes = [
         children: [
           {
             path: 'menu1-1',
-            component: () => import('@/views/nested/menu1/menu1-1'),
+            component: () => import('@/views/nested/menu1/menu'),
             name: 'Menu1-1',
             meta: { title: 'Menu1-1' }
           },
