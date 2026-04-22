@@ -1,6 +1,7 @@
 package com.concert.exception;
 
 import com.concert.common.Result;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -17,18 +19,18 @@ import java.util.stream.Collectors;
  * @author: hzf
  * @date: 2026-04-17 15:30
  */
-
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+//    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
      * 处理自定义业务异常（BusinessException 及其子类）
      */
     @ExceptionHandler(BusinessException.class)
     public Result<Void> handleBusinessException(BusinessException e) {
-        logger.warn("业务异常：{}", e.getMessage());
+        log.warn("业务异常：{}", e.getMessage());
         return Result.error(e.getCode(), e.getMessage());
     }
 
@@ -37,7 +39,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(NotFoundException.class)
     public Result<Void> handleNotFoundException(NotFoundException e) {
-        logger.warn("资源未找到：{}", e.getMessage());
+        log.warn("资源未找到：{}", e.getMessage());
         return Result.error(e.getCode(), e.getMessage());
     }
 
@@ -46,7 +48,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(ForbiddenException.class)
     public Result<Void> handleForbiddenException(ForbiddenException e) {
-        logger.warn("无权限操作：{}", e.getMessage());
+        log.warn("无权限操作：{}", e.getMessage());
         return Result.error(e.getCode(), e.getMessage());
     }
 
@@ -58,7 +60,7 @@ public class GlobalExceptionHandler {
         String message = e.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("；"));
-        logger.warn("参数校验失败：{}", message);
+        log.warn("参数校验失败：{}", message);
         return Result.error(400, message);
     }
 
@@ -70,7 +72,7 @@ public class GlobalExceptionHandler {
         String message = e.getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("；"));
-        logger.warn("参数绑定失败：{}", message);
+        log.warn("参数绑定失败：{}", message);
         return Result.error(400, message);
     }
 
@@ -79,9 +81,23 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DuplicateKeyException.class)
     public Result<Void> handleDuplicateKeyException(DuplicateKeyException e) {
-        logger.warn("数据重复：{}", e.getMessage());
-        return Result.error("数据已存在，请勿重复操作");
+        log.warn("数据唯一键冲突");
+        // 如需记录详细堆栈，可使用 debug 级别
+        log.debug("详细异常：", e);
+        return Result.error(409, "数据已存在，请勿重复操作");
     }
+
+
+    /**
+     * 处理未授权异常
+     */
+    @ExceptionHandler(UnauthorizedException.class)
+    public Result<Void> handleUnauthorized(UnauthorizedException e) {
+        // 返回 401 和错误信息
+        log.warn("未授权访问：{}", e.getMessage());
+        return Result.unauthorized(e.getMessage());
+    }
+
 
     /**
      * 兜底处理所有未捕获的异常
@@ -89,7 +105,8 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public Result<Void> handleException(Exception e) {
-        logger.error("系统异常：", e);
-        return Result.error(500, "系统繁忙，请稍后重试");
+        String errorId = UUID.randomUUID().toString();
+        log.error("系统异常 errorId={}", errorId, e);
+        return Result.error(500, "系统繁忙，请稍后重试 [错误ID：" + errorId + "]");
     }
 }

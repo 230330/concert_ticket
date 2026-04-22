@@ -10,6 +10,7 @@ import com.concert.dto.response.OrderResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.service.OrderService;
 import com.concert.utils.PageUtil;
+import com.concert.utils.SecurityUtil;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -34,7 +35,7 @@ public class OrderController {
      */
     @PostMapping("/create")
     public Result<OrderResponse> createOrder(@RequestBody @Validated CreateOrderRequest request) {
-        Long userId = getCurrentUserId();
+        Long userId = SecurityUtil.getCurrentUserId();
         if (userId == null) {
             return Result.unauthorized("请先登录");
         }
@@ -48,7 +49,7 @@ public class OrderController {
      */
     @PostMapping("/pay")
     public Result<OrderResponse> payOrder(@RequestBody @Validated PayOrderRequest request) {
-        Long userId = getCurrentUserId();
+        Long userId = SecurityUtil.getCurrentUserId();
         if (userId == null) {
             return Result.unauthorized("请先登录");
         }
@@ -62,7 +63,7 @@ public class OrderController {
      */
     @PutMapping("/cancel")
     public Result<Void> cancelOrder(@RequestBody @Validated CancelOrderRequest request) {
-        Long userId = getCurrentUserId();
+        Long userId = SecurityUtil.getCurrentUserId();
         if (userId == null) {
             return Result.unauthorized("请先登录");
         }
@@ -76,7 +77,7 @@ public class OrderController {
      */
     @PutMapping("/refund")
     public Result<OrderResponse> refundOrder(@RequestBody @Validated RefundOrderRequest request) {
-        Long userId = getCurrentUserId();
+        Long userId = SecurityUtil.getCurrentUserId();
         if (userId == null) {
             return Result.unauthorized("请先登录");
         }
@@ -90,7 +91,7 @@ public class OrderController {
      */
     @GetMapping("/{orderId}")
     public Result<OrderResponse> getOrderDetail(@PathVariable Long orderId) {
-        Long userId = getCurrentUserId();
+        Long userId = SecurityUtil.getCurrentUserId();
         if (userId == null) {
             return Result.unauthorized("请先登录");
         }
@@ -120,7 +121,7 @@ public class OrderController {
             @RequestParam(required = false) Integer status,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
-        Long userId = getCurrentUserId();
+        Long userId = SecurityUtil.getCurrentUserId();
         if (userId == null) {
             return Result.unauthorized("请先登录");
         }
@@ -130,19 +131,20 @@ public class OrderController {
         return Result.success(response);
     }
 
-    /**
-     * 获取当前登录用户ID
-     */
-    private Long getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return null;
-        }
-
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof LoginUser) {
-            return ((LoginUser) principal).getId();
-        }
-        return null;
-    }
+//    /**
+//     * 获取当前登录用户ID
+//     * 优化了这段代码，改成工具类（SecurityUtil） + 抛异常（UnauthorizedException）
+//     */
+//    private Long getCurrentUserId() {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (authentication == null || !authentication.isAuthenticated()) {
+//            return null;
+//        }
+//
+//        Object principal = authentication.getPrincipal();
+//        if (principal instanceof LoginUser) {
+//            return ((LoginUser) principal).getId();
+//        }
+//        return null;
+//    }
 }
