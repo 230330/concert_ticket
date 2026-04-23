@@ -6,6 +6,9 @@ server:
 spring:
   application:
     name: concert-ticket
+#  # 允许 循环依赖
+#  main:
+#    allow-circular-references: true
 
   # 数据源配置
   datasource:

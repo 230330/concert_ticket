@@ -12,6 +12,7 @@ import com.concert.enums.ShowStatus;
 import com.concert.exception.NotFoundException;
 import com.concert.mapper.ConcertMapper;
 import com.concert.service.*;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,6 +39,7 @@ public class ConcertServiceImpl extends ServiceImpl<ConcertMapper, Concert> impl
     private ArtistService artistService;
 
     @Resource
+    @Lazy
     private ShowService showService;
 
     @Resource

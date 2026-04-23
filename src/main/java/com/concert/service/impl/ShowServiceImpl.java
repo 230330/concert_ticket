@@ -9,6 +9,7 @@ import com.concert.enums.OrderStatus;
 import com.concert.exception.NotFoundException;
 import com.concert.mapper.ShowMapper;
 import com.concert.service.*;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -46,6 +47,7 @@ public class ShowServiceImpl extends ServiceImpl<ShowMapper, Show> implements Sh
     private OrderSeatService orderSeatService;
 
     @Resource
+    @Lazy
     private OrderService orderService;
 
     @Override
