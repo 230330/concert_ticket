@@ -6,6 +6,8 @@ import com.concert.dto.response.OrderResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.Order;
 
+import java.util.List;
+
 /**
  * @description:    订单服务接口
  * @author: hzf
@@ -80,4 +82,20 @@ public interface OrderService extends IService<Order> {
      * 将演出时间已过且状态为"已支付"的订单标记为"已完成"
      */
     void completeFinishedOrders();
+
+    /**
+     * 批量取消过期订单（系统调用）
+     *
+     * @param orderIds 订单ID列表
+     * @return 取消的订单数量
+     */
+    int batchCancelExpiredOrders(List<Long> orderIds);
+
+    /**
+     * 批量完成已结束场次的订单（系统调用）
+     *
+     * @param maxCompleteBatchSize 每次完成的最大订单数量
+     * @return 完成的订单数量
+     */
+    int batchCompleteFinishedOrders(int maxCompleteBatchSize);
 }

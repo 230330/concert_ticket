@@ -36,6 +36,18 @@ public class Order {
     private Long userId;
 
     /**
+     * 票种ID
+     */
+    @TableField("ticket_type_id")
+    private Long ticketTypeId;
+
+    /**
+     * 座位信息
+     */
+    @TableField("seat_info")
+    private String seatInfo;
+
+    /**
      * 场次ID
      */
     @TableField("show_id")

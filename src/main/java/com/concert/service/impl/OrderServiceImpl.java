@@ -1,5 +1,6 @@
 package com.concert.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -13,10 +14,13 @@ import com.concert.exception.BusinessException;
 import com.concert.exception.ForbiddenException;
 import com.concert.exception.NotFoundException;
 import com.concert.mapper.OrderMapper;
+import com.concert.mapper.OrderSeatMapper;
+import com.concert.mapper.TicketTypeMapper;
 import com.concert.service.*;
 import com.concert.utils.SecureRandomUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -77,6 +81,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Resource
     private OrderSeatService orderSeatService;
+
+    @Resource
+    private OrderSeatMapper orderSeatMapper;
+
+    @Resource
+    private TicketTypeMapper ticketTypeMapper;
 
     /**
      * 创建订单
@@ -621,6 +631,83 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         logger.info("订单自动完成处理完毕，成功：{}/{}", successCount, ordersToComplete.size());
     }
+
+    // ==================== 批量取消过期订单 ====================
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int batchCancelExpiredOrders(List<Long> orderIds) {
+        if (CollectionUtil.isEmpty(orderIds)) {
+            return 0;
+        }
+
+        // 1. 查询这些订单，确保状态为待支付且未过期（二次校验）
+        List<Order> orders = list(new LambdaQueryWrapper<Order>()
+                .in(Order::getId, orderIds)
+                .eq(Order::getStatus, OrderStatus.PENDING)
+                .lt(Order::getExpireTime, LocalDateTime.now()));
+
+        if (orders.isEmpty()) {
+            return 0;
+        }
+
+        // 2. 收集订单ID
+        List<Long> validOrderIds = orders.stream().map(Order::getId).collect(Collectors.toList());
+
+        // 3. 删除 order_seat 表中这些订单的座位锁定记录
+        int deletedSeats = orderSeatMapper.delete(new LambdaQueryWrapper<OrderSeat>()
+                .in(OrderSeat::getOrderId, validOrderIds));
+        logger.debug("批量取消订单：删除 order_seat 记录 {} 条", deletedSeats);
+
+        // 4. 回滚 ticket_type 的 sold_quantity
+        Map<Long, Integer> rollbackMap = new HashMap<>();
+        for (Order order : orders) {
+            int seatCount = order.getSeatInfo().split(",").length;
+            rollbackMap.merge(order.getTicketTypeId(), seatCount, Integer::sum);
+        }
+        for (Map.Entry<Long, Integer> entry : rollbackMap.entrySet()) {
+            ticketTypeMapper.updateSoldQuantityDecrement(entry.getKey(), entry.getValue());
+        }
+
+        // 5. 更新订单状态为已取消，并获取实际更新的行数
+        int updated = baseMapper.update(null, new LambdaUpdateWrapper<Order>()
+                .in(Order::getId, validOrderIds)
+                .set(Order::getStatus, OrderStatus.CANCELLED)
+                .set(Order::getUpdateTime, LocalDateTime.now()));
+
+        logger.info("批量取消订单完成，成功取消 {} 个订单，回滚座位 {} 个", updated, deletedSeats);
+        return updated;
+    }
+
+    // ==================== 批量自动完成订单 ====================
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int batchCompleteFinishedOrders(int batchSize) {
+        // 查询需要完成的订单：已支付，且对应的演出场次已经结束（show_date + show_time < now）
+        // 注意：这里需要关联 show 表，但为了简化，可以在 Order 表中冗余一个字段 show_end_time，
+        // 或者在 SQL 中直接关联。由于我们没有冗余字段，这里使用子查询或 join。
+        // 为了性能，我们直接在 Mapper 中编写 SQL。这里演示使用 MyBatis-Plus 的灵活方式。
+
+        // 方法1：使用自定义 Mapper 方法
+        // return baseMapper.completeFinishedOrdersBatch(batchSize);
+
+        // 方法2：使用简单的分步查询 + 更新（适合数据量不大的情况）
+        // 查询前 batchSize 条需要完成的订单ID
+        List<Long> orderIds = baseMapper.selectNeedCompleteOrderIds(batchSize);
+        if (orderIds.isEmpty()) {
+            return 0;
+        }
+
+        // 更新订单状态为已完成
+        int updated = baseMapper.update(null,new LambdaUpdateWrapper<Order>()
+                .in(Order::getId, orderIds)
+                .set(Order::getStatus, OrderStatus.COMPLETED)
+                .set(Order::getUpdateTime, LocalDateTime.now()));
+        logger.info("批量自动完成订单 {} 个", updated);
+        return updated;
+    }
+
 
     /**
      * 执行退款逻辑：回滚库存 + 释放座位 + 更新订单状态
