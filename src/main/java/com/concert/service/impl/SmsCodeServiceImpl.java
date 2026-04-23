@@ -1,6 +1,7 @@
 package com.concert.service.impl;
 
 import com.concert.service.SmsCodeService;
+import com.concert.utils.SecureRandomUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +10,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -50,7 +50,7 @@ public class SmsCodeServiceImpl implements SmsCodeService {
         }
 
         // 生成6位随机验证码
-        String code = generateCode();
+        String code = SecureRandomUtil.generateNumericCode(6);
 
         // 存入 Redis，设置5分钟有效期
         String redisKey = SMS_CODE_PREFIX + phone;
@@ -90,17 +90,19 @@ public class SmsCodeServiceImpl implements SmsCodeService {
         return false;
     }
 
-    /**
-     * 生成6位随机数字验证码
-     *
-     * @return 验证码
-     */
-    private String generateCode() {
-        Random random = new Random();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < CODE_LENGTH; i++) {
-            sb.append(random.nextInt(10));
-        }
-        return sb.toString();
-    }
+    //短信验证码和取票码的生成使用了 java.util.Random，这是可预测的伪随机数生成器。需要替换为 java.security.SecureRandom
+    // 防止验证码被猜测。
+//    /**
+//     * 生成6位随机数字验证码
+//     *
+//     * @return 验证码
+//     */
+//    private String generateCode() {
+//        Random random = new Random();
+//        StringBuilder sb = new StringBuilder();
+//        for (int i = 0; i < CODE_LENGTH; i++) {
+//            sb.append(random.nextInt(10));
+//        }
+//        return sb.toString();
+//    }
 }

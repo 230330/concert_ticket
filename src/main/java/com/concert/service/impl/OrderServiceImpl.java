@@ -14,6 +14,7 @@ import com.concert.exception.ForbiddenException;
 import com.concert.exception.NotFoundException;
 import com.concert.mapper.OrderMapper;
 import com.concert.service.*;
+import com.concert.utils.SecureRandomUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -213,7 +214,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         // 3. 更新订单状态
         order.setStatus(OrderStatus.PAID); // 已支付
         order.setPayTime(LocalDateTime.now());
-        order.setPickupCode(generatePickupCode()); // 生成取票码
+        order.setPickupCode(SecureRandomUtil.generateAlphanumericCode(6)); // 生成取票码
         this.updateById(order);
 
         logger.info("订单支付成功，订单号：{}，取票码：{}", order.getOrderNo(), order.getPickupCode());
@@ -665,16 +666,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         return UUID.randomUUID().toString().replace("-", "").toUpperCase().substring(0, 20);
     }
 
-    /**
-     * 生成取票码（6位字母数字）
-     */
-    private String generatePickupCode() {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        Random random = new Random();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 6; i++) {
-            sb.append(chars.charAt(random.nextInt(chars.length())));
-        }
-        return sb.toString();
-    }
+    //短信验证码和取票码的生成使用了 java.util.Random，这是可预测的伪随机数生成器。需要替换为 java.security.SecureRandom
+    // 防止验证码被猜测。
+
+//    /**
+//     * 生成取票码（6位字母数字）
+//     */
+//    private String generatePickupCode() {
+//        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+//        Random random = new Random();
+//        StringBuilder sb = new StringBuilder();
+//        for (int i = 0; i < 6; i++) {
+//            sb.append(chars.charAt(random.nextInt(chars.length())));
+//        }
+//        return sb.toString();
+//    }
 }
