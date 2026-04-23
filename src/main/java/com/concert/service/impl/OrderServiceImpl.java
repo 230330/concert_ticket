@@ -77,8 +77,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Resource
     private OrderSeatService orderSeatService;
 
+    /**
+     * 创建订单
+     *
+     * @param userId 用户ID
+     * @param request 创建订单请求
+     * @return 订单详情
+     */
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)// 开启事务，确保数据一致性
     public OrderResponse createOrder(Long userId, CreateOrderRequest request) {
         // 1. 获取场次信息
         Show show = showService.getById(request.getShowId());
@@ -172,6 +179,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         return getOrderDetail(order.getId());
     }
 
+    /**
+     * 支付订单
+     *
+     * @param userId 用户ID
+     * @param orderId 订单ID
+     * @return 订单详情
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public OrderResponse payOrder(Long userId, Long orderId) {
@@ -211,6 +225,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         return getOrderDetail(orderId);
     }
 
+    /**
+     * 取消订单
+     *
+     * @param userId 用户ID
+     * @param orderId 订单ID
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancelOrder(Long userId, Long orderId) {
@@ -236,6 +256,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         logger.info("订单取消成功，订单号：{}，用户ID：{}", order.getOrderNo(), userId);
     }
 
+    /**
+     * 取消过期订单
+     *
+     * @param orderId 订单ID
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancelExpiredOrder(Long orderId) {
@@ -250,6 +275,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     /**
      * 执行取消订单逻辑
+     *
+     * @param order 订单
      */
     private void doCancel(Order order) {
         // 1. 查询订单座位
@@ -280,11 +307,18 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         this.updateById(order);
     }
 
+    /**
+     * 获取订单详情
+     *
+     * @param orderId 订单ID
+     * @return 订单详情
+     */
     @Override
+    @Transactional(readOnly = true)// 开启事务，确保数据一致性
     public OrderResponse getOrderDetail(Long orderId) {
         Order order = this.getById(orderId);
         if (order == null) {
-            return null;
+            throw new NotFoundException("订单不存在，订单ID：" + orderId);
         }
 
         OrderResponse response = new OrderResponse();
@@ -308,13 +342,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             Concert concert = concertService.getById(show.getConcertId());
             if (concert != null) {
                 response.setConcertName(concert.getName());
+            }else {
+                logger.warn("订单{}中存在不存在的演唱会{}", orderId, show.getConcertId());
             }
 
             // 获取场馆名称
             Venue venue = venueService.getById(show.getVenueId());
             if (venue != null) {
                 response.setVenueName(venue.getName());
+            } else {
+                logger.warn("订单{}中存在不存在的场馆{}", orderId, show.getVenueId());
             }
+        }else {
+            logger.warn("订单{}中存在不存在的场次{}", orderId, show.getId());
         }
 
         // 获取座位详情
@@ -359,12 +399,18 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                             SeatArea area = areaMap.get(seat.getAreaId());
                             if (area != null) {
                                 detail.setAreaName(area.getName());
+                            }else {
+                                logger.warn("订单{}中存在不存在的区域{}", orderId, seat.getAreaId());
                             }
+                        }else {
+                            logger.warn("订单{}中存在不存在的座位{}", orderId, os.getSeatId());
                         }
 
                         TicketType ticketType = ticketTypeMap.get(os.getTicketTypeId());
                         if (ticketType != null) {
                             detail.setTicketTypeName(ticketType.getName());
+                        }else{
+                            logger.warn("订单{}中存在不存在的票档{}", orderId, os.getTicketTypeId());
                         }
 
                         return detail;
@@ -378,7 +424,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         return response;
     }
-
+    /**
+     * 获取我的订单
+     *
+     * @param userId 用户ID
+     * @param status 订单状态
+     * @param page 页码
+     * @param size 每页数量
+     * @return 订单列表
+     */
     @Override
     public PageResponse<OrderResponse> getMyOrders(Long userId, Integer status, Integer page, Integer size) {
         // 1. 构建分页查询条件
@@ -463,7 +517,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         return new PageResponse<>(orderPage.getCurrent(), orderPage.getSize(),
                 orderPage.getTotal(), responseList);
     }
-
+    /**
+     * 订单退款
+     *
+     * @param userId 用户ID
+     * @param orderId 订单ID
+     * @return 订单详情
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public OrderResponse refundOrder(Long userId, Long orderId) {
@@ -506,6 +566,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         return getOrderDetail(orderId);
     }
 
+
+    /**
+     * 完成已结束场次的订单
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void completeFinishedOrders() {
@@ -559,6 +623,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     /**
      * 执行退款逻辑：回滚库存 + 释放座位 + 更新订单状态
+     *
+     * @param order 订单
      */
     private void doRefund(Order order) {
         // 1. 查询订单座位
@@ -576,6 +642,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 updateWrapper.eq(TicketType::getId, entry.getKey())
                         .setSql("available_stock = available_stock + " + entry.getValue());
                 ticketTypeService.update(updateWrapper);
+                logger.info("退款释放座位，订单号：{}，票档数量明细：{}", order.getOrderNo(), ticketTypeCountMap);
             }
 
             // 3. 删除订单座位记录（释放座位）
@@ -591,6 +658,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     /**
      * 生成订单号
+     *
+     * @return 订单号
      */
     private String generateOrderNo() {
         return UUID.randomUUID().toString().replace("-", "").toUpperCase().substring(0, 20);
