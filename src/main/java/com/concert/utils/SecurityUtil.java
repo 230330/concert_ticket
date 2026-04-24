@@ -34,4 +34,24 @@ public class SecurityUtil {
         }
         throw new UnauthorizedException("用户未登录或认证信息类型不支持");
     }
+
+    /**
+     * 获取当前登录用户的手机号
+     * @return 手机号
+     * @throws UnauthorizedException 如果用户未登录或认证信息无效
+     */
+    public static String getCurrentUserPhone() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new UnauthorizedException("用户未登录");
+        }
+        Object principal = auth.getPrincipal();
+        if (principal == null) {
+            throw new UnauthorizedException("用户信息为空");
+        }
+        if (principal instanceof LoginUser) {
+            return ((LoginUser) principal).getPhone();
+        }
+        throw new UnauthorizedException("用户未登录或认证信息类型不支持");
+    }
 }

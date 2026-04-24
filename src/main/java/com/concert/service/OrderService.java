@@ -98,4 +98,18 @@ public interface OrderService extends IService<Order> {
      * @return 完成的订单数量
      */
     int batchCompleteFinishedOrders(int maxCompleteBatchSize);
+
+    /**
+     * 根据手机号查询已支付且有取票码的订单
+     * @param phone 手机号
+     * @return 订单列表
+     */
+    List<Order> getPaidOrdersWithTicketCodeByPhone(String phone);
+
+    /**
+     * 核销取票码
+     * @param ticketCode 取票码
+     * @return 是否核销成功
+     */
+    boolean verifyTicketCode(String ticketCode);
 }

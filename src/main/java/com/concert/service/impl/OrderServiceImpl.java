@@ -710,6 +710,32 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
 
     /**
+     * 根据手机号查询已支付且有取票码的订单
+     *
+     * @param phone 手机号
+     * @return 订单列表
+     */
+    @Override
+    public List<Order> getPaidOrdersWithTicketCodeByPhone(String phone) {
+        // 关联用户表查询
+        return baseMapper.selectPaidOrdersWithTicketCodeByPhone(phone);
+    }
+
+    /**
+     * 核销取票码
+     *
+     * @param ticketCode 取票码
+     * @return 是否核销成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean verifyTicketCode(String ticketCode) {
+        int updated = baseMapper.verifyTicketCode(ticketCode);
+        return updated > 0;
+    }
+
+
+    /**
      * 执行退款逻辑：回滚库存 + 释放座位 + 更新订单状态
      *
      * @param order 订单

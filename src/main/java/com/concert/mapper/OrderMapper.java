@@ -40,4 +40,21 @@ public interface OrderMapper extends BaseMapper<Order> {
             "WHERE id = #{ticketTypeId} AND sold_quantity >= #{decrement}")
     int updateSoldQuantityDecrement(@Param("ticketTypeId") Long ticketTypeId,
                                     @Param("decrement") Integer decrement);
+    /**
+     * 验证票码
+     * @param pickupCode 票码
+     * @return 影响行数
+     */
+    @Update("UPDATE `order` SET status = 3, update_time = NOW() WHERE pickup_code = #{pickupCode} AND status = 1 AND pickup_code IS NOT NULL")
+    int verifyTicketCode(@Param("pickupCode") String pickupCode);
+
+    /**
+     * 根据手机号查询已支付的订单
+     * @param phone 手机号
+     * @return 订单列表
+     */
+    @Select("SELECT o.* FROM `order` o INNER JOIN `user` u ON o.user_id = u.id " +
+            "WHERE u.phone = #{phone} AND o.status = 1 AND o.pickup_code IS NOT NULL " +
+            "ORDER BY o.create_time DESC")
+    List<Order> selectPaidOrdersWithTicketCodeByPhone(@Param("phone") String phone);
 }
