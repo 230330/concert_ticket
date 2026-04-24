@@ -37,8 +37,8 @@ public class TicketController {
      * 核销取票码（线下工作人员使用）
      */
     @PostMapping("/verify")
-    public Result<Boolean> verifyTicketCode(@RequestParam String ticketCode) {
-        boolean success = orderService.verifyTicketCode(ticketCode);
+        public Result<Boolean> verifyTicketCode(@RequestParam String pickupCode) {
+        boolean success = orderService.verifyTicketCode(pickupCode);
         if (success) {
             return Result.success(true);
         } else {
