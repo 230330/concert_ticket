@@ -79,9 +79,7 @@ public class AdminUserController {
         List<AdminUserResponse> responseList = users.stream().map(user -> {
             AdminUserResponse resp = new AdminUserResponse();
             resp.setId(user.getId());
-            resp.setUsername(user.getUsername());
             resp.setPhone(user.getPhone());
-            resp.setEmail(user.getEmail());
             resp.setNickname(user.getNickname());
             resp.setAvatar(user.getAvatar());
             resp.setStatus(user.getStatus());
@@ -119,9 +117,7 @@ public class AdminUserController {
 
         AdminUserResponse resp = new AdminUserResponse();
         resp.setId(user.getId());
-        resp.setUsername(user.getUsername());
         resp.setPhone(user.getPhone());
-        resp.setEmail(user.getEmail());
         resp.setNickname(user.getNickname());
         resp.setAvatar(user.getAvatar());
         resp.setStatus(user.getStatus());

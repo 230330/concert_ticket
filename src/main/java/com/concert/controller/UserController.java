@@ -12,7 +12,7 @@ import com.concert.dto.response.UserInfoResponse;
 import com.concert.entity.User;
 import com.concert.enums.UserStatus;
 import com.concert.exception.BusinessException;
-import com.concert.service.SmsCodeService;
+import com.concert.service.SmsVerificationCodeService;
 import com.concert.service.UserService;
 import com.concert.utils.JwtUtil;
 import org.springframework.beans.BeanUtils;
@@ -40,7 +40,7 @@ public class UserController {
     private UserService userService;
 
     @Resource
-    private SmsCodeService smsCodeService;
+    private SmsVerificationCodeService smsVerificationCodeService;
 
     @Resource
     private JwtUtil jwtUtil;
@@ -60,7 +60,7 @@ public class UserController {
     @PostMapping("/register")
     public Result<Void> register(@RequestBody @Validated RegisterRequest request) {
         // 1. 验证码校验
-        boolean codeValid = smsCodeService.verifyCode(request.getPhone(), request.getCode());
+        boolean codeValid = smsVerificationCodeService.verifyCode(request.getPhone(), request.getCode());
         if (!codeValid) {
             return Result.error("验证码错误或已过期");
         }
@@ -76,7 +76,6 @@ public class UserController {
         // 3. 创建用户
         User user = new User();
         user.setPhone(request.getPhone());
-        user.setUsername(request.getPhone()); // 默认用户名为手机号
         user.setPassword(passwordEncoder.encode(request.getPassword())); // 密码加密
         user.setStatus(UserStatus.NORMAL); // 默认启用
 
@@ -119,7 +118,7 @@ public class UserController {
      */
     @PostMapping("/sendSms")
     public Result<Void> sendSms(@RequestBody @Validated SendSmsRequest request) {
-        boolean sent = smsCodeService.sendCode(request.getPhone());
+        boolean sent = smsVerificationCodeService.sendCode(request.getPhone());
         if (sent) {
             return Result.success();
         }
@@ -170,7 +169,6 @@ public class UserController {
         user.setId(loginUser.getId());
         user.setNickname(request.getNickname());
         user.setAvatar(request.getAvatar());
-        user.setEmail(request.getEmail());
 
         // 更新用户信息
         boolean updated = userService.updateById(user);

@@ -22,11 +22,6 @@ public class User {
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /**
-     * 用户名
-     */
-    @TableField("username")
-    private String username;
 
     /**
      * 密码
@@ -40,11 +35,6 @@ public class User {
     @TableField("phone")
     private String phone;
 
-    /**
-     * 邮箱
-     */
-    @TableField("email")
-    private String email;
 
     /**
      * 昵称

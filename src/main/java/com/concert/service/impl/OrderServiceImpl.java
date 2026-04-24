@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -88,6 +90,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Resource
     private TicketTypeMapper ticketTypeMapper;
 
+    @Resource
+    private SmsVerificationCodeService smsVerificationCodeService;
+
+    @Resource
+    private UserService userService;
+
+    @Resource
+    private NotificationService notificationService;
     /**
      * 创建订单
      *
@@ -224,15 +234,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         // 3. 更新订单状态
         order.setStatus(OrderStatus.PAID); // 已支付
         order.setPayTime(LocalDateTime.now());
-        order.setPickupCode(SecureRandomUtil.generateAlphanumericCode(6)); // 生成取票码
+        order.setPickupCode(SecureRandomUtil.generateAlphanumericCode(8)); // 生成取票码
         this.updateById(order);
 
+        // 异步发送短信（事务提交后执行）
+        String userPhone = userService.getById(userId).getPhone();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                notificationService.sendPickupCodeSms(userPhone, order.getPickupCode());
+            }
+        });
+
         logger.info("订单支付成功，订单号：{}，取票码：{}", order.getOrderNo(), order.getPickupCode());
-
-        // 4. 发送短信通知（模拟）
-        logger.info("【演唱会订票系统】短信通知：您的订单 {} 已支付成功，取票码：{}，请妥善保管。",
-                order.getOrderNo(), order.getPickupCode());
-
         return getOrderDetail(orderId);
     }
 

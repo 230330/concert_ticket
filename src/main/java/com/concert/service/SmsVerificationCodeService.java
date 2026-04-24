@@ -15,7 +15,7 @@ public interface SmsVerificationCodeService  extends IService<SmsVerificationCod
      * @param phone 手机号
      * @return 验证码（用于调试，实际生产可不返回）
      */
-    String sendCode(String phone);
+    boolean sendCode(String phone);
 
     /**
      * 验证验证码
