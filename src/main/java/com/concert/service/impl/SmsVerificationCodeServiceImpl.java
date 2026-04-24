@@ -7,6 +7,7 @@ import com.concert.mapper.SmsVerificationCodeMapper;
 import com.concert.service.SmsVerificationCodeService;
 import com.concert.utils.SecureRandomUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
  * @version: 1.0
  */
 @Slf4j
+@Service
 public class SmsVerificationCodeServiceImpl extends ServiceImpl<SmsVerificationCodeMapper, SmsVerificationCode>
         implements SmsVerificationCodeService {
     /**
