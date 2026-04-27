@@ -1,0 +1,34 @@
+# 测试环境配置
+spring:
+  datasource:
+    # 使用 H2 内存数据库进行测试（可选）
+    # 或者使用测试环境的 MySQL
+    url: jdbc:mysql://localhost:3306/concert_ticket_test?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 1  # 使用不同的 Redis 数据库，避免与开发环境冲突
+
+# JWT 配置
+jwt:
+  secret: test-secret-key-for-jwt-token-generation-must-be-at-least-256-bits
+  expiration: 3600000  # 1小时
+
+# 阿里云短信配置（测试环境可以使用 mock）
+aliyun:
+  sms:
+    access-key-id: test-access-key-id
+    access-key-secret: test-access-key-secret
+    sign-name: 测试签名
+    template-code: SMS_TEST001
+
+# 日志配置
+logging:
+  level:
+    com.concert: DEBUG
+    org.springframework: WARN
