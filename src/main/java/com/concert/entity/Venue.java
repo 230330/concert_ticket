@@ -46,6 +46,18 @@ public class Venue {
     private Integer capacity;
 
     /**
+     * 经度
+     */
+    @TableField("longitude")
+    private Double longitude;
+
+    /**
+     * 纬度
+     */
+    @TableField("latitude")
+    private Double latitude;
+
+    /**
      * 创建时间
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)

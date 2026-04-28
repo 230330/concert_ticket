@@ -28,10 +28,10 @@ public class Seat {
     private Long areaId;
 
     /**
-     * 排号
+     * 行号
      */
-    @TableField("row_num")
-    private Integer rowNum;
+    @TableField("row_code")
+    private String rowCode;
 
     /**
      * 列号
@@ -44,6 +44,12 @@ public class Seat {
      */
     @TableField("seat_no")
     private String seatNo;
+
+    /**
+     * 座位状态（如：0空闲、1占用中、2锁定中）
+     */
+    @TableField("seat_status")
+    private Integer seatStatus;
 
     /**
      * 创建时间

@@ -40,6 +40,18 @@ public class SeatArea {
     private Integer capacity;
 
     /**
+     * 该区域行数
+     */
+    @TableField("row_num")
+    private Integer rowNum;
+
+    /**
+     * 该区域列数
+     */
+    @TableField("col_num")
+    private Integer colNum;
+
+    /**
      * 创建时间
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)

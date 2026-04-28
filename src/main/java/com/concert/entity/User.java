@@ -65,4 +65,10 @@ public class User {
      */
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    /**
+     * 角色  这里不使用该字段来判断角色权限
+     */
+    @TableField("role")
+    private String role;
 }

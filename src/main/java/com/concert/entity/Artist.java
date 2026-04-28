@@ -36,7 +36,7 @@ public class Artist {
     /**
      * 艺人简介
      */
-    @TableField("description")
+    @TableField("intro")
     private String description;
 
     /**

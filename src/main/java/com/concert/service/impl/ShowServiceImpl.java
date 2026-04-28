@@ -201,7 +201,7 @@ public class ShowServiceImpl extends ServiceImpl<ShowMapper, Show> implements Sh
         // 查询所有座位
         LambdaQueryWrapper<Seat> seatQuery = new LambdaQueryWrapper<>();
         seatQuery.in(Seat::getAreaId, areaIds)
-                .orderByAsc(Seat::getRowNum)
+                .orderByAsc(Seat::getRowCode)
                 .orderByAsc(Seat::getColNum);
         List<Seat> allSeats = seatService.list(seatQuery);
 
@@ -230,19 +230,19 @@ public class ShowServiceImpl extends ServiceImpl<ShowMapper, Show> implements Sh
 
                     // 座位信息（按行分组）
                     List<Seat> areaSeats = areaSeatMap.getOrDefault(area.getId(), Collections.emptyList());
-                    Map<Integer, List<Seat>> rowSeatMap = areaSeats.stream()
-                            .collect(Collectors.groupingBy(Seat::getRowNum, TreeMap::new, Collectors.toList()));
+                    Map<String, List<Seat>> rowSeatMap = areaSeats.stream()
+                            .collect(Collectors.groupingBy(Seat::getRowCode, TreeMap::new, Collectors.toList()));
 
                     List<SeatMapResponse.RowInfo> rows = rowSeatMap.entrySet().stream()
                             .map(entry -> {
                                 SeatMapResponse.RowInfo rowInfo = new SeatMapResponse.RowInfo();
-                                rowInfo.setRowNum(entry.getKey());
+                                rowInfo.setRowNum(Integer.valueOf(entry.getKey()));
 
                                 List<SeatMapResponse.SeatInfo> seatInfos = entry.getValue().stream()
                                         .map(seat -> {
                                             SeatMapResponse.SeatInfo seatInfo = new SeatMapResponse.SeatInfo();
                                             seatInfo.setId(seat.getId());
-                                            seatInfo.setRowNum(seat.getRowNum());
+                                            seatInfo.setRowNum(Integer.valueOf(seat.getRowCode()));
                                             seatInfo.setColNum(seat.getColNum());
                                             seatInfo.setSeatNo(seat.getSeatNo());
                                             seatInfo.setSold(soldSeatIds.contains(seat.getId()));
