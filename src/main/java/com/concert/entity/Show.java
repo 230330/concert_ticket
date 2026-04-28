@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  */
 
 @Data
-@TableName("show")
+@TableName("`show`")
 public class Show {
 
     /**
@@ -54,7 +54,7 @@ public class Show {
 
     /**
      * 状态
-     */
+     */field list
     @TableField("status")
     private ShowStatus status;
 
