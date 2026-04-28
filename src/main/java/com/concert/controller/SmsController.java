@@ -25,7 +25,8 @@ public class SmsController {
     @PostMapping("/send")
     public Result<Boolean> sendCode(@RequestBody Map<String, String> params) {
         // 校验手机号格式（简单校验）
-        if (!params.get("phone").matches("^1[3-9]\\d{9}$")) {
+        String phone = params.get("phone");
+        if (!phone.matches("^1[3-9]\\d{9}$")) {
             return Result.error("手机号格式错误");
         }
         boolean result = smsService.sendCode(params.get("phone"));
