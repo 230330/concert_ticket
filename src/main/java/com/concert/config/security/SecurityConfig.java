@@ -75,7 +75,7 @@ public class SecurityConfig {
                         // 登录、注册、验证码
                         "/api/user/login",
                         "/api/user/register",
-                        "/api/user/sendSms",
+                        "/api/sms/sendSms",
                         "/auth/captcha/**",
                         // Swagger 文档
                         "/swagger-ui/**",
