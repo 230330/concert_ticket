@@ -53,10 +53,10 @@ public class OrderCleanupTask {
     // ==================== 过期订单清理 ====================
 
     /**
-     * 每分钟执行一次，清理过期未支付订单
+     * 每30分钟执行一次，清理过期未支付订单
      * 使用分批查询 + 批量取消，避免一次性加载过多订单
      */
-    @Scheduled(cron = "0 */1 * * * ?")
+    @Scheduled(cron = "0 */30 * * * ?")
     public void cleanupExpiredOrders() {
         String lockKey = LOCK_KEY_PREFIX + "cleanupExpiredOrders";
         // 尝试获取分布式锁（setIfAbsent + 过期时间）

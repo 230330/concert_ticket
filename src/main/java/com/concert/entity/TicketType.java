@@ -53,6 +53,12 @@ public class TicketType {
     private Integer totalStock;
 
     /**
+     * 已售票
+     */
+    @TableField("sold_stock")
+    private Integer soldStock;
+
+    /**
      * 可用库存
      */
     @TableField("available_stock")
