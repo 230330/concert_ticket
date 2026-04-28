@@ -54,7 +54,7 @@ public class Show {
 
     /**
      * 状态
-     */field list
+     */
     @TableField("status")
     private ShowStatus status;
 
