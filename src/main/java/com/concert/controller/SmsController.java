@@ -23,12 +23,12 @@ public class SmsController {
      * 发送验证码
      */
     @PostMapping("/send")
-    public Result<Boolean> sendCode(@RequestParam String phone) {
+    public Result<Boolean> sendCode(@RequestBody Map<String, String> params) {
         // 校验手机号格式（简单校验）
-        if (!phone.matches("^1[3-9]\\d{9}$")) {
+        if (!params.get("phone").matches("^1[3-9]\\d{9}$")) {
             return Result.error("手机号格式错误");
         }
-        boolean result = smsService.sendCode(phone);
+        boolean result = smsService.sendCode(params.get("phone"));
         // 生产环境不要返回验证码，这里仅为调试
         return Result.success("验证码已发送", result);
     }
