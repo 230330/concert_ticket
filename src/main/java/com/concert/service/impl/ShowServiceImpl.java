@@ -242,9 +242,9 @@ public class ShowServiceImpl extends ServiceImpl<ShowMapper, Show> implements Sh
                                         .map(seat -> {
                                             SeatMapResponse.SeatInfo seatInfo = new SeatMapResponse.SeatInfo();
                                             seatInfo.setId(seat.getId());
-                                            seatInfo.setRowNum(Integer.valueOf(seat.getRowCode()));
+                                            seatInfo.setRowNum(seat.getRowCode());
                                             seatInfo.setColNum(seat.getColNum());
-                                            seatInfo.setSeatNo(seat.getSeatNo());
+                                            seatInfo.setSeatNo(seat.getSeatCode());
                                             seatInfo.setSold(soldSeatIds.contains(seat.getId()));
                                             return seatInfo;
                                         })

@@ -419,7 +419,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
                         Seat seat = seatMap.get(os.getSeatId());
                         if (seat != null) {
-                            detail.setSeatNo(seat.getSeatNo());
+                            detail.setSeatNo(seat.getSeatCode());
 
                             SeatArea area = areaMap.get(seat.getAreaId());
                             if (area != null) {

@@ -104,7 +104,7 @@ public class SeatMapResponse {
         /**
          * 排号
          */
-        private Integer rowNum;
+        private String rowNum;
 
         /**
          * 列号

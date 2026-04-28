@@ -42,13 +42,13 @@ public class Seat {
     /**
      * 座位编号（如：A1-01）
      */
-    @TableField("seat_no")
-    private String seatNo;
+    @TableField("seat_code")
+    private String seatCode;
 
     /**
      * 座位状态（如：0空闲、1占用中、2锁定中）
      */
-    @TableField("seat_status")
+    @TableField("status")
     private Integer seatStatus;
 
     /**
