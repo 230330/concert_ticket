@@ -675,14 +675,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 .in(OrderSeat::getOrderId, validOrderIds));
         logger.debug("批量取消订单：删除 order_seat 记录 {} 条", deletedSeats);
 
-        // 4. 回滚 ticket_type 的 sold_quantity
+        // 4. 回滚 ticket_type 的 sold_stock
         Map<Long, Integer> rollbackMap = new HashMap<>();
         for (Order order : orders) {
             int seatCount = order.getSeatInfo().split(",").length;
             rollbackMap.merge(order.getTicketTypeId(), seatCount, Integer::sum);
         }
         for (Map.Entry<Long, Integer> entry : rollbackMap.entrySet()) {
-            ticketTypeMapper.updateSoldQuantityDecrement(entry.getKey(), entry.getValue());
+            ticketTypeMapper.updateSoldStockDecrement(entry.getKey(), entry.getValue());
         }
 
         // 5. 更新订单状态为已取消，并获取实际更新的行数

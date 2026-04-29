@@ -20,8 +20,8 @@ public interface TicketTypeMapper extends BaseMapper<TicketType> {
      * @param decrement 要减少的数量（即取消订单中的座位数）
      * @return 影响的行数（成功更新则返回1，否则返回0）
      */
-    @Update("UPDATE ticket_type SET sold_quantity = sold_quantity - #{decrement}, update_time = NOW()" +
-            "WHERE id = #{ticketTypeId} AND sold_quantity >= #{decrement}")
-    int updateSoldQuantityDecrement(@Param("ticketTypeId") Long ticketTypeId,
+    @Update("UPDATE ticket_type SET sold_stock = sold_stock - #{decrement}, update_time = NOW()" +
+            "WHERE id = #{ticketTypeId} AND sold_stock >= #{decrement}")
+    int updateSoldStockDecrement(@Param("ticketTypeId") Long ticketTypeId,
                                     @Param("decrement") Integer decrement);
 }
