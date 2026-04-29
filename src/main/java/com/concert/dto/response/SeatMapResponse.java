@@ -83,7 +83,7 @@ public class SeatMapResponse {
         /**
          * 排号
          */
-        private Integer rowNum;
+        private String rowCode;
 
         /**
          * 座位列表

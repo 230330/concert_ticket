@@ -236,7 +236,7 @@ public class ShowServiceImpl extends ServiceImpl<ShowMapper, Show> implements Sh
                     List<SeatMapResponse.RowInfo> rows = rowSeatMap.entrySet().stream()
                             .map(entry -> {
                                 SeatMapResponse.RowInfo rowInfo = new SeatMapResponse.RowInfo();
-                                rowInfo.setRowNum(Integer.valueOf(entry.getKey()));
+                                rowInfo.setRowCode(entry.getKey());
 
                                 List<SeatMapResponse.SeatInfo> seatInfos = entry.getValue().stream()
                                         .map(seat -> {
