@@ -162,6 +162,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         order.setUserId(userId);
         order.setShowId(request.getShowId());
         order.setTotalAmount(totalAmount);
+        order.setTicketTypeId(request.getTicketTypeId());
+        order.setSeatInfo(seatIds.toString());
         order.setStatus(OrderStatus.PENDING); // 待支付
         order.setExpireTime(LocalDateTime.now().plusMinutes(orderExpireMinutes));
 
