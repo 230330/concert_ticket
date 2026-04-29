@@ -75,7 +75,7 @@ public class AdminArtistController {
     /**
      * 新增艺人
      */
-    @PostMapping
+    @PostMapping("/add")
     public Result<Void> add(@RequestBody @Validated ArtistRequest request) {
         Artist artist = new Artist();
         artist.setName(request.getName());

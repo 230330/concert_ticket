@@ -25,8 +25,8 @@ public interface OrderMapper extends BaseMapper<Order> {
     @Select("SELECT o.id FROM `order` o " +
             "INNER JOIN `show` s ON o.show_id = s.id " +
             "WHERE o.status = 1 " +
-            "AND (s.show_date < CURDATE() " +
-            "     OR (s.show_date = CURDATE() AND s.show_time < CURTIME())) " +
+            "AND (s.show_time < CURDATE() " +
+            "     OR (s.show_time = CURDATE() AND s.show_time < CURTIME())) " +
             "LIMIT #{limit}")
     List<Long> selectNeedCompleteOrderIds(@Param("limit") int limit);
 
