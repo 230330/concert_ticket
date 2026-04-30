@@ -79,7 +79,7 @@ public class AdminTicketTypeController {
     /**
      * 新增票种
      */
-    @PostMapping
+    @PostMapping("/add")
     public Result<Void> add(@RequestBody @Validated TicketTypeRequest request) {
         TicketType ticketType = new TicketType();
         ticketType.setShowId(request.getShowId());

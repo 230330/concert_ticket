@@ -80,7 +80,7 @@ public class AdminVenueController {
     /**
      * 新增场馆
      */
-    @PostMapping
+    @PostMapping("/add")
     public Result<Void> add(@RequestBody @Validated VenueRequest request) {
         Venue venue = new Venue();
         venue.setName(request.getName());

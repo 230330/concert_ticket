@@ -81,7 +81,7 @@ public class AdminShowController {
     /**
      * 新增场次
      */
-    @PostMapping
+    @PostMapping("/add")
     public Result<Void> add(@RequestBody @Validated ShowRequest request) {
         Show show = new Show();
         show.setConcertId(request.getConcertId());

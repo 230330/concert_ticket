@@ -27,6 +27,7 @@ public enum ConcertStatus {
         this.desc = desc;
     }
 
+    @JsonValue
     public int getValue() {
         return value;
     }

@@ -88,7 +88,7 @@ public class AdminConcertController {
     /**
      * 新增演唱会
      */
-    @PostMapping
+    @PostMapping("/add")
     public Result<Void> add(@RequestBody @Validated ConcertRequest request) {
         Concert concert = new Concert();
         concert.setName(request.getName());
@@ -100,7 +100,7 @@ public class AdminConcertController {
 
         // 保存艺人关联
         if (request.getArtistIds() != null && !request.getArtistIds().isEmpty()) {
-            saveConcertArtists(concert.getId(), request.getArtistIds());
+            concertArtistService.saveConcertArtists(concert.getId(), request.getArtistIds());
         }
 
         return Result.success();
@@ -133,7 +133,7 @@ public class AdminConcertController {
             deleteWrapper.eq(ConcertArtist::getConcertId, id);
             concertArtistService.remove(deleteWrapper);
 
-            saveConcertArtists(id, request.getArtistIds());
+            concertArtistService.saveConcertArtists(id, request.getArtistIds());
         }
 
         return Result.success();
@@ -160,18 +160,5 @@ public class AdminConcertController {
         concertService.removeById(id);
 
         return Result.success();
-    }
-
-    /**
-     * 保存演唱会-艺人关联
-     */
-    private void saveConcertArtists(Long concertId, List<Long> artistIds) {
-        List<ConcertArtist> concertArtists = artistIds.stream().map(artistId -> {
-            ConcertArtist ca = new ConcertArtist();
-            ca.setConcertId(concertId);
-            ca.setArtistId(artistId);
-            return ca;
-        }).collect(Collectors.toList());
-        concertArtistService.saveBatch(concertArtists);
     }
 }
