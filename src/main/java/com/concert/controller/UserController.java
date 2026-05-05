@@ -26,6 +26,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 
 /**
  * @description:    用户相关控制器
@@ -147,6 +148,9 @@ public class UserController {
         // 转换为响应对象
         UserInfoResponse response = new UserInfoResponse();
         BeanUtils.copyProperties(user, response);
+
+        // 填充角色编码列表（从 LoginUser 获取，登录时已加载）
+        response.setRoles(loginUser.getRoles() != null ? loginUser.getRoles() : Collections.emptyList());
 
         return Result.success(response);
     }

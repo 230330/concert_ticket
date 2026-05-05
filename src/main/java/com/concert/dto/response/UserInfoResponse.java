@@ -4,6 +4,7 @@ import com.concert.enums.UserStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @description:    用户信息响应
@@ -48,6 +49,11 @@ public class UserInfoResponse {
      * 状态
      */
     private UserStatus status;
+
+    /**
+     * 角色编码列表（如：["ADMIN"]、["CONCERT_MANAGER"]）
+     */
+    private List<String> roles;
 
     /**
      * 创建时间
