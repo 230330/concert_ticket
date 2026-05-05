@@ -1,24 +1,55 @@
 import request from '@/utils/request'
 
+/**
+ * 用户登录（手机号+密码）
+ */
 export function login(data) {
   return request({
-    url: '/vue-admin-template/user/login',
+    url: '/api/user/login',
     method: 'post',
     data
   })
 }
 
-export function getInfo(token) {
+/**
+ * 用户注册（手机号+密码+验证码）
+ */
+export function register(data) {
   return request({
-    url: '/vue-admin-template/user/info',
-    method: 'get',
-    params: { token }
+    url: '/api/user/register',
+    method: 'post',
+    data
   })
 }
 
-export function logout() {
+/**
+ * 发送短信验证码
+ */
+export function sendSms(data) {
   return request({
-    url: '/vue-admin-template/user/logout',
-    method: 'post'
+    url: '/api/user/sendSms',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 获取当前登录用户信息
+ */
+export function getInfo() {
+  return request({
+    url: '/api/user/info',
+    method: 'get'
+  })
+}
+
+/**
+ * 更新用户信息
+ */
+export function updateInfo(data) {
+  return request({
+    url: '/api/user/update',
+    method: 'put',
+    data
   })
 }

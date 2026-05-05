@@ -7,28 +7,8 @@ Vue.use(Router)
 import Layout from '@/layout'
 
 /**
- * Note: sub-menu only appear when route children.length >= 1
- * Detail see: https://panjiachen.github.io/vue-element-admin-site/guide/essentials/router-and-nav.html
- *
- * hidden: true                   if set true, item will not show in the sidebar(default is false)
- * alwaysShow: true               if set true, will always show the root menu
- *                                if not set alwaysShow, when item has more than one children route,
- *                                it will becomes nested mode, otherwise not show the root menu
- * redirect: noRedirect           if set noRedirect will no redirect in the breadcrumb
- * name:'router-name'             the name is used by <keep-alive> (must set!!!)
- * meta : {
-    roles: ['admin','editor']    control the page roles (you can set multiple roles)
-    title: 'title'               the name show in sidebar and breadcrumb (recommend set)
-    icon: 'svg-name'/'el-icon-x' the icon show in the sidebar
-    breadcrumb: false            if set false, the item will hidden in breadcrumb(default is true)
-    activeMenu: '/example/list'  if set path, the sidebar will highlight the path you set
-  }
- */
-
-/**
  * constantRoutes
- * a base page that does not have permission requirements
- * all roles can be accessed
+ * 无需权限的基础路由
  */
 export const constantRoutes = [
   {
@@ -43,6 +23,7 @@ export const constantRoutes = [
     hidden: true
   },
 
+  // ===================== 前台模块 =====================
   {
     path: '/',
     component: Layout,
@@ -51,131 +32,166 @@ export const constantRoutes = [
       path: 'dashboard',
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index'),
-      meta: { title: 'Dashboard', icon: 'dashboard' }
+      meta: { title: '首页', icon: 'dashboard' }
     }]
   },
 
   {
-    path: '/example',
+    path: '/concert',
     component: Layout,
-    redirect: '/example/table',
-    name: 'Example',
-    meta: { title: 'Example', icon: 'el-icon-s-help' },
+    redirect: '/concert/list',
+    name: 'Concert',
+    meta: { title: '演唱会', icon: 'el-icon-headset' },
     children: [
       {
-        path: 'table',
-        name: 'Table',
-        component: () => import('@/views/table/index'),
-        meta: { title: 'Table', icon: 'table' }
+        path: 'list',
+        name: 'ConcertList',
+        component: () => import('@/views/concert/list'),
+        meta: { title: '演唱会列表' }
       },
       {
-        path: 'tree',
-        name: 'Tree',
-        component: () => import('@/views/tree/index'),
-        meta: { title: 'Tree', icon: 'tree' }
+        path: 'detail/:id',
+        name: 'ConcertDetail',
+        component: () => import('@/views/concert/detail'),
+        hidden: true,
+        meta: { title: '演唱会详情', activeMenu: '/concert/list' }
+      },
+      {
+        path: 'seat/:showId',
+        name: 'SeatSelect',
+        component: () => import('@/views/concert/seat'),
+        hidden: true,
+        meta: { title: '选座购票', activeMenu: '/concert/list' }
       }
     ]
   },
 
   {
-    path: '/form',
+    path: '/order',
     component: Layout,
+    redirect: '/order/my',
+    name: 'Order',
+    meta: { title: '我的订单', icon: 'el-icon-s-order' },
+    children: [
+      {
+        path: 'my',
+        name: 'MyOrders',
+        component: () => import('@/views/order/my'),
+        meta: { title: '我的订单' }
+      },
+      {
+        path: 'detail/:id',
+        name: 'OrderDetail',
+        component: () => import('@/views/order/detail'),
+        hidden: true,
+        meta: { title: '订单详情', activeMenu: '/order/my' }
+      }
+    ]
+  },
+
+  {
+    path: '/ticket',
+    component: Layout,
+    name: 'Ticket',
+    meta: { title: '取票码', icon: 'el-icon-tickets' },
+    children: [
+      {
+        path: 'my-codes',
+        name: 'MyTicketCodes',
+        component: () => import('@/views/ticket/my-codes'),
+        meta: { title: '我的取票码' }
+      }
+    ]
+  },
+
+  {
+    path: '/profile',
+    component: Layout,
+    name: 'Profile',
+    meta: { title: '个人中心', icon: 'user' },
     children: [
       {
         path: 'index',
-        name: 'Form',
-        component: () => import('@/views/form/index'),
-        meta: { title: 'Form', icon: 'form' }
+        name: 'ProfileIndex',
+        component: () => import('@/views/profile/index'),
+        meta: { title: '个人信息' }
       }
     ]
   },
 
+  // ===================== 管理后台模块 =====================
   {
-    path: '/nested',
+    path: '/admin',
     component: Layout,
-    redirect: '/nested/menu1',
-    name: 'Nested',
-    meta: {
-      title: 'Nested',
-      icon: 'nested'
-    },
+    redirect: '/admin/dashboard',
+    name: 'Admin',
+    meta: { title: '管理后台', icon: 'el-icon-setting', roles: ['admin'] },
     children: [
       {
-        path: 'menu1',
-        component: () => import('@/views/nested/menu1/index'), // Parent router-view
-        name: 'Menu1',
-        meta: { title: 'Menu1' },
-        children: [
-          {
-            path: 'menu1-1',
-            component: () => import('@/views/nested/menu1/menu'),
-            name: 'Menu1-1',
-            meta: { title: 'Menu1-1' }
-          },
-          {
-            path: 'menu1-2',
-            component: () => import('@/views/nested/menu1/menu1-2'),
-            name: 'Menu1-2',
-            meta: { title: 'Menu1-2' },
-            children: [
-              {
-                path: 'menu1-2-1',
-                component: () => import('@/views/nested/menu1/menu1-2/menu1-2-1'),
-                name: 'Menu1-2-1',
-                meta: { title: 'Menu1-2-1' }
-              },
-              {
-                path: 'menu1-2-2',
-                component: () => import('@/views/nested/menu1/menu1-2/menu1-2-2'),
-                name: 'Menu1-2-2',
-                meta: { title: 'Menu1-2-2' }
-              }
-            ]
-          },
-          {
-            path: 'menu1-3',
-            component: () => import('@/views/nested/menu1/menu1-3'),
-            name: 'Menu1-3',
-            meta: { title: 'Menu1-3' }
-          }
-        ]
+        path: 'dashboard',
+        name: 'AdminDashboard',
+        component: () => import('@/views/admin/dashboard/index'),
+        meta: { title: '数据看板', icon: 'dashboard' }
       },
       {
-        path: 'menu2',
-        component: () => import('@/views/nested/menu2/index'),
-        name: 'Menu2',
-        meta: { title: 'menu2' }
-      }
-    ]
-  },
-
-  {
-    path: 'external-link',
-    component: Layout,
-    children: [
+        path: 'concert',
+        name: 'AdminConcert',
+        component: () => import('@/views/admin/concert/index'),
+        meta: { title: '演唱会管理' }
+      },
       {
-        path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
-        meta: { title: 'External Link', icon: 'link' }
+        path: 'artist',
+        name: 'AdminArtist',
+        component: () => import('@/views/admin/artist/index'),
+        meta: { title: '艺人管理' }
+      },
+      {
+        path: 'show',
+        name: 'AdminShow',
+        component: () => import('@/views/admin/show/index'),
+        meta: { title: '场次管理' }
+      },
+      {
+        path: 'venue',
+        name: 'AdminVenue',
+        component: () => import('@/views/admin/venue/index'),
+        meta: { title: '场馆管理' }
+      },
+      {
+        path: 'ticket-type',
+        name: 'AdminTicketType',
+        component: () => import('@/views/admin/ticket-type/index'),
+        meta: { title: '票种管理' }
+      },
+      {
+        path: 'order',
+        name: 'AdminOrder',
+        component: () => import('@/views/admin/order/index'),
+        meta: { title: '订单管理' }
+      },
+      {
+        path: 'user',
+        name: 'AdminUser',
+        component: () => import('@/views/admin/user/index'),
+        meta: { title: '用户管理' }
       }
     ]
   },
 
-  // 404 page must be placed at the end !!!
+  // 404 must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]
 
 const createRouter = () => new Router({
-  // mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }),
   routes: constantRoutes
 })
 
 const router = createRouter()
 
-// Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
 export function resetRouter() {
   const newRouter = createRouter()
-  router.matcher = newRouter.matcher // reset router
+  router.matcher = newRouter.matcher
 }
 
 export default router

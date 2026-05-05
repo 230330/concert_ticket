@@ -1,12 +1,14 @@
-import { login, logout, getInfo } from '@/api/user'
+import { login, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
 
 const getDefaultState = () => {
   return {
     token: getToken(),
-    name: '',
-    avatar: ''
+    phone: '',
+    nickname: '',
+    avatar: '',
+    roles: []
   }
 }
 
@@ -19,21 +21,28 @@ const mutations = {
   SET_TOKEN: (state, token) => {
     state.token = token
   },
-  SET_NAME: (state, name) => {
-    state.name = name
+  SET_PHONE: (state, phone) => {
+    state.phone = phone
+  },
+  SET_NICKNAME: (state, nickname) => {
+    state.nickname = nickname
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
+  },
+  SET_ROLES: (state, roles) => {
+    state.roles = roles
   }
 }
 
 const actions = {
-  // user login
+  // user login (phone + password)
   login({ commit }, userInfo) {
-    const { username, password } = userInfo
+    const { phone, password } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
+      login({ phone: phone.trim(), password: password }).then(response => {
         const { data } = response
+        // Backend returns: { token, expiresIn }
         commit('SET_TOKEN', data.token)
         setToken(data.token)
         resolve()
@@ -44,19 +53,21 @@ const actions = {
   },
 
   // get user info
-  getInfo({ commit, state }) {
+  getInfo({ commit }) {
     return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
+      getInfo().then(response => {
         const { data } = response
 
         if (!data) {
-          return reject('Verification failed, please Login again.')
+          return reject('获取用户信息失败，请重新登录。')
         }
 
-        const { name, avatar } = data
+        // Backend UserInfoResponse: { id, phone, nickname, avatar, status, createTime ... }
+        const { phone, nickname, avatar } = data
 
-        commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
+        commit('SET_PHONE', phone)
+        commit('SET_NICKNAME', nickname || phone)
+        commit('SET_AVATAR', avatar || '')
         resolve(data)
       }).catch(error => {
         reject(error)
@@ -65,23 +76,19 @@ const actions = {
   },
 
   // user logout
-  logout({ commit, state }) {
-    return new Promise((resolve, reject) => {
-      logout(state.token).then(() => {
-        removeToken() // must remove  token  first
-        resetRouter()
-        commit('RESET_STATE')
-        resolve()
-      }).catch(error => {
-        reject(error)
-      })
+  logout({ commit }) {
+    return new Promise(resolve => {
+      removeToken()
+      resetRouter()
+      commit('RESET_STATE')
+      resolve()
     })
   },
 
   // remove token
   resetToken({ commit }) {
     return new Promise(resolve => {
-      removeToken() // must remove  token  first
+      removeToken()
       commit('RESET_STATE')
       resolve()
     })
@@ -94,4 +101,3 @@ export default {
   mutations,
   actions
 }
-
