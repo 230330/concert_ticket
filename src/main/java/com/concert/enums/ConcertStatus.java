@@ -38,7 +38,7 @@ public enum ConcertStatus {
     /**
      * 根据数值获取枚举
      */
-    @JsonCreator
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static ConcertStatus fromValue(int value) {
         for (ConcertStatus status : values()) {
             if (status.value == value) {

@@ -37,7 +37,7 @@ public enum SeatStatus {
     /**
      * 根据数值获取枚举
      */
-    @JsonCreator
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static SeatStatus fromValue(int value) {
         for (SeatStatus status : values()) {
             if (status.value == value) {

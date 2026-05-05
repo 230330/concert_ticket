@@ -39,7 +39,7 @@ public enum ShowStatus {
     /**
      * 根据数值获取枚举
      */
-    @JsonCreator
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static ShowStatus fromValue(int value) {
         for (ShowStatus status : values()) {
             if (status.value == value) {

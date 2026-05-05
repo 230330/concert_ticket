@@ -36,7 +36,7 @@ public enum UserStatus {
     /**
      * 根据数值获取枚举
      */
-    @JsonCreator
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static UserStatus fromValue(int value) {
         for (UserStatus status : values()) {
             if (status.value == value) {

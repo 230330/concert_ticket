@@ -39,7 +39,7 @@ public enum OrderStatus {
     /**
      * 根据数值获取枚举
      */
-    @JsonCreator
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static OrderStatus fromValue(int value) {
         for (OrderStatus status : values()) {
             if (status.value == value) {
