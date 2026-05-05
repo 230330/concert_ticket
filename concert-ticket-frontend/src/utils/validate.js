@@ -17,10 +17,14 @@ export function validPhone(phone) {
 }
 
 /**
- * 校验密码长度（6-20位）
+ * 校验密码格式（8-32位，必须包含字母和数字）
+ * 与后端 RegisterRequest @Size(min=8,max=32) + @Pattern(?=.*[a-zA-Z])(?=.*\d) 保持一致
  * @param {string} password
  * @returns {Boolean}
  */
 export function validPassword(password) {
-  return password && password.length >= 6 && password.length <= 20
+  if (!password || password.length < 8 || password.length > 32) {
+    return false
+  }
+  return /(?=.*[a-zA-Z])(?=.*\d)/.test(password)
 }

@@ -59,14 +59,14 @@
       >
 
       <div class="tips">
-        <span>没有账号？请联系管理员</span>
+        <span>没有账号？<el-link type="primary" @click="$router.push('/register')">立即注册</el-link></span>
       </div>
     </el-form>
   </div>
 </template>
 
 <script>
-import { validPhone } from '@/utils/validate'
+import { validPhone, validPassword } from '@/utils/validate'
 
 export default {
   name: 'Login',
@@ -79,8 +79,8 @@ export default {
       }
     }
     const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('密码长度不能少于6位'))
+      if (!validPassword(value)) {
+        callback(new Error('密码需8-32位，且必须包含字母和数字'))
       } else {
         callback()
       }
@@ -111,11 +111,7 @@ export default {
   },
   methods: {
     showPwd() {
-      if (this.passwordType === 'password') {
-        this.passwordType = ''
-      } else {
-        this.passwordType = 'password'
-      }
+      this.passwordType = this.passwordType === 'password' ? '' : 'password'
       this.$nextTick(() => {
         this.$refs.password.focus()
       })

@@ -72,10 +72,12 @@ public class SecurityConfig {
                 .authorizeRequests()
                 // 放行的接口
                 .antMatchers(
-                        // 登录、注册、验证码
+                        // 登录、注册、发送验证码
                         "/api/user/login",
                         "/api/user/register",
-                        "/api/sms/sendSms",
+                        "/api/user/sendSms",
+                        "/api/sms/send",
+                        "/api/sms/verify",
                         "/auth/captcha/**",
                         // Swagger 文档
                         "/swagger-ui/**",
