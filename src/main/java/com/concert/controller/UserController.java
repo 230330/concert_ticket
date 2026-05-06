@@ -3,6 +3,7 @@ package com.concert.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.concert.common.Result;
 import com.concert.config.security.LoginUser;
+import com.concert.dto.request.ChangePasswordRequest;
 import com.concert.dto.request.LoginRequest;
 import com.concert.dto.request.RegisterRequest;
 import com.concert.dto.request.SendSmsRequest;
@@ -28,6 +29,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -175,11 +177,38 @@ public class UserController {
 
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
 
+        // 从数据库获取当前用户信息
+        User currentUser = userService.getById(loginUser.getId());
+        if (currentUser == null) {
+            return Result.error("用户不存在");
+        }
+
         // 构建更新对象
         User user = new User();
         user.setId(loginUser.getId());
-        user.setNickname(request.getNickname());
         user.setAvatar(request.getAvatar());
+
+        // 昵称修改校验
+        if (request.getNickname() != null && !request.getNickname().equals(currentUser.getNickname())) {
+            // 1. 检查一个月内是否已修改过昵称
+            if (currentUser.getNicknameLastModified() != null) {
+                LocalDateTime nextAllowedTime = currentUser.getNicknameLastModified().plusMonths(1);
+                if (LocalDateTime.now().isBefore(nextAllowedTime)) {
+                    return Result.error("昵称修改过于频繁，每月仅可修改一次");
+                }
+            }
+
+            // 2. 检查昵称是否与其他用户重名
+            LambdaQueryWrapper<User> nicknameQuery = new LambdaQueryWrapper<>();
+            nicknameQuery.eq(User::getNickname, request.getNickname());
+            User existUser = userService.getOne(nicknameQuery);
+            if (existUser != null && !existUser.getId().equals(loginUser.getId())) {
+                return Result.error("该昵称已被其他用户使用");
+            }
+
+            user.setNickname(request.getNickname());
+            user.setNicknameLastModified(LocalDateTime.now());
+        }
 
         // 更新用户信息
         boolean updated = userService.updateById(user);
@@ -187,5 +216,51 @@ public class UserController {
             return Result.success();
         }
         return Result.error("更新失败，请稍后重试");
+    }
+
+    /**
+     * 修改密码
+     */
+    @PutMapping("/changePassword")
+    public Result<Void> changePassword(@RequestBody @Validated ChangePasswordRequest request) {
+        // 校验新密码与确认密码是否一致
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return Result.error("新密码与确认密码不一致");
+        }
+
+        // 从 Security 上下文获取当前登录用户
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return Result.unauthorized("请先登录");
+        }
+
+        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+
+        // 获取当前用户信息
+        User user = userService.getById(loginUser.getId());
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+
+        // 校验原密码是否正确
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            return Result.error("原密码不正确");
+        }
+
+        // 校验新密码不能与原密码相同
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            return Result.error("新密码不能与原密码相同");
+        }
+
+        // 更新密码
+        User updateUser = new User();
+        updateUser.setId(loginUser.getId());
+        updateUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        boolean updated = userService.updateById(updateUser);
+        if (updated) {
+            return Result.success();
+        }
+        return Result.error("密码修改失败，请稍后重试");
     }
 }

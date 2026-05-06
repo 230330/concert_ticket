@@ -54,6 +54,11 @@ public class UserInfoResponse {
     private List<String> roles;
 
     /**
+     * 昵称最后修改时间
+     */
+    private LocalDateTime nicknameLastModified;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createTime;
