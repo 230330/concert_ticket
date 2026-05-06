@@ -53,7 +53,7 @@
           <el-input
             v-model="passwordForm.newPassword"
             type="password"
-            placeholder="请输入新密码（6-20位）"
+            placeholder="请输入新密码（8-20位）"
             show-password
           />
         </el-form-item>
@@ -101,7 +101,7 @@ export default {
         ],
         newPassword: [
           { required: true, message: '请输入新密码', trigger: 'blur' },
-          { min: 6, max: 20, message: '密码长度为6-20个字符', trigger: 'blur' }
+          { min: 6, max: 20, message: '密码长度为8-20个字符', trigger: 'blur' }
         ],
         confirmPassword: [
           { required: true, message: '请确认新密码', trigger: 'blur' },
