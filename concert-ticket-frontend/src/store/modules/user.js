@@ -62,17 +62,14 @@ const actions = {
           return reject('获取用户信息失败，请重新登录。')
         }
 
-        // Backend UserInfoResponse: { id, phone, nickname, avatar, status, roles, createTime }
+        // Backend UserInfoResponse: { id, phone, nickname, avatar, status, roles, createTime ... }
         const { phone, nickname, avatar, roles } = data
-
-        // 角色列表不能为空，否则动态路由无法正确生成
-        const userRoles = roles && roles.length > 0 ? roles : ['USER']
 
         commit('SET_PHONE', phone)
         commit('SET_NICKNAME', nickname || phone)
         commit('SET_AVATAR', avatar || '')
-        commit('SET_ROLES', userRoles)
-        resolve({ ...data, roles: userRoles })
+        commit('SET_ROLES', roles || [])
+        resolve(data)
       }).catch(error => {
         reject(error)
       })

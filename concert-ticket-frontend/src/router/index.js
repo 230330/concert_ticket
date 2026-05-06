@@ -8,7 +8,7 @@ import Layout from '@/layout'
 
 /**
  * constantRoutes
- * 所有用户都能看到的基础路由（无需权限）
+ * 无需权限的基础路由，所有用户都能看到
  */
 export const constantRoutes = [
   {
@@ -29,7 +29,7 @@ export const constantRoutes = [
     hidden: true
   },
 
-  // ===================== 前台模块（所有用户可见）=====================
+  // ===================== 前台模块 =====================
   {
     path: '/',
     component: Layout,
@@ -128,11 +128,10 @@ export const constantRoutes = [
 
 /**
  * asyncRoutes
- * 需要根据用户角色动态加载的路由
- * meta.roles: 允许访问的角色编码列表，不设置则所有已登录用户可访问
+ * 需要权限控制的路由，根据用户角色动态加载
  */
 export const asyncRoutes = [
-  // ===================== 管理后台模块（仅 ADMIN 可见）=====================
+  // ===================== 管理后台模块 =====================
   {
     path: '/admin',
     component: Layout,

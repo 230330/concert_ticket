@@ -53,3 +53,14 @@ export function updateInfo(data) {
     data
   })
 }
+
+/**
+ * 修改密码
+ */
+export function changePassword(data) {
+  return request({
+    url: '/api/user/changePassword',
+    method: 'put',
+    data
+  })
+}

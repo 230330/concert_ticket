@@ -49,6 +49,12 @@ public class User {
     private String avatar;
 
     /**
+     * 昵称最后修改时间
+     */
+    @TableField("nickname_last_modified")
+    private LocalDateTime nicknameLastModified;
+
+    /**
      * 状态
      */
     @TableField("status")
