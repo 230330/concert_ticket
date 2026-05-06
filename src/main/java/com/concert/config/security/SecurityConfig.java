@@ -81,6 +81,8 @@ public class SecurityConfig {
                         "/api/sms/send",
                         "/api/sms/verify",
                         "/auth/captcha/**",
+                        // 上传文件访问
+                        "/uploads/**",
                         // Swagger 文档
                         "/swagger-ui/**",
                         "/swagger-resources/**",

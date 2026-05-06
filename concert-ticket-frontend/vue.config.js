@@ -29,6 +29,11 @@ module.exports = {
         target: 'http://localhost:8090',
         changeOrigin: true,
       },
+      // 上传文件访问代理
+      '/uploads': {
+        target: 'http://localhost:8090',
+        changeOrigin: true,
+      },
     },
   },
   configureWebpack: {

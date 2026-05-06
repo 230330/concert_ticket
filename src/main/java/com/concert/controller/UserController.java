@@ -88,6 +88,7 @@ public class UserController {
         user.setPhone(request.getPhone());
         user.setPassword(passwordEncoder.encode(request.getPassword())); // 密码加密
         user.setStatus(UserStatus.NORMAL); // 默认启用
+        user.setAvatar("/default-avatar.svg"); // 默认头像
 
         // 4. 保存用户
         boolean saved = userService.save(user);

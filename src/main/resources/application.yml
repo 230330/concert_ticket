@@ -4,6 +4,11 @@ server:
     context-path: /
 
 spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
   application:
     name: concert-ticket
 #  # 允许 循环依赖
@@ -97,6 +102,10 @@ logging:
 
 # 演唱会订票系统自定义配置
 concert:
+  # 文件上传配置
+  upload:
+    path: ./uploads/avatar    # 头像上传存储路径
+    url-prefix: /uploads/avatar  # 头像访问URL前缀
   # 订单配置
   order:
     expire-minutes: 15  # 订单超时时间（分钟）

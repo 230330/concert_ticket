@@ -7,7 +7,8 @@
     <div class="right-menu">
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar">
+          <img v-if="avatarUrl" :src="avatarUrl" class="user-avatar">
+          <img v-else src="/default-avatar.svg" class="user-avatar">
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
@@ -43,7 +44,14 @@ export default {
       'sidebar',
       'avatar',
       'nickname'
-    ])
+    ]),
+    avatarUrl() {
+      if (!this.avatar) return ''
+      // 如果是完整URL直接返回
+      if (this.avatar.startsWith('http')) return this.avatar
+      // 相对路径拼接后端地址
+      return process.env.VUE_APP_BASE_API + this.avatar
+    }
   },
   methods: {
     toggleSideBar() {

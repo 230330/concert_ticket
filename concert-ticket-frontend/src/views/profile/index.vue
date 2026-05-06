@@ -21,7 +21,20 @@
           </div>
         </el-form-item>
         <el-form-item label="头像">
-          <el-input v-model="profileForm.avatar" placeholder="请输入头像URL" />
+          <div class="avatar-upload-wrapper">
+            <el-upload
+              class="avatar-uploader"
+              action=""
+              :http-request="handleUploadAvatar"
+              :show-file-list="false"
+              :before-upload="beforeAvatarUpload"
+              accept=".jpg,.jpeg,.png"
+            >
+              <img v-if="profileForm.avatar" :src="avatarFullUrl" class="avatar-preview" />
+              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </el-upload>
+            <div class="avatar-tip">支持JPG、PNG格式，大小不超过10MB</div>
+          </div>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSaveProfile" :loading="saveLoading">保存修改</el-button>
@@ -53,7 +66,7 @@
           <el-input
             v-model="passwordForm.newPassword"
             type="password"
-            placeholder="请输入新密码（8-20位）"
+            placeholder="请输入新密码（8-32位，含字母和数字）"
             show-password
           />
         </el-form-item>
@@ -75,7 +88,7 @@
 </template>
 
 <script>
-import { getInfo, updateInfo, changePassword } from '@/api/user'
+import { getInfo, updateInfo, changePassword, uploadAvatar } from '@/api/user'
 
 export default {
   name: 'ProfileIndex',
@@ -94,6 +107,7 @@ export default {
       loading: false,
       saveLoading: false,
       pwdLoading: false,
+      uploadLoading: false,
       nicknameLastModified: null,
       passwordRules: {
         oldPassword: [
@@ -101,7 +115,7 @@ export default {
         ],
         newPassword: [
           { required: true, message: '请输入新密码', trigger: 'blur' },
-          { min: 6, max: 20, message: '密码长度为8-20个字符', trigger: 'blur' }
+          { min: 8, max: 32, message: '密码长度为8-32个字符', trigger: 'blur' }
         ],
         confirmPassword: [
           { required: true, message: '请确认新密码', trigger: 'blur' },
@@ -129,6 +143,14 @@ export default {
       const h = String(nextAllowed.getHours()).padStart(2, '0')
       const min = String(nextAllowed.getMinutes()).padStart(2, '0')
       return `${y}-${m}-${d} ${h}:${min}`
+    },
+    // 头像完整URL：处理相对路径
+    avatarFullUrl() {
+      if (!this.profileForm.avatar) return ''
+      // 如果是完整URL直接返回
+      if (this.profileForm.avatar.startsWith('http')) return this.profileForm.avatar
+      // 相对路径拼接后端地址
+      return process.env.VUE_APP_BASE_API + this.profileForm.avatar
     }
   },
   created() {
@@ -145,6 +167,36 @@ export default {
         this.nicknameLastModified = d.nicknameLastModified || null
       }).finally(() => { this.loading = false })
     },
+    /**
+     * 上传前校验：格式和大小
+     */
+    beforeAvatarUpload(file) {
+      const isJpgOrPng = ['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)
+      if (!isJpgOrPng) {
+        this.$message.error('头像仅支持JPG和PNG格式！')
+        return false
+      }
+      const isLt10M = file.size / 1024 / 1024 < 10
+      if (!isLt10M) {
+        this.$message.error('头像图片大小不能超过10MB！')
+        return false
+      }
+      return true
+    },
+    /**
+     * 自定义上传头像
+     */
+    handleUploadAvatar(options) {
+      this.uploadLoading = true
+      uploadAvatar(options.file).then(res => {
+        this.profileForm.avatar = res.data
+        this.$message.success('头像上传成功')
+      }).catch(() => {
+        this.$message.error('头像上传失败')
+      }).finally(() => {
+        this.uploadLoading = false
+      })
+    },
     handleSaveProfile() {
       this.saveLoading = true
       updateInfo({
@@ -154,7 +206,7 @@ export default {
         this.$message.success('保存成功')
         // 重新获取用户信息以刷新昵称锁定状态
         this.fetchInfo()
-        // 更新 store 中的昵称
+        // 更新 store 中的昵称和头像
         this.$store.dispatch('user/getInfo')
       }).finally(() => { this.saveLoading = false })
     },
@@ -190,5 +242,46 @@ export default {
   color: #E6A23C;
   line-height: 1.5;
   margin-top: 4px;
+}
+
+.avatar-upload-wrapper {
+  display: flex;
+  align-items: flex-end;
+}
+
+.avatar-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-left: 16px;
+  line-height: 1.5;
+}
+
+.avatar-uploader >>> .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-uploader >>> .el-upload:hover {
+  border-color: #409EFF;
+}
+
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+}
+
+.avatar-preview {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  display: block;
 }
 </style>
