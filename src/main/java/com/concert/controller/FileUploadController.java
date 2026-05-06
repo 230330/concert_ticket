@@ -9,8 +9,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +36,11 @@ public class FileUploadController {
     private String urlPrefix;
 
     /**
+     * 上传目录的绝对路径，在项目启动时初始化
+     */
+    private File uploadDir;
+
+    /**
      * 允许的图片格式
      */
     private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png");
@@ -40,6 +49,24 @@ public class FileUploadController {
      * 最大文件大小：10MB
      */
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+    /**
+     * 项目启动时将相对路径转为绝对路径，并预创建上传目录
+     */
+    @PostConstruct
+    public void init() {
+        uploadDir = new File(uploadPath).getAbsoluteFile();
+        if (!uploadDir.exists()) {
+            boolean created = uploadDir.mkdirs();
+            if (created) {
+                log.info("创建上传目录: {}", uploadDir.getAbsolutePath());
+            } else {
+                log.warn("创建上传目录失败: {}", uploadDir.getAbsolutePath());
+            }
+        } else {
+            log.info("上传目录已存在: {}", uploadDir.getAbsolutePath());
+        }
+    }
 
     /**
      * 上传头像
@@ -79,19 +106,18 @@ public class FileUploadController {
         String newFilename = UUID.randomUUID().toString().replace("-", "") + "." + extension;
 
         // 6. 确保上传目录存在
-        File uploadDir = new File(uploadPath);
         if (!uploadDir.exists()) {
             boolean created = uploadDir.mkdirs();
             if (!created) {
-                log.error("创建上传目录失败: {}", uploadPath);
+                log.error("创建上传目录失败: {}", uploadDir.getAbsolutePath());
                 return Result.error("文件上传失败，请稍后重试");
             }
         }
 
-        // 7. 保存文件
-        File destFile = new File(uploadDir, newFilename);
+        // 7. 保存文件（使用Files.copy替代transferTo，绕开Tomcat Part.write相对路径解析问题）
+        Path destPath = Paths.get(uploadDir.getAbsolutePath(), newFilename);
         try {
-            file.transferTo(destFile);
+            Files.copy(file.getInputStream(), destPath);
         } catch (IOException e) {
             log.error("文件保存失败", e);
             return Result.error("文件上传失败，请稍后重试");
