@@ -526,6 +526,7 @@ public class ConcertServiceImpl extends ServiceImpl<ConcertMapper, Concert> impl
                     resp.setId(concert.getId());
                     resp.setName(concert.getName());
                     resp.setPoster(concert.getPoster());
+                    resp.setDescription(concert.getDescription());
                     resp.setStatus(concert.getStatus());
                     resp.setCreateTime(concert.getCreateTime());
 

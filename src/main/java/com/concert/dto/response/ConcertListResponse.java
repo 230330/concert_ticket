@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * @description:    管理端-用户信息响应
+ * @description:    演唱会列表响应
  * @author: hzf
  * @date: 2026-04-17 15:30
  */
@@ -28,6 +28,11 @@ public class ConcertListResponse {
      * 演唱会海报
      */
     private String poster;
+
+    /**
+     * 演唱会描述
+     */
+    private String description;
 
     /**
      * 状态
