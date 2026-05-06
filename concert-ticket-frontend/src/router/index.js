@@ -8,7 +8,7 @@ import Layout from '@/layout'
 
 /**
  * constantRoutes
- * 无需权限的基础路由
+ * 无需权限的基础路由，所有用户都能看到
  */
 export const constantRoutes = [
   {
@@ -123,15 +123,21 @@ export const constantRoutes = [
         meta: { title: '个人信息' }
       }
     ]
-  },
+  }
+]
 
+/**
+ * asyncRoutes
+ * 需要权限控制的路由，根据用户角色动态加载
+ */
+export const asyncRoutes = [
   // ===================== 管理后台模块 =====================
   {
     path: '/admin',
     component: Layout,
     redirect: '/admin/dashboard',
     name: 'Admin',
-    meta: { title: '管理后台', icon: 'el-icon-setting', roles: ['admin'] },
+    meta: { title: '管理后台', icon: 'el-icon-setting', roles: ['ADMIN'] },
     children: [
       {
         path: 'dashboard',

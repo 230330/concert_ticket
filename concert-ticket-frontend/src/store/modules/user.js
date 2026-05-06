@@ -62,12 +62,13 @@ const actions = {
           return reject('获取用户信息失败，请重新登录。')
         }
 
-        // Backend UserInfoResponse: { id, phone, nickname, avatar, status, createTime ... }
-        const { phone, nickname, avatar } = data
+        // Backend UserInfoResponse: { id, phone, nickname, avatar, status, roles, createTime ... }
+        const { phone, nickname, avatar, roles } = data
 
         commit('SET_PHONE', phone)
         commit('SET_NICKNAME', nickname || phone)
         commit('SET_AVATAR', avatar || '')
+        commit('SET_ROLES', roles || [])
         resolve(data)
       }).catch(error => {
         reject(error)

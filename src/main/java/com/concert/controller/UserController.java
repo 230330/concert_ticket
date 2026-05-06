@@ -9,10 +9,12 @@ import com.concert.dto.request.SendSmsRequest;
 import com.concert.dto.request.UserUpdateRequest;
 import com.concert.dto.response.LoginResponse;
 import com.concert.dto.response.UserInfoResponse;
+import com.concert.entity.SysRole;
 import com.concert.entity.User;
 import com.concert.enums.UserStatus;
 import com.concert.exception.BusinessException;
 import com.concert.service.SmsVerificationCodeService;
+import com.concert.service.SysRoleService;
 import com.concert.service.UserService;
 import com.concert.utils.JwtUtil;
 import org.springframework.beans.BeanUtils;
@@ -26,6 +28,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @description:    用户相关控制器
@@ -38,6 +42,9 @@ public class UserController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private SysRoleService sysRoleService;
 
     @Resource
     private SmsVerificationCodeService smsVerificationCodeService;
@@ -147,6 +154,10 @@ public class UserController {
         // 转换为响应对象
         UserInfoResponse response = new UserInfoResponse();
         BeanUtils.copyProperties(user, response);
+
+        // 查询角色列表
+        List<SysRole> roles = sysRoleService.getRolesByUserId(loginUser.getId());
+        response.setRoles(roles.stream().map(SysRole::getRoleCode).collect(Collectors.toList()));
 
         return Result.success(response);
     }
