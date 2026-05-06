@@ -50,8 +50,6 @@ public class UserInfoResponse {
      */
     private UserStatus status;
 
-    /** 角色编码列表 */
-    private List<String> roles;
 
     /**
      * 昵称最后修改时间
