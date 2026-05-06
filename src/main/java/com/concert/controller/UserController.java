@@ -6,6 +6,7 @@ import com.concert.config.security.LoginUser;
 import com.concert.dto.request.ChangePasswordRequest;
 import com.concert.dto.request.LoginRequest;
 import com.concert.dto.request.RegisterRequest;
+import com.concert.dto.request.ResetPasswordRequest;
 import com.concert.dto.request.SendSmsRequest;
 import com.concert.dto.request.UserUpdateRequest;
 import com.concert.dto.response.LoginResponse;
@@ -132,6 +133,79 @@ public class UserController {
             return Result.success();
         }
         return Result.error("验证码发送失败，请稍后重试");
+    }
+
+    /**
+     * 忘记密码-发送重置密码验证码
+     * 先校验手机号是否已注册，再发送验证码
+     */
+    @PostMapping("/sendResetSms")
+    public Result<Void> sendResetSms(@RequestBody @Validated SendSmsRequest request) {
+        // 1. 校验手机号是否已注册
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getPhone, request.getPhone());
+        User existUser = userService.getOne(queryWrapper);
+        if (existUser == null) {
+            return Result.error("该手机号未注册");
+        }
+
+        // 2. 校验用户状态
+        if (existUser.getStatus() == UserStatus.DISABLED) {
+            return Result.error("该账号已被禁用，请联系管理员");
+        }
+
+        // 3. 发送验证码
+        boolean sent = smsVerificationCodeService.sendCode(request.getPhone());
+        if (sent) {
+            return Result.success();
+        }
+        return Result.error("验证码发送失败，请稍后重试");
+    }
+
+    /**
+     * 忘记密码-重置密码
+     */
+    @PostMapping("/resetPassword")
+    public Result<Void> resetPassword(@RequestBody @Validated ResetPasswordRequest request) {
+        // 1. 校验新密码与确认密码是否一致
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return Result.error("新密码与确认密码不一致");
+        }
+
+        // 2. 验证码校验
+        boolean codeValid = smsVerificationCodeService.verifyCode(request.getPhone(), request.getCode());
+        if (!codeValid) {
+            return Result.error("验证码错误或已过期");
+        }
+
+        // 3. 查询用户
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getPhone, request.getPhone());
+        User user = userService.getOne(queryWrapper);
+        if (user == null) {
+            return Result.error("该手机号未注册");
+        }
+
+        // 4. 校验用户状态
+        if (user.getStatus() == UserStatus.DISABLED) {
+            return Result.error("该账号已被禁用，请联系管理员");
+        }
+
+        // 5. 校验新密码不能与原密码相同
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            return Result.error("新密码不能与原密码相同");
+        }
+
+        // 6. 更新密码
+        User updateUser = new User();
+        updateUser.setId(user.getId());
+        updateUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        boolean updated = userService.updateById(updateUser);
+        if (updated) {
+            return Result.success();
+        }
+        return Result.error("密码重置失败，请稍后重试");
     }
 
     /**

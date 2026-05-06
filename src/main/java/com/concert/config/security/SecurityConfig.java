@@ -76,6 +76,8 @@ public class SecurityConfig {
                         "/api/user/login",
                         "/api/user/register",
                         "/api/user/sendSms",
+                        "/api/user/sendResetSms",
+                        "/api/user/resetPassword",
                         "/api/sms/send",
                         "/api/sms/verify",
                         "/auth/captcha/**",

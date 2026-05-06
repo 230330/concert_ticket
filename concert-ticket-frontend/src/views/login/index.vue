@@ -60,6 +60,7 @@
 
       <div class="tips">
         <span>没有账号？<el-link type="primary" @click="$router.push('/register')">立即注册</el-link></span>
+        <span style="margin-left: 16px"><el-link type="info" @click="$router.push('/forgot-password')">忘记密码？</el-link></span>
       </div>
     </el-form>
   </div>
@@ -80,7 +81,7 @@ export default {
     }
     const validatePassword = (rule, value, callback) => {
       if (!validPassword(value)) {
-        callback(new Error('密码需8-32位，且必须包含字母和数字'))
+        callback(new Error('密码需8-20位，且必须包含字母和数字'))
       } else {
         callback()
       }

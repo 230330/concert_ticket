@@ -64,3 +64,25 @@ export function changePassword(data) {
     data
   })
 }
+
+/**
+ * 忘记密码-发送重置密码验证码
+ */
+export function sendResetSms(data) {
+  return request({
+    url: '/api/user/sendResetSms',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 忘记密码-重置密码
+ */
+export function resetPassword(data) {
+  return request({
+    url: '/api/user/resetPassword',
+    method: 'post',
+    data
+  })
+}
