@@ -45,8 +45,8 @@ spring:
 
   # Jackson 配置
   jackson:
-    date-format: yyyy-MM-dd HH:mm:ss
-    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss #date-format 仅对 java.util.Date 类型生效，对 LocalDateTime 不生效。需配合JacksonConfig使用
+    time-zone: GMT+8
     serialization:
       write-dates-as-timestamps: false
     default-property-inclusion: non_null
