@@ -36,3 +36,10 @@ export function updateConcert(id, data) {
 export function deleteConcert(id) {
   return request({ url: `${BASE}/${id}`, method: 'delete' })
 }
+
+/**
+ * 更新演唱会状态
+ */
+export function updateConcertStatus(id, data) {
+  return request({ url: `${BASE}/${id}/status`, method: 'put', data })
+}

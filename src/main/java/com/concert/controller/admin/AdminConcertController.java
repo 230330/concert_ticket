@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.concert.common.Result;
 import com.concert.dto.request.ConcertRequest;
+import com.concert.dto.request.ConcertStatusRequest;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.Concert;
 import com.concert.entity.ConcertArtist;
 import com.concert.enums.ConcertStatus;
+import com.concert.exception.BusinessException;
 import com.concert.service.ConcertArtistService;
 import com.concert.service.ConcertService;
 import com.concert.utils.PageUtil;
@@ -137,6 +139,66 @@ public class AdminConcertController {
         }
 
         return Result.success();
+    }
+
+    /**
+     * 更新演唱会状态
+     *
+     * @param id      演唱会ID
+     * @param request 状态变更请求
+     */
+    @PutMapping("/{id}/status")
+    public Result<Void> updateStatus(@PathVariable Long id, @RequestBody @Validated ConcertStatusRequest request) {
+        Concert concert = concertService.getById(id);
+        if (concert == null) {
+            throw new BusinessException("演唱会不存在");
+        }
+
+        ConcertStatus currentStatus = concert.getStatus();
+        ConcertStatus targetStatus = request.getStatus();
+
+        // 相同状态无需变更
+        if (currentStatus == targetStatus) {
+            throw new BusinessException("当前状态已是" + currentStatus.getDesc());
+        }
+
+        // 校验状态转换合法性
+        validateStatusTransition(currentStatus, targetStatus);
+
+        concert.setStatus(targetStatus);
+        concertService.updateById(concert);
+        return Result.success();
+    }
+
+    /**
+     * 校验演唱会状态转换是否合法
+     * 合法转换路径：未开始 → 进行中 → 已结束
+     * 任何状态 → 已取消
+     * 已取消/已结束 为终态，不可再变更
+     */
+    private void validateStatusTransition(ConcertStatus current, ConcertStatus target) {
+        // 已结束和已取消为终态，不可变更
+        if (current == ConcertStatus.ENDED) {
+            throw new BusinessException("已结束的演唱会不可变更状态");
+        }
+        if (current == ConcertStatus.CANCELLED) {
+            throw new BusinessException("已取消的演唱会不可变更状态");
+        }
+
+        // 任何非终态状态都可以转为已取消
+        if (target == ConcertStatus.CANCELLED) {
+            return;
+        }
+
+        // 未开始只能转为进行中
+        if (current == ConcertStatus.NOT_STARTED && target != ConcertStatus.IN_PROGRESS) {
+            throw new BusinessException("未开始的演唱会只能变更为进行中或已取消");
+        }
+
+        // 进行中只能转为已结束
+        if (current == ConcertStatus.IN_PROGRESS && target != ConcertStatus.ENDED) {
+            throw new BusinessException("进行中的演唱会只能变更为已结束或已取消");
+        }
     }
 
     /**
