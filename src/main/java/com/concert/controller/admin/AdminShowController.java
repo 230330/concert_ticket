@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.concert.common.Result;
 import com.concert.dto.request.ShowRequest;
+import com.concert.dto.request.ShowStatusRequest;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.Show;
 import com.concert.enums.ShowStatus;
+import com.concert.exception.BusinessException;
 import com.concert.service.ShowService;
 import com.concert.utils.PageUtil;
 import org.springframework.validation.annotation.Validated;
@@ -132,6 +134,71 @@ public class AdminShowController {
         }
         showService.updateById(show);
         return Result.success();
+    }
+
+    /**
+     * 更新场次状态
+     *
+     * @param id      场次ID
+     * @param request 状态变更请求
+     */
+    @PutMapping("/{id}/status")
+    public Result<Void> updateStatus(@PathVariable Long id, @RequestBody @Validated ShowStatusRequest request) {
+        Show show = showService.getById(id);
+        if (show == null) {
+            throw new BusinessException("场次不存在");
+        }
+
+        ShowStatus currentStatus = show.getStatus();
+        ShowStatus targetStatus = request.getStatus();
+
+        // 相同状态无需变更
+        if (currentStatus == targetStatus) {
+            throw new BusinessException("当前状态已是" + currentStatus.getDesc());
+        }
+
+        // 校验状态转换合法性
+        validateStatusTransition(currentStatus, targetStatus);
+
+        show.setStatus(targetStatus);
+        showService.updateById(show);
+        return Result.success();
+    }
+
+    /**
+     * 校验场次状态转换是否合法
+     * 合法转换路径：未开售 → 售票中 → 已售罄 → 已结束
+     * 未开售/售票中 → 已取消
+     * 已结束/已取消为终态，不可再变更
+     */
+    private void validateStatusTransition(ShowStatus current, ShowStatus target) {
+        // 已结束和已取消为终态，不可变更
+        if (current == ShowStatus.ENDED) {
+            throw new BusinessException("已结束的场次不可变更状态");
+        }
+        if (current == ShowStatus.CANCELLED) {
+            throw new BusinessException("已取消的场次不可变更状态");
+        }
+
+        // 任何非终态状态都可以转为已取消
+        if (target == ShowStatus.CANCELLED) {
+            return;
+        }
+
+        // 未开售只能转为售票中
+        if (current == ShowStatus.NOT_ON_SALE && target != ShowStatus.ON_SALE) {
+            throw new BusinessException("未开售的场次只能变更为售票中或已取消");
+        }
+
+        // 售票中只能转为已售罄
+        if (current == ShowStatus.ON_SALE && target != ShowStatus.SOLD_OUT) {
+            throw new BusinessException("售票中的场次只能变更为已售罄或已取消");
+        }
+
+        // 已售罄只能转为已结束
+        if (current == ShowStatus.SOLD_OUT && target != ShowStatus.ENDED) {
+            throw new BusinessException("已售罄的场次只能变更为已结束或已取消");
+        }
     }
 
     /**

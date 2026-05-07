@@ -36,3 +36,10 @@ export function updateShow(id, data) {
 export function deleteShow(id) {
   return request({ url: `${BASE}/${id}`, method: 'delete' })
 }
+
+/**
+ * 更新场次状态
+ */
+export function updateShowStatus(id, data) {
+  return request({ url: `${BASE}/${id}/status`, method: 'put', data })
+}
