@@ -22,8 +22,11 @@ import com.concert.utils.JwtUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
@@ -106,20 +109,24 @@ public class UserController {
         // 1. 使用 AuthenticationManager 进行认证
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(request.getPhone(), request.getPassword());
-        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(authenticationToken);
+        } catch (BadCredentialsException e) {
+            throw new BusinessException("用户名或密码错误");
+        } catch (DisabledException e) {
+            throw new BusinessException("账号已被禁用");
+        } catch (AuthenticationException e) {
+            throw new BusinessException("认证失败，请重新登录");
+        }
 
         // 2. 认证成功，获取用户信息
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
 
-        // 3. 检查用户状态
-        if (!loginUser.isEnabled()) {
-            throw new BusinessException("账号已被禁用");
-        }
-
-        // 4. 生成 JWT Token
+        // 3. 生成 JWT Token
         String token = jwtUtil.generateToken(loginUser.getId(), loginUser.getPhone());
 
-        // 5. 返回登录响应
+        // 4. 返回登录响应
         LoginResponse response = new LoginResponse(token, jwtExpiration);
         return Result.success(response);
     }
