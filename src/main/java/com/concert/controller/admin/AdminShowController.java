@@ -83,6 +83,14 @@ public class AdminShowController {
      */
     @PostMapping("/add")
     public Result<Void> add(@RequestBody @Validated ShowRequest request) {
+        // 业务校验：时间逻辑
+        if (request.getSaleEndTime().isAfter(request.getShowTime())) {
+            return Result.error("停售时间必须在演出时间之前");
+        }
+        if (!request.getSaleStartTime().isBefore(request.getSaleEndTime())) {
+            return Result.error("停售时间必须晚于开售时间");
+        }
+
         Show show = new Show();
         show.setConcertId(request.getConcertId());
         show.setVenueId(request.getVenueId());
@@ -90,7 +98,6 @@ public class AdminShowController {
         show.setSaleStartTime(request.getSaleStartTime());
         show.setSaleEndTime(request.getSaleEndTime());
         show.setStatus(request.getStatus() != null ? request.getStatus() : ShowStatus.NOT_ON_SALE);
-
         showService.save(show);
         return Result.success();
     }
@@ -107,6 +114,14 @@ public class AdminShowController {
             return Result.error("场次不存在");
         }
 
+        // 业务校验：时间逻辑
+        if (request.getSaleEndTime().isAfter(request.getShowTime())) {
+            return Result.error("停售时间必须在演出时间之前");
+        }
+        if (!request.getSaleStartTime().isBefore(request.getSaleEndTime())) {
+            return Result.error("停售时间必须晚于开售时间");
+        }
+
         show.setConcertId(request.getConcertId());
         show.setVenueId(request.getVenueId());
         show.setShowTime(request.getShowTime());
@@ -115,7 +130,6 @@ public class AdminShowController {
         if (request.getStatus() != null) {
             show.setStatus(request.getStatus());
         }
-
         showService.updateById(show);
         return Result.success();
     }
