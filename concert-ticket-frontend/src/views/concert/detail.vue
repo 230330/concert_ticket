@@ -29,14 +29,16 @@
         <el-table-column prop="id" label="场次ID" width="80" />
         <el-table-column prop="showTime" label="演出时间" width="180" />
         <el-table-column prop="venueName" label="场馆" width="150" />
+        <!-- 修改部分：状态列（新增映射逻辑） -->
         <el-table-column label="状态" width="100">
           <template slot-scope="{row}">
-            <el-tag :type="row.status === 2 ? 'success' : 'info'">{{ row.status === 2 ? '售票中' : '未开售' }}</el-tag>
+            <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
+        <!-- 操作列：按钮禁用条件保持不变（仅状态为1时可用） -->
         <el-table-column label="操作" width="120">
           <template slot-scope="{row}">
-            <el-button type="primary" size="mini" :disabled="row.status !== 2" @click="$router.push(`/concert/seat/${row.id}`)">
+            <el-button type="primary" size="mini" :disabled="row.status !== 1" @click="$router.push(`/concert/seat/${row.id}`)">
               选座购票
             </el-button>
           </template>
@@ -78,7 +80,32 @@ export default {
       }).finally(() => {
         this.loading = false
       })
+    },
+
+    // ========== 新增辅助方法 ==========
+    // 获取状态文本
+    getStatusText(status) {
+      const statusMap = {
+        0: '未开售',
+        1: '售票中',
+        2: '已售罄',
+        3: '已结束',
+        4: '已取消'
+      }
+      return statusMap[status] || '未知'
+    },
+    // 获取状态对应的标签颜色类型
+    getStatusType(status) {
+      const typeMap = {
+        0: 'info',
+        1: 'success',
+        2: 'danger',
+        3: 'warning',
+        4: 'info'
+      }
+      return typeMap[status] || 'info'
     }
+    // ========== 新增结束 ==========
   }
 }
 </script>
