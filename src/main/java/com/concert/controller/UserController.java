@@ -1,8 +1,6 @@
 package com.concert.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.concert.common.Result;
-import com.concert.config.security.LoginUser;
 import com.concert.dto.request.ChangePasswordRequest;
 import com.concert.dto.request.LoginRequest;
 import com.concert.dto.request.RegisterRequest;
@@ -11,37 +9,22 @@ import com.concert.dto.request.SendSmsRequest;
 import com.concert.dto.request.UserUpdateRequest;
 import com.concert.dto.response.LoginResponse;
 import com.concert.dto.response.UserInfoResponse;
-import com.concert.entity.SysRole;
-import com.concert.entity.User;
-import com.concert.enums.UserStatus;
-import com.concert.exception.BusinessException;
 import com.concert.service.SmsVerificationCodeService;
-import com.concert.service.SysRoleService;
 import com.concert.service.UserService;
-import com.concert.utils.JwtUtil;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.concert.utils.SecurityUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @description:    用户相关控制器
  * @author: hzf
  * @date: 2026-04-17 15:30
  */
+@Tag(name = "用户管理", description = "用户注册、登录、密码管理等接口")
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -50,90 +33,32 @@ public class UserController {
     private UserService userService;
 
     @Resource
-    private SysRoleService sysRoleService;
-
-    @Resource
     private SmsVerificationCodeService smsVerificationCodeService;
-
-    @Resource
-    private JwtUtil jwtUtil;
-
-    @Resource
-    private PasswordEncoder passwordEncoder;
-
-    @Resource
-    private AuthenticationManager authenticationManager;
-
-    @Value("${jwt.expiration}")
-    private Long jwtExpiration;
 
     /**
      * 用户注册
      */
+    @Operation(summary = "用户注册", description = "通过手机号+验证码注册新用户")
     @PostMapping("/register")
     public Result<Void> register(@RequestBody @Validated RegisterRequest request) {
-        // 1. 验证码校验
-        boolean codeValid = smsVerificationCodeService.verifyCode(request.getPhone(), request.getCode());
-        if (!codeValid) {
-            return Result.error("验证码错误或已过期");
-        }
-
-        // 2. 手机号唯一性校验
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getPhone, request.getPhone());
-        User existUser = userService.getOne(queryWrapper);
-        if (existUser != null) {
-            return Result.error("该手机号已注册");
-        }
-
-        // 3. 创建用户
-        User user = new User();
-        user.setPhone(request.getPhone());
-        user.setPassword(passwordEncoder.encode(request.getPassword())); // 密码加密
-        user.setStatus(UserStatus.NORMAL); // 默认启用
-        user.setAvatar("/default-avatar.svg"); // 默认头像
-
-        // 4. 保存用户
-        boolean saved = userService.save(user);
-        if (saved) {
-            return Result.success();
-        }
-        return Result.error("注册失败，请稍后重试");
+        userService.register(request);
+        return Result.success();
     }
 
     /**
      * 用户登录
      */
+    @Operation(summary = "用户登录", description = "通过手机号+密码登录，返回JWT Token")
     @PostMapping("/login")
     public Result<LoginResponse> login(@RequestBody @Validated LoginRequest request) {
-        // 1. 使用 AuthenticationManager 进行认证
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(request.getPhone(), request.getPassword());
-        Authentication authentication;
-        try {
-            authentication = authenticationManager.authenticate(authenticationToken);
-        } catch (BadCredentialsException e) {
-            throw new BusinessException("用户名或密码错误");
-        } catch (DisabledException e) {
-            throw new BusinessException("账号已被禁用");
-        } catch (AuthenticationException e) {
-            throw new BusinessException("认证失败，请重新登录");
-        }
-
-        // 2. 认证成功，获取用户信息
-        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
-
-        // 3. 生成 JWT Token
-        String token = jwtUtil.generateToken(loginUser.getId(), loginUser.getPhone());
-
-        // 4. 返回登录响应
-        LoginResponse response = new LoginResponse(token, jwtExpiration);
+        LoginResponse response = userService.login(request);
         return Result.success(response);
     }
 
     /**
      * 发送短信验证码
      */
+    @Operation(summary = "发送注册验证码", description = "向指定手机号发送注册用短信验证码")
     @PostMapping("/sendSms")
     public Result<Void> sendSms(@RequestBody @Validated SendSmsRequest request) {
         boolean sent = smsVerificationCodeService.sendCode(request.getPhone());
@@ -145,24 +70,10 @@ public class UserController {
 
     /**
      * 忘记密码-发送重置密码验证码
-     * 先校验手机号是否已注册，再发送验证码
      */
+    @Operation(summary = "发送重置密码验证码", description = "向指定手机号发送重置密码用短信验证码")
     @PostMapping("/sendResetSms")
     public Result<Void> sendResetSms(@RequestBody @Validated SendSmsRequest request) {
-        // 1. 校验手机号是否已注册
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getPhone, request.getPhone());
-        User existUser = userService.getOne(queryWrapper);
-        if (existUser == null) {
-            return Result.error("该手机号未注册");
-        }
-
-        // 2. 校验用户状态
-        if (existUser.getStatus() == UserStatus.DISABLED) {
-            return Result.error("该账号已被禁用，请联系管理员");
-        }
-
-        // 3. 发送验证码
         boolean sent = smsVerificationCodeService.sendCode(request.getPhone());
         if (sent) {
             return Result.success();
@@ -173,176 +84,52 @@ public class UserController {
     /**
      * 忘记密码-重置密码
      */
+    @Operation(summary = "重置密码", description = "通过手机号+验证码重置密码，无需登录")
     @PostMapping("/resetPassword")
     public Result<Void> resetPassword(@RequestBody @Validated ResetPasswordRequest request) {
-        // 1. 校验新密码与确认密码是否一致
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            return Result.error("新密码与确认密码不一致");
-        }
-
-        // 2. 验证码校验
-        boolean codeValid = smsVerificationCodeService.verifyCode(request.getPhone(), request.getCode());
-        if (!codeValid) {
-            return Result.error("验证码错误或已过期");
-        }
-
-        // 3. 查询用户
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getPhone, request.getPhone());
-        User user = userService.getOne(queryWrapper);
-        if (user == null) {
-            return Result.error("该手机号未注册");
-        }
-
-        // 4. 校验用户状态
-        if (user.getStatus() == UserStatus.DISABLED) {
-            return Result.error("该账号已被禁用，请联系管理员");
-        }
-
-        // 5. 校验新密码不能与原密码相同
-        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
-            return Result.error("新密码不能与原密码相同");
-        }
-
-        // 6. 更新密码
-        User updateUser = new User();
-        updateUser.setId(user.getId());
-        updateUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
-
-        boolean updated = userService.updateById(updateUser);
-        if (updated) {
-            return Result.success();
-        }
-        return Result.error("密码重置失败，请稍后重试");
+        userService.resetPassword(request);
+        return Result.success();
     }
 
     /**
      * 获取当前登录用户信息
      */
+    @Operation(summary = "获取用户信息", description = "获取当前登录用户的个人信息和角色列表，需要登录")
     @GetMapping("/info")
     public Result<UserInfoResponse> getUserInfo() {
-        // 从 Security 上下文获取当前登录用户
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        if (userId == null) {
             return Result.unauthorized("请先登录");
         }
-
-        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
-
-        // 从数据库获取最新用户信息
-        User user = userService.getById(loginUser.getId());
-        if (user == null) {
-            return Result.error("用户不存在");
-        }
-
-        // 转换为响应对象
-        UserInfoResponse response = new UserInfoResponse();
-        BeanUtils.copyProperties(user, response);
-
-        // 查询角色列表
-        List<SysRole> roles = sysRoleService.getRolesByUserId(loginUser.getId());
-        response.setRoles(roles.stream().map(SysRole::getRoleCode).collect(Collectors.toList()));
-
+        UserInfoResponse response = userService.getUserInfo(userId);
         return Result.success(response);
     }
 
     /**
      * 更新用户信息
      */
+    @Operation(summary = "更新用户信息", description = "更新当前登录用户的头像和昵称，昵称每月仅可修改一次")
     @PutMapping("/update")
     public Result<Void> updateUserInfo(@RequestBody @Validated UserUpdateRequest request) {
-        // 从 Security 上下文获取当前登录用户
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        if (userId == null) {
             return Result.unauthorized("请先登录");
         }
-
-        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
-
-        // 从数据库获取当前用户信息
-        User currentUser = userService.getById(loginUser.getId());
-        if (currentUser == null) {
-            return Result.error("用户不存在");
-        }
-
-        // 构建更新对象
-        User user = new User();
-        user.setId(loginUser.getId());
-        user.setAvatar(request.getAvatar());
-
-        // 昵称修改校验
-        if (request.getNickname() != null && !request.getNickname().equals(currentUser.getNickname())) {
-            // 1. 检查一个月内是否已修改过昵称
-            if (currentUser.getNicknameLastModified() != null) {
-                LocalDateTime nextAllowedTime = currentUser.getNicknameLastModified().plusMonths(1);
-                if (LocalDateTime.now().isBefore(nextAllowedTime)) {
-                    return Result.error("昵称修改过于频繁，每月仅可修改一次");
-                }
-            }
-
-            // 2. 检查昵称是否与其他用户重名
-            LambdaQueryWrapper<User> nicknameQuery = new LambdaQueryWrapper<>();
-            nicknameQuery.eq(User::getNickname, request.getNickname());
-            User existUser = userService.getOne(nicknameQuery);
-            if (existUser != null && !existUser.getId().equals(loginUser.getId())) {
-                return Result.error("该昵称已被其他用户使用");
-            }
-
-            user.setNickname(request.getNickname());
-            user.setNicknameLastModified(LocalDateTime.now());
-        }
-
-        // 更新用户信息
-        boolean updated = userService.updateById(user);
-        if (updated) {
-            return Result.success();
-        }
-        return Result.error("更新失败，请稍后重试");
+        userService.updateUserInfo(userId, request);
+        return Result.success();
     }
 
     /**
      * 修改密码
      */
+    @Operation(summary = "修改密码", description = "已登录用户修改密码，需提供原密码和新密码")
     @PutMapping("/changePassword")
     public Result<Void> changePassword(@RequestBody @Validated ChangePasswordRequest request) {
-        // 校验新密码与确认密码是否一致
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            return Result.error("新密码与确认密码不一致");
-        }
-
-        // 从 Security 上下文获取当前登录用户
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        if (userId == null) {
             return Result.unauthorized("请先登录");
         }
-
-        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
-
-        // 获取当前用户信息
-        User user = userService.getById(loginUser.getId());
-        if (user == null) {
-            return Result.error("用户不存在");
-        }
-
-        // 校验原密码是否正确
-        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            return Result.error("原密码不正确");
-        }
-
-        // 校验新密码不能与原密码相同
-        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
-            return Result.error("新密码不能与原密码相同");
-        }
-
-        // 更新密码
-        User updateUser = new User();
-        updateUser.setId(loginUser.getId());
-        updateUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
-
-        boolean updated = userService.updateById(updateUser);
-        if (updated) {
-            return Result.success();
-        }
-        return Result.error("密码修改失败，请稍后重试");
+        userService.changePassword(userId, request);
+        return Result.success();
     }
 }

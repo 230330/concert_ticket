@@ -6,6 +6,9 @@ import com.concert.dto.response.ConcertListResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.service.ConcertService;
 import com.concert.utils.PageUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +20,7 @@ import java.time.LocalDate;
  * @author: hzf
  * @date: 2026-04-17 15:30
  */
+@Tag(name = "演唱会", description = "演唱会搜索、推荐、详情等接口")
 @RestController
 @RequestMapping("/api/concert")
 public class ConcertController {
@@ -31,6 +35,7 @@ public class ConcertController {
      * @param size 每页条数
      * @param sort 排序方式：time-按时间，default-默认
      */
+    @Operation(summary = "热门演出列表", description = "获取热门演唱会分页列表，支持按时间或默认排序")
     @GetMapping("/hot")
     public Result<PageResponse<ConcertListResponse>> getHotConcerts(
             @RequestParam(defaultValue = "1") Integer page,
@@ -48,6 +53,7 @@ public class ConcertController {
      * @param page 页码
      * @param size 每页条数
      */
+    @Operation(summary = "即将开始演出列表", description = "获取即将开始的演唱会分页列表")
     @GetMapping("/upcoming")
     public Result<PageResponse<ConcertListResponse>> getUpcomingConcerts(
             @RequestParam(defaultValue = "1") Integer page,
@@ -69,6 +75,7 @@ public class ConcertController {
      * @param page       页码
      * @param size       每页条数
      */
+    @Operation(summary = "搜索演唱会", description = "支持关键词、城市、艺人名称、日期范围等多条件搜索")
     @GetMapping("/search")
     public Result<PageResponse<ConcertListResponse>> searchConcerts(
             @RequestParam(required = false) String keyword,
@@ -90,6 +97,7 @@ public class ConcertController {
      *
      * @param id 演唱会ID
      */
+    @Operation(summary = "演唱会详情", description = "获取演唱会详情，包含关联艺人信息和场次列表")
     @GetMapping("/{id}")
     public Result<ConcertDetailResponse> getConcertDetail(@PathVariable Long id) {
         ConcertDetailResponse response = concertService.getConcertDetail(id);

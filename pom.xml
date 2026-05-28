@@ -28,6 +28,8 @@
         <aliyun-sms.version>2.0.24</aliyun-sms.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <hutool.version>5.8.18</hutool.version>
+        <!-- 覆盖 Spring Boot Parent BOM 中的默认版本，确保 JUnit 5 测试可被发现 -->
+        <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
     </properties>
 
     <dependencies>
@@ -139,6 +141,13 @@
             <version>${hutool.version}</version>
         </dependency>
 
+        <!-- SpringDoc OpenAPI (Swagger) -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.7.0</version>
+        </dependency>
+
         <!-- Spring Boot Starter Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -177,6 +186,16 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                    <useManifestOnlyJar>false</useManifestOnlyJar>
+                    <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
                 </configuration>
             </plugin>
         </plugins>

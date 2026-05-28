@@ -2,6 +2,7 @@ package com.concert.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.concert.dto.request.CreateOrderRequest;
+import com.concert.dto.response.AdminOrderResponse;
 import com.concert.dto.response.OrderResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.Order;
@@ -79,7 +80,6 @@ public interface OrderService extends IService<Order> {
 
     /**
      * 自动完成已结束场次的订单（系统定时调用）
-     * 将演出时间已过且状态为"已支付"的订单标记为"已完成"
      */
     void completeFinishedOrders();
 
@@ -101,6 +101,7 @@ public interface OrderService extends IService<Order> {
 
     /**
      * 根据手机号查询已支付且有取票码的订单
+     *
      * @param phone 手机号
      * @return 订单列表
      */
@@ -108,8 +109,38 @@ public interface OrderService extends IService<Order> {
 
     /**
      * 核销取票码
+     *
      * @param ticketCode 取票码
      * @return 是否核销成功
      */
     boolean verifyTicketCode(String ticketCode);
+
+    // ==================== 管理端方法 ====================
+
+    /**
+     * 管理端-分页查询订单列表
+     *
+     * @param page    页码
+     * @param size    每页条数
+     * @param status  订单状态筛选
+     * @param orderNo 订单编号搜索
+     * @param userId  用户ID筛选
+     * @return 订单分页列表
+     */
+    PageResponse<AdminOrderResponse> listOrdersForAdmin(int page, int size, Integer status, String orderNo, Long userId);
+
+    /**
+     * 管理端-查询订单详情（含用户信息和座位详情）
+     *
+     * @param orderId 订单ID
+     * @return 订单详情
+     */
+    AdminOrderResponse getOrderDetailForAdmin(Long orderId);
+
+    /**
+     * 管理端-退款（不受退款时限限制）
+     *
+     * @param orderId 订单ID
+     */
+    void adminRefundOrder(Long orderId);
 }
