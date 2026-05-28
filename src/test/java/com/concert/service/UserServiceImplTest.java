@@ -28,6 +28,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -260,7 +261,7 @@ class UserServiceImplTest {
             SysRole role = new SysRole();
             role.setId(1L);
             role.setRoleCode("USER");
-            when(sysRoleService.getRolesByUserId(1L)).thenReturn(List.of(role));
+            when(sysRoleService.getRolesByUserId(1L)).thenReturn(Collections.singletonList(role));
 
             // When
             UserInfoResponse response = userService.getUserInfo(1L);
