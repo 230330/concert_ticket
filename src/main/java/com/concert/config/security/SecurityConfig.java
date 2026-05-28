@@ -1,5 +1,6 @@
 package com.concert.config.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * 安全配置类
@@ -37,6 +39,14 @@ public class SecurityConfig {
 
     @Resource
     private AccessDeniedHandlerImpl accessDeniedHandler;
+
+    /**
+     * CORS 允许的域名列表，通过环境变量 CORS_ALLOWED_ORIGINS 配置
+     * 多个域名用逗号分隔，例如：http://localhost:9528,https://concert.example.com
+     * 开发环境默认允许 localhost:9528，生产环境必须配置为实际域名
+     */
+    @Value("${cors.allowed-origins:http://localhost:9528}")
+    private String allowedOrigins;
 
     /**
      * 密码加密器
@@ -114,11 +124,16 @@ public class SecurityConfig {
 
     /**
      * CORS 配置
+     * 生产环境通过环境变量 CORS_ALLOWED_ORIGINS 指定允许的域名（逗号分隔）
+     * 例如：CORS_ALLOWED_ORIGINS=https://concert.example.com,https://admin.concert.example.com
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+
+        // 解析允许的域名列表（支持逗号分隔的多个域名）
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        configuration.setAllowedOriginPatterns(origins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.concert.mapper.OrderMapper">
+
+    <!--
+        SQL 中状态值通过 OGNL 表达式引用 OrderStatus 枚举的编译期常量，
+        避免硬编码魔法数字，与 Java 代码保持同步。
+        语法：${@全限定类名@静态字段名}
+    -->
+
+    <!-- 查询需要自动完成的订单ID（已支付，且演出场次已结束） -->
+    <select id="selectNeedCompleteOrderIds" resultType="java.lang.Long">
+        SELECT o.id FROM `order` o
+        INNER JOIN `show` s ON o.show_id = s.id
+        WHERE o.status = ${@com.concert.enums.OrderStatus@PAID_VALUE}
+          AND (s.show_time &lt; CURDATE()
+               OR (s.show_time = CURDATE() AND s.show_time &lt; CURTIME()))
+        LIMIT #{limit}
+    </select>
+
+    <!-- 验证票码：将已支付订单标记为已退款 -->
+    <update id="verifyTicketCode">
+        UPDATE `order`
+        SET status = ${@com.concert.enums.OrderStatus@REFUNDED_VALUE}, update_time = NOW()
+        WHERE pickup_code = #{pickupCode}
+          AND status = ${@com.concert.enums.OrderStatus@PAID_VALUE}
+          AND pickup_code IS NOT NULL
+    </update>
+
+    <!-- 根据手机号查询已支付且有取票码的订单 -->
+    <select id="selectPaidOrdersWithTicketCodeByPhone" resultType="com.concert.entity.Order">
+        SELECT o.* FROM `order` o
+        INNER JOIN `user` u ON o.user_id = u.id
+        WHERE u.phone = #{phone}
+          AND o.status = ${@com.concert.enums.OrderStatus@PAID_VALUE}
+          AND o.pickup_code IS NOT NULL
+        ORDER BY o.create_time DESC
+    </select>
+
+</mapper>

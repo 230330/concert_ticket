@@ -3,20 +3,20 @@ spring:
   datasource:
     # 使用 H2 内存数据库进行测试（可选）
     # 或者使用测试环境的 MySQL
-    url: jdbc:mysql://localhost:3306/concert_ticket_test?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
-    username: root
-    password: root
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/concert_ticket_test?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   redis:
-    host: localhost
-    port: 6379
-    password:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
     database: 1  # 使用不同的 Redis 数据库，避免与开发环境冲突
 
 # JWT 配置
 jwt:
-  secret: test-secret-key-for-jwt-token-generation-must-be-at-least-256-bits
+  secret: ${JWT_SECRET:test-secret-key-for-jwt-token-generation-must-be-at-least-256-bits}  # 测试环境密钥，CI 环境通过环境变量注入
   expiration: 3600000  # 1小时
 
 # 阿里云短信配置（测试环境可以使用 mock）

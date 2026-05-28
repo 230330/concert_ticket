@@ -17,6 +17,15 @@ public enum ShowStatus {
     ENDED(3, "已结束"),
     CANCELLED(4, "已取消");
 
+    /**
+     * 编译期常量，用于 MyBatis @Select/@Update 注解中引用枚举值，避免硬编码魔法数字
+     */
+    public static final int NOT_ON_SALE_VALUE = 0;
+    public static final int ON_SALE_VALUE = 1;
+    public static final int SOLD_OUT_VALUE = 2;
+    public static final int ENDED_VALUE = 3;
+    public static final int CANCELLED_VALUE = 4;
+
     @EnumValue
     @JsonValue
     private final int value;

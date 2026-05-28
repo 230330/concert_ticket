@@ -18,9 +18,9 @@ spring:
   # 数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/concert_ticket?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: 123456
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/concert_ticket?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:123456}  # 生产环境必须通过环境变量注入，默认值仅供本地开发
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -31,10 +31,10 @@ spring:
 
   # Redis 配置
   redis:
-    host: localhost
-    port: 6379
-    password:  # 如有密码请填写
-    database: 0
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}  # 如有密码请通过环境变量 REDIS_PASSWORD 注入
+    database: ${REDIS_DATABASE:0}
     timeout: 10000ms
     lettuce:
       pool:
@@ -73,8 +73,8 @@ mybatis-plus:
 
 # JWT 配置
 jwt:
-  secret: ConcertTicketSecretKey2024!@#$%^&*()_+ABCDEFGHIJKLMNOPQRSTUVWXYZ
-  expiration: 86400000  # 24小时，单位毫秒
+  secret: ${JWT_SECRET:ConcertTicketSecretKey2024!@#$%^&*()_+ABCDEFGHIJKLMNOPQRSTUVWXYZ}  # 生产环境必须通过环境变量注入，默认值仅供本地开发
+  expiration: ${JWT_EXPIRATION:86400000}  # 24小时，单位毫秒；生产环境建议缩短为 43200000（12小时）
   header: Authorization
   prefix: Bearer
 
