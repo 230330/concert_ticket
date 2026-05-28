@@ -10,6 +10,7 @@ import com.concert.enums.ShowStatus;
 import com.concert.service.*;
 import com.concert.service.concert.ConcertResponseAssembler;
 import com.concert.service.concert.ConcertSearchService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -46,6 +47,8 @@ public class ConcertSearchServiceImpl implements ConcertSearchService {
     private TicketTypeService ticketTypeService;
 
     @Override
+    @Cacheable(value = "concert:hot", key = "#page + ':' + #size + ':' + #sort",
+               unless = "#result == null || #result.total == 0")
     public PageResponse<ConcertListResponse> getHotConcerts(Integer page, Integer size, String sort) {
         Page<Concert> concertPage = new Page<>(page, size);
 
@@ -68,6 +71,8 @@ public class ConcertSearchServiceImpl implements ConcertSearchService {
     }
 
     @Override
+    @Cacheable(value = "concert:list", key = "#keyword + ':' + #city + ':' + #artistName + ':' + #startDate + ':' + #endDate + ':' + #page + ':' + #size",
+               unless = "#result == null || #result.total == 0")
     public PageResponse<ConcertListResponse> searchConcerts(String keyword, String city, String artistName,
                                                              LocalDate startDate, LocalDate endDate,
                                                              Integer page, Integer size) {

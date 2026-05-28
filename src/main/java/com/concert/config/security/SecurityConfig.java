@@ -104,7 +104,10 @@ public class SecurityConfig {
                         "/favicon.ico",
                         // 演唱会查询（公开接口）
                         "/api/concert/**",
-                        "/api/show/**"
+                        "/api/show/**",
+                        // 支付宝支付回调（支付宝服务器调用，无需认证）
+                        "/api/pay/alipay/notify",
+                        "/api/pay/alipay/return"
                 ).permitAll()
                 // 管理端接口：需要 ADMIN 角色
                 .antMatchers("/api/admin/**").hasRole("ADMIN")

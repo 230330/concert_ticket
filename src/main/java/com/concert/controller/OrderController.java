@@ -1,5 +1,6 @@
 package com.concert.controller;
 
+import com.concert.annotation.RateLimit;
 import com.concert.common.Result;
 import com.concert.dto.request.CancelOrderRequest;
 import com.concert.dto.request.CreateOrderRequest;
@@ -33,6 +34,7 @@ public class OrderController {
 
     @Operation(summary = "创建订单", description = "选择场次、票档和座位创建订单，需要登录")
     @PostMapping("/create")
+    @RateLimit(key = "order:create", count = 5, period = 60)
     public Result<OrderResponse> createOrder(@RequestBody @Validated CreateOrderRequest request) {
         Long userId = SecurityUtil.getCurrentUserId();
         if (userId == null) {
@@ -45,6 +47,7 @@ public class OrderController {
 
     @Operation(summary = "支付订单", description = "模拟支付待支付订单，支付成功后生成取票码")
     @PostMapping("/pay")
+    @RateLimit(key = "order:pay", count = 5, period = 60)
     public Result<OrderResponse> payOrder(@RequestBody @Validated PayOrderRequest request) {
         Long userId = SecurityUtil.getCurrentUserId();
         if (userId == null) {

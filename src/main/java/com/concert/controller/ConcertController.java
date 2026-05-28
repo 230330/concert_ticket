@@ -1,5 +1,6 @@
 package com.concert.controller;
 
+import com.concert.annotation.RateLimit;
 import com.concert.common.Result;
 import com.concert.dto.response.ConcertDetailResponse;
 import com.concert.dto.response.ConcertListResponse;
@@ -37,6 +38,7 @@ public class ConcertController {
      */
     @Operation(summary = "热门演出列表", description = "获取热门演唱会分页列表，支持按时间或默认排序")
     @GetMapping("/hot")
+    @RateLimit(key = "concert:hot", count = 30, period = 60, limitType = RateLimit.LimitType.IP)
     public Result<PageResponse<ConcertListResponse>> getHotConcerts(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
@@ -77,6 +79,7 @@ public class ConcertController {
      */
     @Operation(summary = "搜索演唱会", description = "支持关键词、城市、艺人名称、日期范围等多条件搜索")
     @GetMapping("/search")
+    @RateLimit(key = "concert:search", count = 20, period = 60, limitType = RateLimit.LimitType.IP)
     public Result<PageResponse<ConcertListResponse>> searchConcerts(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String city,

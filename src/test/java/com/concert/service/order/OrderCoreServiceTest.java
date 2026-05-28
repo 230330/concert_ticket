@@ -7,8 +7,10 @@ import com.concert.enums.OrderStatus;
 import com.concert.enums.ShowStatus;
 import com.concert.exception.BusinessException;
 import com.concert.exception.NotFoundException;
+import com.concert.mq.MessageProducer;
 import com.concert.service.*;
 import com.concert.service.order.impl.OrderCoreServiceImpl;
+import com.concert.utils.DistributedLock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,6 +53,12 @@ class OrderCoreServiceTest {
 
     @Mock
     private OrderQueryService orderQueryService;
+
+    @Mock
+    private DistributedLock distributedLock;
+
+    @Mock
+    private MessageProducer messageProducer;
 
     @InjectMocks
     private OrderCoreServiceImpl orderCoreService;
@@ -98,6 +106,7 @@ class OrderCoreServiceTest {
             when(seatService.listByIds(anyList())).thenReturn(Collections.singletonList(validSeat));
             when(orderService.save(any(Order.class))).thenReturn(true);
             when(orderSeatService.saveBatch(anyList())).thenReturn(true);
+            when(distributedLock.tryLockWithRetry(anyString(), anyLong(), anyInt(), anyLong())).thenReturn("mock-lock-value");
             when(ticketTypeService.update(any())).thenReturn(true);
 
             OrderResponse expectedResponse = new OrderResponse();
@@ -133,6 +142,7 @@ class OrderCoreServiceTest {
             when(seatService.listByIds(anyList())).thenReturn(Arrays.asList(validSeat, seat2));
             when(orderService.save(any(Order.class))).thenReturn(true);
             when(orderSeatService.saveBatch(anyList())).thenReturn(true);
+            when(distributedLock.tryLockWithRetry(anyString(), anyLong(), anyInt(), anyLong())).thenReturn("mock-lock-value");
             when(ticketTypeService.update(any())).thenReturn(true);
             when(orderQueryService.getOrderDetail(any())).thenReturn(new OrderResponse());
 

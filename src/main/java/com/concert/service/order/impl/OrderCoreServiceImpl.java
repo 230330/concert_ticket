@@ -11,6 +11,8 @@ import com.concert.exception.NotFoundException;
 import com.concert.service.*;
 import com.concert.service.order.OrderCoreService;
 import com.concert.service.order.OrderQueryService;
+import com.concert.mq.MessageProducer;
+import com.concert.utils.DistributedLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,6 +60,12 @@ public class OrderCoreServiceImpl implements OrderCoreService {
 
     @Resource
     private OrderQueryService orderQueryService;
+
+    @Resource
+    private DistributedLock distributedLock;
+
+    @Resource
+    private MessageProducer messageProducer;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -137,17 +145,31 @@ public class OrderCoreServiceImpl implements OrderCoreService {
             throw new BusinessException("座位已被占用，请重新选择");
         }
 
-        // 8. 更新票档库存
-        LambdaUpdateWrapper<TicketType> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(TicketType::getId, ticketType.getId())
-                .ge(TicketType::getAvailableStock, seatIds.size())
-                .setSql("available_stock = available_stock - " + seatIds.size());
-        boolean updated = ticketTypeService.update(updateWrapper);
-        if (!updated) {
-            throw new BusinessException("库存不足");
+        // 8. 更新票档库存（使用分布式锁防止并发超卖）
+        String stockLockKey = "stock:" + ticketType.getId();
+        String lockValue = distributedLock.tryLockWithRetry(stockLockKey, 10, 3, 200);
+        if (lockValue == null) {
+            throw new BusinessException("系统繁忙，请稍后再试");
+        }
+
+        try {
+            LambdaUpdateWrapper<TicketType> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(TicketType::getId, ticketType.getId())
+                    .ge(TicketType::getAvailableStock, seatIds.size())
+                    .setSql("available_stock = available_stock - " + seatIds.size());
+            boolean updated = ticketTypeService.update(updateWrapper);
+            if (!updated) {
+                throw new BusinessException("库存不足");
+            }
+        } finally {
+            distributedLock.unlock(stockLockKey, lockValue);
         }
 
         logger.info("订单创建成功，订单号：{}，用户ID：{}，座位数：{}", order.getOrderNo(), userId, seatIds.size());
+
+        // 9. 发送订单超时延迟消息（MQ实现订单自动取消）
+        long delayMs = orderExpireMinutes * 60 * 1000L;
+        messageProducer.sendOrderTimeoutMessage(order.getId(), delayMs);
 
         return orderQueryService.getOrderDetail(order.getId());
     }

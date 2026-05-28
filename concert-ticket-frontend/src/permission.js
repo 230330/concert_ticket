@@ -1,6 +1,7 @@
 import router from './router'
-import store from './store'
-import { Message } from 'element-ui'
+import { useUserStore } from '@/store/modules/user'
+import { usePermissionStore } from '@/store/modules/settings'
+import { ElMessage } from 'element-plus'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { getToken } from '@/utils/auth'
@@ -25,29 +26,31 @@ router.beforeEach(async(to, from, next) => {
       next({ path: '/' })
       NProgress.done()
     } else {
-      const hasGetUserInfo = store.getters.nickname
+      const userStore = useUserStore()
+      const hasGetUserInfo = userStore.nickname
       if (hasGetUserInfo) {
         next()
       } else {
         try {
           // 获取用户信息（含角色）
-          const { roles } = await store.dispatch('user/getInfo')
+          const { roles } = await userStore.getInfoAction()
 
           // 根据角色生成可访问的路由
-          const accessRoutes = await store.dispatch('permission/generateRoutes', roles || [])
+          const permissionStore = usePermissionStore()
+          const accessRoutes = await permissionStore.generateRoutes(roles || [])
 
-          // 动态添加路由
-          router.addRoutes(accessRoutes)
+          // 动态添加路由（Vue Router 4 使用 addRoute）
+          accessRoutes.forEach(route => {
+            router.addRoute(route)
+          })
 
-          // hack 方法，确保 addRoutes 已完成
-          // replace: true 使导航不留下历史记录
           hasRoles = true
           next({ ...to, replace: true })
         } catch (error) {
           // 移除 token 并跳转到登录页
           hasRoles = false
-          await store.dispatch('user/resetToken')
-          Message.error(error || '获取用户信息失败')
+          await userStore.resetTokenAction()
+          ElMessage.error(error || '获取用户信息失败')
           next(`/login?redirect=${to.path}`)
           NProgress.done()
         }

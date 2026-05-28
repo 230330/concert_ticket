@@ -43,6 +43,28 @@ spring:
         min-idle: 5
         max-wait: -1ms
 
+  # RabbitMQ 配置
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    # 消息确认机制
+    publisher-confirm-type: correlated   # 发布确认（异步回调）
+    publisher-returns: true              # 发布退回（消息无法路由时退回）
+    template:
+      mandatory: true                    # 消息无法路由时强制退回而非丢弃
+    # 消费者配置
+    listener:
+      simple:
+        acknowledge-mode: manual         # 手动确认
+        prefetch: 10                     # 每次预取消息数
+        retry:
+          enabled: true                  # 开启消费重试
+          max-attempts: 3                # 最大重试次数
+          initial-interval: 1000ms       # 初始重试间隔
+
   # Jackson 配置
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss #date-format 仅对 java.util.Date 类型生效，对 LocalDateTime 不生效。需配合JacksonConfig使用
@@ -86,6 +108,18 @@ aliyun:
     sign-name: ${ALIYUN_SMS_SIGN_NAME:}           # 短信签名
     template-code: ${ALIYUN_SMS_TEMPLATE_CODE:}   # 短信模板编码
     region-id: cn-hangzhou
+
+# 支付宝配置
+alipay:
+  app-id: ${ALIPAY_APP_ID:}                       # 支付宝应用ID
+  private-key: ${ALIPAY_PRIVATE_KEY:}              # 应用私钥
+  public-key: ${ALIPAY_PUBLIC_KEY:}                # 支付宝公钥
+  gateway: ${ALIPAY_GATEWAY:https://openapi.alipaydev.com/gateway.do}  # 网关地址（沙箱用 dev）
+  sign-type: RSA2                                  # 签名算法
+  charset: UTF-8
+  format: json
+  notify-url: ${ALIPAY_NOTIFY_URL:http://localhost:8090/api/pay/alipay/notify}  # 异步回调地址
+  return-url: ${ALIPAY_RETURN_URL:http://localhost:9528/#/order/my}              # 同步跳转地址
 
 # 日志配置
 logging:

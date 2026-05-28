@@ -1,27 +1,22 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 
 import 'normalize.css/normalize.css'
-
-import ElementUI from 'element-ui'
-import 'element-ui/lib/theme-chalk/index.css'
-
 import '@/styles/index.scss'
 
-import App from './App'
-import store from './store'
+import App from './App.vue'
+import { createPinia } from 'pinia'
 import router from './router'
 
 import '@/icons'
 import '@/permission'
 
-// 设置 ElementUI 为中文
-Vue.use(ElementUI)
+const app = createApp(App)
 
-Vue.config.productionTip = false
+app.use(createPinia())
+app.use(router)
+app.use(ElementPlus, { locale: zhCn })
 
-new Vue({
-  el: '#app',
-  router,
-  store,
-  render: h => h(App)
-})
+app.mount('#app')

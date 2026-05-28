@@ -22,4 +22,17 @@ public class NotificationService {
         log.info("【测试模式】向手机号 {} 发送取票码：{}", phone, pickupCode);
         // 后续对接阿里云时，再替换为真实短信发送代码
     }
+
+    /**
+     * 发送验证码短信（MQ 异步调用）
+     *
+     * @param phone 手机号
+     * @param code  验证码
+     */
+    @Async
+    public void sendVerificationCodeSms(String phone, String code) {
+        // 调用阿里云短信 SDK 发送验证码
+        // 测试阶段：仅打印日志
+        log.info("【测试模式】向手机号 {} 发送验证码：{}", phone, code);
+    }
 }

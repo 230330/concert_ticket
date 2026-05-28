@@ -1,104 +1,54 @@
+import { defineStore } from 'pinia'
 import { login, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
 
-const getDefaultState = () => {
-  return {
+export const useUserStore = defineStore('user', {
+  state: () => ({
     token: getToken(),
     phone: '',
     nickname: '',
     avatar: '',
     roles: []
-  }
-}
+  }),
 
-const state = getDefaultState()
-
-const mutations = {
-  RESET_STATE: (state) => {
-    Object.assign(state, getDefaultState())
-  },
-  SET_TOKEN: (state, token) => {
-    state.token = token
-  },
-  SET_PHONE: (state, phone) => {
-    state.phone = phone
-  },
-  SET_NICKNAME: (state, nickname) => {
-    state.nickname = nickname
-  },
-  SET_AVATAR: (state, avatar) => {
-    state.avatar = avatar
-  },
-  SET_ROLES: (state, roles) => {
-    state.roles = roles
-  }
-}
-
-const actions = {
-  // user login (phone + password)
-  login({ commit }, userInfo) {
-    const { phone, password } = userInfo
-    return new Promise((resolve, reject) => {
-      login({ phone: phone.trim(), password: password }).then(response => {
-        const { data } = response
-        // Backend returns: { token, expiresIn }
-        commit('SET_TOKEN', data.token)
-        setToken(data.token)
-        resolve()
-      }).catch(error => {
-        reject(error)
-      })
-    })
+  getters: {
+    isLoggedIn: (state) => !!state.token
   },
 
-  // get user info
-  getInfo({ commit }) {
-    return new Promise((resolve, reject) => {
-      getInfo().then(response => {
-        const { data } = response
+  actions: {
+    // 用户登录
+    async loginAction(userInfo) {
+      const { phone, password } = userInfo
+      const { data } = await login({ phone: phone.trim(), password })
+      this.token = data.token
+      setToken(data.token)
+    },
 
-        if (!data) {
-          return reject('获取用户信息失败，请重新登录。')
-        }
+    // 获取用户信息
+    async getInfoAction() {
+      const { data } = await getInfo()
+      if (!data) {
+        return Promise.reject('获取用户信息失败，请重新登录。')
+      }
+      this.phone = data.phone
+      this.nickname = data.nickname || data.phone
+      this.avatar = data.avatar || ''
+      this.roles = data.roles || []
+      return data
+    },
 
-        // Backend UserInfoResponse: { id, phone, nickname, avatar, status, roles, createTime ... }
-        const { phone, nickname, avatar, roles } = data
-
-        commit('SET_PHONE', phone)
-        commit('SET_NICKNAME', nickname || phone)
-        commit('SET_AVATAR', avatar || '')
-        commit('SET_ROLES', roles || [])
-        resolve(data)
-      }).catch(error => {
-        reject(error)
-      })
-    })
-  },
-
-  // user logout
-  logout({ commit }) {
-    return new Promise(resolve => {
+    // 用户登出
+    logoutAction() {
       removeToken()
       resetRouter()
-      commit('RESET_STATE')
-      resolve()
-    })
-  },
+      this.$reset()
+    },
 
-  // remove token
-  resetToken({ commit }) {
-    return new Promise(resolve => {
+    // 重置 Token
+    resetTokenAction() {
       removeToken()
-      commit('RESET_STATE')
-      resolve()
-    })
+      this.$reset()
+    }
   }
-}
-
-export default {
-  namespaced: true,
-  state,
-  mutations,
-  actions
-}
+})

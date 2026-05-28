@@ -10,6 +10,7 @@ import com.concert.enums.ShowStatus;
 import com.concert.service.*;
 import com.concert.service.concert.ConcertResponseAssembler;
 import com.concert.service.concert.ConcertShowService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +48,8 @@ public class ConcertShowServiceImpl implements ConcertShowService {
     private TicketTypeService ticketTypeService;
 
     @Override
+    @Cacheable(value = "show:info", key = "'upcoming:' + #page + ':' + #size",
+               unless = "#result == null || #result.total == 0")
     public PageResponse<ConcertListResponse> getUpcomingConcerts(Integer page, Integer size) {
         LocalDateTime now = LocalDateTime.now();
 

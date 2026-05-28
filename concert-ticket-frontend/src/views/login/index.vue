@@ -1,11 +1,10 @@
 <template>
   <div class="login-container">
     <el-form
-      ref="loginForm"
+      ref="loginFormRef"
       :model="loginForm"
       :rules="loginRules"
       class="login-form"
-      auto-complete="on"
       label-position="left"
     >
       <div class="title-container">
@@ -41,7 +40,7 @@
           name="password"
           tabindex="2"
           auto-complete="on"
-          @keyup.enter.native="handleLogin"
+          @keyup.enter="handleLogin"
         />
         <span class="show-pwd" @click="showPwd">
           <svg-icon
@@ -54,7 +53,7 @@
         :loading="loading"
         type="primary"
         style="width: 100%; margin-bottom: 30px"
-        @click.native.prevent="handleLogin"
+        @click.prevent="handleLogin"
         >登 录</el-button
       >
 
@@ -66,77 +65,77 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, nextTick } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useUserStore } from '@/store/modules/user'
 import { validPhone, validPassword } from '@/utils/validate'
 
-export default {
-  name: 'Login',
-  data() {
-    const validatePhone = (rule, value, callback) => {
-      if (!validPhone(value)) {
-        callback(new Error('请输入正确的手机号'))
-      } else {
-        callback()
-      }
+const router = useRouter()
+const route = useRoute()
+const userStore = useUserStore()
+
+const loginForm = ref({
+  phone: '',
+  password: ''
+})
+
+const loginRules = ref({
+  phone: [{ required: true, trigger: 'blur', validator: validatePhone }],
+  password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+})
+
+const loading = ref(false)
+const passwordType = ref('password')
+const redirect = ref(undefined)
+const loginFormRef = ref(null)
+
+watch(() => route, (newRoute) => {
+  redirect.value = newRoute.query && newRoute.query.redirect
+}, { immediate: true })
+
+function validatePhone(rule, value, callback) {
+  if (!validPhone(value)) {
+    callback(new Error('请输入正确的手机号'))
+  } else {
+    callback()
+  }
+}
+
+function validatePassword(rule, value, callback) {
+  if (!validPassword(value)) {
+    callback(new Error('密码需8-20位，且必须包含字母和数字'))
+  } else {
+    callback()
+  }
+}
+
+function showPwd() {
+  passwordType.value = passwordType.value === 'password' ? '' : 'password'
+  nextTick(() => {
+    passwordInput.value.focus()
+  })
+}
+
+const passwordInput = ref(null)
+
+function handleLogin() {
+  loginFormRef.value.validate((valid) => {
+    if (valid) {
+      loading.value = true
+      userStore.loginAction(loginForm.value)
+        .then(() => {
+          router.push({ path: redirect.value || '/' })
+          loading.value = false
+        })
+        .catch(() => {
+          loading.value = false
+        })
+    } else {
+      console.log('表单验证失败')
+      return false
     }
-    const validatePassword = (rule, value, callback) => {
-      if (!validPassword(value)) {
-        callback(new Error('密码需8-20位，且必须包含字母和数字'))
-      } else {
-        callback()
-      }
-    }
-    return {
-      loginForm: {
-        phone: '',
-        password: '',
-      },
-      loginRules: {
-        phone: [{ required: true, trigger: 'blur', validator: validatePhone }],
-        password: [
-          { required: true, trigger: 'blur', validator: validatePassword },
-        ],
-      },
-      loading: false,
-      passwordType: 'password',
-      redirect: undefined,
-    }
-  },
-  watch: {
-    $route: {
-      handler: function (route) {
-        this.redirect = route.query && route.query.redirect
-      },
-      immediate: true,
-    },
-  },
-  methods: {
-    showPwd() {
-      this.passwordType = this.passwordType === 'password' ? '' : 'password'
-      this.$nextTick(() => {
-        this.$refs.password.focus()
-      })
-    },
-    handleLogin() {
-      this.$refs.loginForm.validate((valid) => {
-        if (valid) {
-          this.loading = true
-          this.$store
-            .dispatch('user/login', this.loginForm)
-            .then(() => {
-              this.$router.push({ path: this.redirect || '/' })
-              this.loading = false
-            })
-            .catch(() => {
-              this.loading = false
-            })
-        } else {
-          console.log('表单验证失败')
-          return false
-        }
-      })
-    },
-  },
+  })
 }
 </script>
 
