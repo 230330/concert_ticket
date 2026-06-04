@@ -18,10 +18,10 @@
         LIMIT #{limit}
     </select>
 
-    <!-- 验证票码：将已支付订单标记为已退款 -->
+    <!-- 核销取票码：将已支付订单标记为已完成 -->
     <update id="verifyTicketCode">
         UPDATE `order`
-        SET status = ${@com.concert.enums.OrderStatus@REFUNDED_VALUE}, update_time = NOW()
+        SET status = ${@com.concert.enums.OrderStatus@COMPLETED_VALUE}, update_time = NOW()
         WHERE pickup_code = #{pickupCode}
           AND status = ${@com.concert.enums.OrderStatus@PAID_VALUE}
           AND pickup_code IS NOT NULL
@@ -35,6 +35,15 @@
           AND o.status = ${@com.concert.enums.OrderStatus@PAID_VALUE}
           AND o.pickup_code IS NOT NULL
         ORDER BY o.create_time DESC
+    </select>
+
+    <!-- 按订单状态聚合求和金额 -->
+    <select id="sumAmountByStatuses" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(total_amount), 0) FROM `order`
+        WHERE status IN
+        <foreach collection="statuses" item="status" open="(" separator="," close=")">
+            #{status}
+        </foreach>
     </select>
 
 </mapper>

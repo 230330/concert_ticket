@@ -48,9 +48,9 @@ public class ConcertServiceImpl extends ServiceImpl<ConcertMapper, Concert> impl
 
     @Override
     public PageResponse<ConcertListResponse> searchConcerts(String keyword, String city, String artistName,
-                                                             LocalDate startDate, LocalDate endDate,
+                                                             LocalDate startDate, LocalDate endDate, String sort,
                                                              Integer page, Integer size) {
-        return concertSearchService.searchConcerts(keyword, city, artistName, startDate, endDate, page, size);
+        return concertSearchService.searchConcerts(keyword, city, artistName, startDate, endDate, sort, page, size);
     }
 
     @Override

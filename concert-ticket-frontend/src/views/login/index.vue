@@ -1,67 +1,64 @@
 <template>
   <div class="login-container">
-    <el-form
-      ref="loginFormRef"
-      :model="loginForm"
-      :rules="loginRules"
-      class="login-form"
-      label-position="left"
-    >
-      <div class="title-container">
-        <h3 class="title">演唱会售票系统</h3>
+    <div class="login-bg">
+      <div class="bg-pattern"></div>
+    </div>
+    <div class="login-card">
+      <div class="login-header">
+        <div class="logo-icon"><i class="el-icon-headset"></i></div>
+        <h2 class="login-title">演唱会售票系统</h2>
+        <p class="login-subtitle">精彩演出，触手可及</p>
       </div>
 
-      <el-form-item prop="phone">
-        <span class="svg-container">
-          <svg-icon icon-class="user" />
-        </span>
-        <el-input
-          ref="phone"
-          v-model="loginForm.phone"
-          placeholder="请输入手机号"
-          name="phone"
-          type="text"
-          tabindex="1"
-          auto-complete="on"
-          maxlength="11"
-        />
-      </el-form-item>
-
-      <el-form-item prop="password">
-        <span class="svg-container">
-          <svg-icon icon-class="password" />
-        </span>
-        <el-input
-          :key="passwordType"
-          ref="password"
-          v-model="loginForm.password"
-          :type="passwordType"
-          placeholder="请输入密码"
-          name="password"
-          tabindex="2"
-          auto-complete="on"
-          @keyup.enter="handleLogin"
-        />
-        <span class="show-pwd" @click="showPwd">
-          <svg-icon
-            :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'"
-          />
-        </span>
-      </el-form-item>
-
-      <el-button
-        :loading="loading"
-        type="primary"
-        style="width: 100%; margin-bottom: 30px"
-        @click.prevent="handleLogin"
-        >登 录</el-button
+      <el-form
+        ref="loginFormRef"
+        :model="loginForm"
+        :rules="loginRules"
+        class="login-form"
+        label-position="top"
       >
+        <el-form-item prop="phone" label="手机号">
+          <el-input
+            ref="phone"
+            v-model="loginForm.phone"
+            placeholder="请输入手机号"
+            name="phone"
+            type="text"
+            tabindex="1"
+            maxlength="11"
+            prefix-icon="el-icon-mobile-phone"
+            clearable
+          />
+        </el-form-item>
 
-      <div class="tips">
-        <span>没有账号？<el-link type="primary" @click="$router.push('/register')">立即注册</el-link></span>
-        <span style="margin-left: 16px"><el-link type="info" @click="$router.push('/forgot-password')">忘记密码？</el-link></span>
-      </div>
-    </el-form>
+        <el-form-item prop="password" label="密码">
+          <el-input
+            ref="password"
+            v-model="loginForm.password"
+            :type="passwordType"
+            placeholder="请输入密码"
+            name="password"
+            tabindex="2"
+            prefix-icon="el-icon-lock"
+            @keyup.enter.native="handleLogin"
+          >
+            <i slot="suffix" class="el-icon-view toggle-pwd" @click="showPwd"></i>
+          </el-input>
+        </el-form-item>
+
+        <el-button
+          :loading="loading"
+          type="primary"
+          class="login-btn"
+          @click.prevent="handleLogin"
+        >登 录</el-button>
+
+        <div class="login-footer">
+          <span>没有账号？<el-link type="primary" @click="$router.push('/register')">立即注册</el-link></span>
+          <el-link type="info" @click="$router.push('/forgot-password')">忘记密码？</el-link>
+        </div>
+      </el-form>
+    </div>
   </div>
 </template>
 
@@ -139,112 +136,145 @@ function handleLogin() {
 }
 </script>
 
-<style lang="scss">
-/* 修复input 背景不协调 和光标变色 */
-$bg: #283443;
-$light_gray: #fff;
-$cursor: #fff;
-
-@supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
-  .login-container .el-input input {
-    color: $cursor;
-  }
-}
-
-/* reset element-ui css */
-.login-container {
-  .el-input {
-    display: inline-block;
-    height: 47px;
-    width: 85%;
-
-    input {
-      background: transparent;
-      border: 0px;
-      -webkit-appearance: none;
-      border-radius: 0px;
-      padding: 12px 5px 12px 15px;
-      color: $light_gray;
-      height: 47px;
-      caret-color: $cursor;
-
-      &:-webkit-autofill {
-        box-shadow: 0 0 0px 1000px $bg inset !important;
-        -webkit-text-fill-color: $cursor !important;
-      }
-    }
-  }
-
-  .el-form-item {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    color: #454545;
-  }
-}
-</style>
-
 <style lang="scss" scoped>
-$bg: #2d3a4b;
-$dark_gray: #889aa4;
-$light_gray: #eee;
-
 .login-container {
-  min-height: 100%;
+  min-height: 100vh;
   width: 100%;
-  background-color: $bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
   overflow: hidden;
+}
 
-  .login-form {
-    position: relative;
-    width: 520px;
-    max-width: 100%;
-    padding: 160px 35px 0;
-    margin: 0 auto;
-    overflow: hidden;
+.login-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  z-index: 0;
+
+  .bg-pattern {
+    width: 100%;
+    height: 100%;
+    opacity: 0.08;
+    background-image: radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px),
+      radial-gradient(circle at 80% 20%, #fff 1px, transparent 1px),
+      radial-gradient(circle at 60% 80%, #fff 1px, transparent 1px);
+    background-size: 60px 60px, 80px 80px, 100px 100px;
+  }
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  width: 420px;
+  max-width: 90vw;
+  background: #fff;
+  border-radius: 20px;
+  padding: 48px 36px 36px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 36px;
+
+  .logo-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+
+    i {
+      font-size: 32px;
+      color: #fff;
+    }
   }
 
-  .tips {
+  .login-title {
+    font-size: 24px;
+    color: #303133;
+    margin: 0 0 8px 0;
+    font-weight: bold;
+  }
+
+  .login-subtitle {
     font-size: 14px;
-    color: #fff;
-    margin-bottom: 10px;
-    text-align: center;
+    color: #909399;
+    margin: 0;
+  }
+}
 
-    span {
-      &:first-of-type {
-        margin-right: 16px;
-      }
+.login-form {
+  :deep(.el-form-item__label) {
+    font-weight: 500;
+    color: #606266;
+  }
+
+  :deep(.el-input__inner) {
+    height: 44px;
+    border-radius: 10px;
+    border-color: #dcdfe6;
+
+    &:focus {
+      border-color: #667eea;
     }
   }
 
-  .svg-container {
-    padding: 6px 5px 6px 15px;
-    color: $dark_gray;
-    vertical-align: middle;
-    width: 30px;
-    display: inline-block;
+  :deep(.el-input__prefix) {
+    left: 10px;
   }
 
-  .title-container {
-    position: relative;
-
-    .title {
-      font-size: 26px;
-      color: $light_gray;
-      margin: 0px auto 40px auto;
-      text-align: center;
-      font-weight: bold;
-    }
-  }
-
-  .show-pwd {
-    position: absolute;
-    right: 10px;
-    top: 7px;
-    font-size: 16px;
-    color: $dark_gray;
+  .toggle-pwd {
     cursor: pointer;
-    user-select: none;
+    padding: 0 10px;
+    line-height: 44px;
   }
+}
+
+.login-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 10px;
+  font-size: 16px;
+  margin-top: 8px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.login-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #909399;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 32px 24px 24px;
+    border-radius: 16px;
+  }
+
+  .login-header .logo-icon {
+    width: 52px;
+    height: 52px;
+
+    i { font-size: 26px; }
+  }
+
+  .login-header .login-title { font-size: 20px; }
 }
 </style>

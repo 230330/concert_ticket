@@ -179,6 +179,12 @@ export const asyncRoutes = [
         meta: { title: '票种管理' }
       },
       {
+        path: 'ticket-verify',
+        name: 'AdminTicketVerify',
+        component: () => import('@/views/admin/ticket/verify.vue'),
+        meta: { title: '取票核销' }
+      },
+      {
         path: 'order',
         name: 'AdminOrder',
         component: () => import('@/views/admin/order/index.vue'),

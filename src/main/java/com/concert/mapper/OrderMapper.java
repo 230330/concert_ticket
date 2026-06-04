@@ -5,6 +5,7 @@ import com.concert.entity.Order;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -38,4 +39,11 @@ public interface OrderMapper extends BaseMapper<Order> {
      * @return 订单列表
      */
     List<Order> selectPaidOrdersWithTicketCodeByPhone(@Param("phone") String phone);
+
+    /**
+     * 按订单状态聚合求和金额
+     * @param statuses 状态值数组
+     * @return 金额总和
+     */
+    BigDecimal sumAmountByStatuses(@Param("statuses") int[] statuses);
 }

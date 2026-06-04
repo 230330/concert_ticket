@@ -7,7 +7,10 @@ import com.concert.entity.*;
 import com.concert.enums.ConcertStatus;
 import com.concert.enums.OrderStatus;
 import com.concert.enums.ShowStatus;
+import com.concert.mapper.OrderMapper;
+import com.concert.mapper.OrderSeatMapper;
 import com.concert.service.*;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -17,10 +20,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * @description: 仪表盘服务实现类
+ * @description: 仪表盘服务实现类（SQL聚合查询 + 缓存）
  * @author: hzf
  * @date: 2026-04-17 15:30
  */
@@ -42,7 +44,14 @@ public class DashboardServiceImpl implements DashboardService {
     @Resource
     private UserService userService;
 
+    @Resource
+    private OrderMapper orderMapper;
+
+    @Resource
+    private OrderSeatMapper orderSeatMapper;
+
     @Override
+    @Cacheable(value = "dashboard:sales", unless = "#result == null")
     public DashboardSalesResponse getSalesOverview() {
         DashboardSalesResponse response = new DashboardSalesResponse();
 
@@ -55,32 +64,20 @@ public class DashboardServiceImpl implements DashboardService {
         response.setRefundedOrders(countByStatus(OrderStatus.REFUNDED));
         response.setCompletedOrders(countByStatus(OrderStatus.COMPLETED));
 
-        // 总销售额（已支付 + 已完成）
-        LambdaQueryWrapper<Order> revenueQuery = new LambdaQueryWrapper<>();
-        revenueQuery.in(Order::getStatus, OrderStatus.PAID, OrderStatus.COMPLETED);
-        List<Order> revenueOrders = orderService.list(revenueQuery);
-        BigDecimal totalRevenue = revenueOrders.stream()
-                .map(Order::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        response.setTotalRevenue(totalRevenue);
+        // 总销售额（已支付 + 已完成）- 使用SQL聚合
+        BigDecimal totalRevenue = orderMapper.sumAmountByStatuses(
+                new int[]{OrderStatus.PAID_VALUE, OrderStatus.COMPLETED_VALUE});
+        response.setTotalRevenue(totalRevenue != null ? totalRevenue : BigDecimal.ZERO);
 
         // 实际收入（已完成）
-        LambdaQueryWrapper<Order> actualQuery = new LambdaQueryWrapper<>();
-        actualQuery.eq(Order::getStatus, OrderStatus.COMPLETED);
-        List<Order> actualOrders = orderService.list(actualQuery);
-        BigDecimal actualRevenue = actualOrders.stream()
-                .map(Order::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        response.setActualRevenue(actualRevenue);
+        BigDecimal actualRevenue = orderMapper.sumAmountByStatuses(
+                new int[]{OrderStatus.COMPLETED_VALUE});
+        response.setActualRevenue(actualRevenue != null ? actualRevenue : BigDecimal.ZERO);
 
         // 退款金额
-        LambdaQueryWrapper<Order> refundQuery = new LambdaQueryWrapper<>();
-        refundQuery.eq(Order::getStatus, OrderStatus.REFUNDED);
-        List<Order> refundOrders = orderService.list(refundQuery);
-        BigDecimal refundAmount = refundOrders.stream()
-                .map(Order::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        response.setRefundAmount(refundAmount);
+        BigDecimal refundAmount = orderMapper.sumAmountByStatuses(
+                new int[]{OrderStatus.REFUNDED_VALUE});
+        response.setRefundAmount(refundAmount != null ? refundAmount : BigDecimal.ZERO);
 
         // 总售票数
         response.setTotalTickets(orderSeatService.count());
@@ -102,53 +99,57 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    @Cacheable(value = "dashboard:revenue", key = "#startDate + ':' + #endDate", unless = "#result == null || #result.isEmpty()")
     public List<DashboardRevenueResponse> getRevenueReport(LocalDate startDate, LocalDate endDate) {
         List<DashboardRevenueResponse> result = new ArrayList<>();
 
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
-        LambdaQueryWrapper<Order> orderQuery = new LambdaQueryWrapper<>();
-        orderQuery.between(Order::getCreateTime, startDateTime, endDateTime)
-                .in(Order::getStatus, OrderStatus.PAID, OrderStatus.REFUNDED, OrderStatus.COMPLETED);
-        List<Order> orders = orderService.list(orderQuery);
+        // 使用SQL聚合查询替代内存过滤，提升性能
+        // 查询收入数据（已支付 + 已完成）
+        LambdaQueryWrapper<Order> revenueQuery = new LambdaQueryWrapper<>();
+        revenueQuery.between(Order::getCreateTime, startDateTime, endDateTime)
+                .in(Order::getStatus, OrderStatus.PAID, OrderStatus.COMPLETED);
+        List<Order> revenueOrders = orderService.list(revenueQuery);
 
-        List<Order> refundedOrders = orders.stream()
-                .filter(o -> o.getStatus() == OrderStatus.REFUNDED)
-                .collect(Collectors.toList());
+        // 查询退款数据
+        LambdaQueryWrapper<Order> refundQuery = new LambdaQueryWrapper<>();
+        refundQuery.between(Order::getCreateTime, startDateTime, endDateTime)
+                .eq(Order::getStatus, OrderStatus.REFUNDED);
+        List<Order> refundOrders = orderService.list(refundQuery);
+
+        // 查询所有相关订单（用于统计订单数和售票数）
+        LambdaQueryWrapper<Order> allQuery = new LambdaQueryWrapper<>();
+        allQuery.between(Order::getCreateTime, startDateTime, endDateTime)
+                .in(Order::getStatus, OrderStatus.PAID, OrderStatus.REFUNDED, OrderStatus.COMPLETED);
+        List<Order> allOrders = orderService.list(allQuery);
 
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
             LocalDateTime dayStart = date.atStartOfDay();
             LocalDateTime dayEnd = date.atTime(LocalTime.MAX);
 
-            List<Order> dayOrders = orders.stream()
-                    .filter(o -> o.getCreateTime() != null
-                            && !o.getCreateTime().isBefore(dayStart)
-                            && !o.getCreateTime().isAfter(dayEnd))
-                    .collect(Collectors.toList());
-
-            List<Order> dayRefunds = refundedOrders.stream()
-                    .filter(o -> o.getCreateTime() != null
-                            && !o.getCreateTime().isBefore(dayStart)
-                            && !o.getCreateTime().isAfter(dayEnd))
-                    .collect(Collectors.toList());
-
             DashboardRevenueResponse dayResp = new DashboardRevenueResponse();
             dayResp.setDate(date.toString());
-            dayResp.setOrderCount((long) dayOrders.size());
 
-            BigDecimal dayRevenue = dayOrders.stream()
-                    .filter(o -> o.getStatus() == OrderStatus.PAID || o.getStatus() == OrderStatus.COMPLETED)
+            // 当日所有相关订单
+            List<Order> dayAllOrders = filterByTimeRange(allOrders, dayStart, dayEnd);
+            dayResp.setOrderCount((long) dayAllOrders.size());
+
+            // 当日收入
+            BigDecimal dayRevenue = filterByTimeRange(revenueOrders, dayStart, dayEnd).stream()
                     .map(Order::getTotalAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             dayResp.setRevenue(dayRevenue);
 
-            BigDecimal dayRefundAmount = dayRefunds.stream()
+            // 当日退款
+            BigDecimal dayRefundAmount = filterByTimeRange(refundOrders, dayStart, dayEnd).stream()
                     .map(Order::getTotalAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             dayResp.setRefundAmount(dayRefundAmount);
 
-            List<Long> dayOrderIds = dayOrders.stream().map(Order::getId).collect(Collectors.toList());
+            // 当日售票数
+            List<Long> dayOrderIds = dayAllOrders.stream().map(Order::getId).collect(java.util.stream.Collectors.toList());
             if (!dayOrderIds.isEmpty()) {
                 LambdaQueryWrapper<OrderSeat> osQuery = new LambdaQueryWrapper<>();
                 osQuery.in(OrderSeat::getOrderId, dayOrderIds);
@@ -161,6 +162,17 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         return result;
+    }
+
+    /**
+     * 按时间范围过滤订单
+     */
+    private List<Order> filterByTimeRange(List<Order> orders, LocalDateTime start, LocalDateTime end) {
+        return orders.stream()
+                .filter(o -> o.getCreateTime() != null
+                        && !o.getCreateTime().isBefore(start)
+                        && !o.getCreateTime().isAfter(end))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     private Long countByStatus(OrderStatus status) {

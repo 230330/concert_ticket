@@ -10,8 +10,6 @@
 </template>
 
 <script>
-import pathToRegexp from 'path-to-regexp'
-
 export default {
   data() {
     return {
@@ -28,7 +26,6 @@ export default {
   },
   methods: {
     getBreadcrumb() {
-      // only show routes with meta.title
       let matched = this.$route.matched.filter(item => item.meta && item.meta.title)
       const first = matched[0]
 
@@ -46,10 +43,8 @@ export default {
       return name.trim().toLocaleLowerCase() === 'Dashboard'.toLocaleLowerCase()
     },
     pathCompile(path) {
-      // To solve this problem https://github.com/PanJiaChen/vue-element-admin/issues/561
       const { params } = this.$route
-      var toPath = pathToRegexp.compile(path)
-      return toPath(params)
+      return path.replace(/:(\w+)/g, (_, key) => params[key] || '')
     },
     handleLink(item) {
       const { redirect, path } = item

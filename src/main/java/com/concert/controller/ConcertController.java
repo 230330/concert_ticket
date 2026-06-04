@@ -77,7 +77,7 @@ public class ConcertController {
      * @param page       页码
      * @param size       每页条数
      */
-    @Operation(summary = "搜索演唱会", description = "支持关键词、城市、艺人名称、日期范围等多条件搜索")
+    @Operation(summary = "搜索演唱会", description = "支持关键词、城市、艺人名称、日期范围等多条件搜索，支持排序")
     @GetMapping("/search")
     @RateLimit(key = "concert:search", count = 20, period = 60, limitType = RateLimit.LimitType.IP)
     public Result<PageResponse<ConcertListResponse>> searchConcerts(
@@ -86,12 +86,13 @@ public class ConcertController {
             @RequestParam(required = false) String artistName,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+            @RequestParam(defaultValue = "default") String sort,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
 
         int[] params = PageUtil.validate(page, size);
         PageResponse<ConcertListResponse> pageResponse = concertService.searchConcerts(
-                keyword, city, artistName, startDate, endDate, params[0], params[1]);
+                keyword, city, artistName, startDate, endDate, sort, params[0], params[1]);
         return Result.success(pageResponse);
     }
 

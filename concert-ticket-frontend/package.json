@@ -9,11 +9,13 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
+    "@vue/shared": "^3.5.35",
     "axios": "^1.6.0",
     "element-plus": "^2.4.0",
     "js-cookie": "^3.0.5",
     "normalize.css": "^8.0.1",
     "nprogress": "^0.2.0",
+    "path-to-regexp": "^8.4.2",
     "pinia": "^2.1.7",
     "vue": "^3.3.8",
     "vue-router": "^4.2.5"

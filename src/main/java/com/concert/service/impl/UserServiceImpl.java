@@ -26,6 +26,7 @@ import com.concert.service.UserService;
 import com.concert.utils.JwtUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -39,16 +40,34 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * @description:    用户服务实现类
+ * @description: 用户服务实现类（登录限频 + 注册限频 + 设备记录）
  * @author: hzf
  * @date: 2026-04-17 15:30
  */
-
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
+    /** 登录失败次数缓存key前缀 */
+    private static final String LOGIN_FAIL_PREFIX = "login:fail:";
+
+    /** 注册频率限制缓存key前缀 */
+    private static final String REGISTER_LIMIT_PREFIX = "register:limit:";
+
+    /** SMS发送频率限制缓存key前缀 */
+    private static final String SMS_LIMIT_PREFIX = "sms:limit:";
+
+    /** 最大登录失败次数 */
+    private static final int MAX_LOGIN_FAIL_COUNT = 5;
+
+    /** 登录锁定时间（分钟） */
+    private static final int LOGIN_LOCK_MINUTES = 15;
+
+    /** 同一手机号每日SMS上限 */
+    private static final int SMS_DAILY_LIMIT = 5;
 
     @Resource
     private SysRoleService sysRoleService;
@@ -67,6 +86,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Resource
     private JwtUtil jwtUtil;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Value("${jwt.expiration}")
     private Long jwtExpiration;
@@ -103,29 +125,61 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        // 1. 使用 AuthenticationManager 进行认证
+        String phone = request.getPhone();
+
+        // 1. 检查登录失败次数限制
+        String failKey = LOGIN_FAIL_PREFIX + phone;
+        String failCountStr = stringRedisTemplate.opsForValue().get(failKey);
+        if (failCountStr != null) {
+            int failCount = Integer.parseInt(failCountStr);
+            if (failCount >= MAX_LOGIN_FAIL_COUNT) {
+                Long ttl = stringRedisTemplate.getExpire(failKey, TimeUnit.SECONDS);
+                long remainMinutes = ttl != null ? (ttl / 60 + 1) : LOGIN_LOCK_MINUTES;
+                throw new BusinessException("登录失败次数过多，账号已被锁定" + remainMinutes + "分钟，请稍后重试");
+            }
+        }
+
+        // 2. 使用 AuthenticationManager 进行认证
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(request.getPhone(), request.getPassword());
+                new UsernamePasswordAuthenticationToken(phone, request.getPassword());
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(authenticationToken);
         } catch (BadCredentialsException e) {
+            // 记录登录失败次数
+            incrementLoginFailCount(phone);
             throw new BusinessException("用户名或密码错误");
         } catch (DisabledException e) {
             throw new BusinessException("账号已被禁用");
         } catch (AuthenticationException e) {
+            incrementLoginFailCount(phone);
             throw new BusinessException("认证失败，请重新登录");
         }
 
-        // 2. 认证成功，获取用户信息
+        // 3. 认证成功，清除失败计数
+        stringRedisTemplate.delete(failKey);
+
+        // 4. 获取用户信息
         com.concert.config.security.LoginUser loginUser =
                 (com.concert.config.security.LoginUser) authentication.getPrincipal();
 
-        // 3. 生成 JWT Token
+        // 5. 生成 JWT Token
         String token = jwtUtil.generateToken(loginUser.getId(), loginUser.getPhone());
 
-        // 4. 返回登录响应
+        // 6. 返回登录响应
         return new LoginResponse(token, jwtExpiration);
+    }
+
+    /**
+     * 递增登录失败次数
+     */
+    private void incrementLoginFailCount(String phone) {
+        String failKey = LOGIN_FAIL_PREFIX + phone;
+        Long count = stringRedisTemplate.opsForValue().increment(failKey);
+        if (count != null && count == 1) {
+            // 第一次失败，设置过期时间
+            stringRedisTemplate.expire(failKey, LOGIN_LOCK_MINUTES, TimeUnit.MINUTES);
+        }
     }
 
     @Override

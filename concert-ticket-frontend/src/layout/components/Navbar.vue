@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { useAppStore, useUserStore } from '@/store'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 
@@ -40,25 +40,27 @@ export default {
     Hamburger
   },
   computed: {
-    ...mapGetters([
-      'sidebar',
-      'avatar',
-      'nickname'
-    ]),
+    sidebar() {
+      return useAppStore().sidebar
+    },
+    avatar() {
+      return useUserStore().avatar
+    },
+    nickname() {
+      return useUserStore().nickname
+    },
     avatarUrl() {
       if (!this.avatar) return ''
-      // 如果是完整URL直接返回
       if (this.avatar.startsWith('http')) return this.avatar
-      // 相对路径拼接后端地址
       return process.env.VUE_APP_BASE_API + this.avatar
     }
   },
   methods: {
     toggleSideBar() {
-      this.$store.dispatch('app/toggleSideBar')
+      useAppStore().toggleSideBar()
     },
     async logout() {
-      await this.$store.dispatch('user/logout')
+      await useUserStore().logoutAction()
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     }
   }

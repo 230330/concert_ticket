@@ -35,6 +35,6 @@ public interface ConcertSearchService {
      * @return 分页响应
      */
     PageResponse<ConcertListResponse> searchConcerts(String keyword, String city, String artistName,
-                                                      LocalDate startDate, LocalDate endDate,
+                                                      LocalDate startDate, LocalDate endDate, String sort,
                                                       Integer page, Integer size);
 }

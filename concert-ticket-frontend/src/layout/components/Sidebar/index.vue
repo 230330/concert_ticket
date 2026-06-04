@@ -19,38 +19,38 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { useAppStore, useSettingsStore, usePermissionStore } from '@/store'
 import Logo from './Logo'
 import SidebarItem from './SidebarItem'
-import variables from '@/styles/variables.scss'
+
+const variables = {
+  menuBg: '#304156',
+  menuText: '#bfcbd9',
+  menuActiveText: '#409EFF'
+}
 
 export default {
   components: { SidebarItem, Logo },
   computed: {
-    ...mapGetters([
-      'sidebar',
-      'permission_routes'
-    ]),
     routes() {
-      return this.permission_routes
+      return usePermissionStore().routes
     },
     activeMenu() {
       const route = this.$route
       const { meta, path } = route
-      // if set path, the sidebar will highlight the path you set
       if (meta.activeMenu) {
         return meta.activeMenu
       }
       return path
     },
     showLogo() {
-      return this.$store.state.settings.sidebarLogo
+      return useSettingsStore().sidebarLogo
     },
     variables() {
       return variables
     },
     isCollapse() {
-      return !this.sidebar.opened
+      return !useAppStore().sidebar.opened
     }
   }
 }

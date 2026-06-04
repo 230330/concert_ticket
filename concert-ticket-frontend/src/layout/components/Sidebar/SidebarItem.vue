@@ -25,11 +25,16 @@
 </template>
 
 <script>
-import path from 'path'
 import { isExternal } from '@/utils/validate'
 import Item from './Item'
 import AppLink from './Link'
 import FixiOSBug from './FixiOSBug'
+
+function resolvePath(basePath, routePath) {
+  if (routePath.startsWith('/')) return routePath
+  if (basePath.endsWith('/')) return basePath + routePath
+  return basePath + '/' + routePath
+}
 
 export default {
   name: 'SidebarItem',
@@ -88,7 +93,7 @@ export default {
       if (isExternal(this.basePath)) {
         return this.basePath
       }
-      return path.resolve(this.basePath, routePath)
+      return resolvePath(this.basePath, routePath)
     }
   }
 }

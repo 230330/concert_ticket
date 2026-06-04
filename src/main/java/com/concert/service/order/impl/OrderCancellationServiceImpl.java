@@ -16,6 +16,7 @@ import com.concert.mapper.TicketTypeMapper;
 import com.concert.service.*;
 import com.concert.service.order.OrderCancellationService;
 import com.concert.service.order.OrderQueryService;
+import com.concert.utils.DistributedLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +31,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * @description: 订单取消退款服务实现
+ * @description: 订单取消退款服务实现（分布式锁保护库存回滚 + 批量优化）
  * @author: hzf
  * @date: 2026-04-17 15:30
  */
@@ -66,6 +67,12 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
     @Resource
     private OrderMapper orderMapper;
 
+    @Resource
+    private DistributedLock distributedLock;
+
+    @Resource
+    private RedisStockService redisStockService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancelOrder(Long userId, Long orderId) {
@@ -82,7 +89,7 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
             throw new BusinessException("订单状态异常，无法取消");
         }
 
-        doCancel(order);
+        doCancelWithLock(order);
         logger.info("订单取消成功，订单号：{}，用户ID：{}", order.getOrderNo(), userId);
     }
 
@@ -94,7 +101,7 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
             return;
         }
 
-        doCancel(order);
+        doCancelWithLock(order);
         logger.info("过期订单自动取消，订单号：{}", order.getOrderNo());
     }
 
@@ -125,7 +132,7 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
             throw new BusinessException("已超过退款截止时间（演出前" + refundBeforeHours + "小时），无法退款");
         }
 
-        doRefund(order);
+        doRefundWithLock(order);
 
         logger.info("订单退款成功，订单号：{}，用户ID：{}，退款金额：{}", order.getOrderNo(), userId, order.getTotalAmount());
         return orderQueryService.getOrderDetail(orderId);
@@ -144,7 +151,7 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
             throw new BusinessException("订单状态异常，无法退款");
         }
 
-        doRefund(order);
+        doRefundWithLock(order);
         logger.info("管理员退款成功，订单号：{}", order.getOrderNo());
     }
 
@@ -171,17 +178,24 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
                 .in(OrderSeat::getOrderId, validOrderIds));
         logger.debug("批量取消订单：删除 order_seat 记录 {} 条", deletedSeats);
 
-        // 回滚库存
+        // 回滚库存（带分布式锁保护）
         Map<Long, Integer> rollbackMap = new HashMap<>();
         for (Order order : orders) {
             int seatCount = order.getSeatInfo().split(",").length;
             rollbackMap.merge(order.getTicketTypeId(), seatCount, Integer::sum);
         }
         for (Map.Entry<Long, Integer> entry : rollbackMap.entrySet()) {
+            // 数据库回滚
             ticketTypeMapper.updateSoldStockDecrement(entry.getKey(), entry.getValue());
+            // Redis库存回滚
+            try {
+                redisStockService.rollbackStock(entry.getKey(), entry.getValue());
+            } catch (Exception e) {
+                logger.warn("批量取消时Redis库存回滚失败，ticketTypeId={}", entry.getKey(), e);
+            }
         }
 
-        // 更新订单状态
+        // 批量更新订单状态
         int updated = orderMapper.update(null, new LambdaUpdateWrapper<Order>()
                 .in(Order::getId, validOrderIds)
                 .set(Order::getStatus, OrderStatus.CANCELLED)
@@ -256,9 +270,9 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
     }
 
     /**
-     * 执行取消订单逻辑：回滚库存 + 释放座位 + 更新状态
+     * 带分布式锁保护的取消订单逻辑
      */
-    private void doCancel(Order order) {
+    private void doCancelWithLock(Order order) {
         LambdaQueryWrapper<OrderSeat> osQuery = new LambdaQueryWrapper<>();
         osQuery.eq(OrderSeat::getOrderId, order.getId());
         List<OrderSeat> orderSeats = orderSeatService.list(osQuery);
@@ -268,10 +282,30 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
                     .collect(Collectors.groupingBy(OrderSeat::getTicketTypeId, Collectors.counting()));
 
             for (Map.Entry<Long, Long> entry : ticketTypeCountMap.entrySet()) {
-                LambdaUpdateWrapper<TicketType> updateWrapper = new LambdaUpdateWrapper<>();
-                updateWrapper.eq(TicketType::getId, entry.getKey())
-                        .setSql("available_stock = available_stock + " + entry.getValue());
-                ticketTypeService.update(updateWrapper);
+                Long ticketTypeId = entry.getKey();
+                int count = entry.getValue().intValue();
+
+                // 使用分布式锁保护库存回滚
+                String lockKey = "stock:" + order.getShowId() + ":" + ticketTypeId;
+                String lockValue = distributedLock.tryLock(lockKey, 10);
+                try {
+                    // 数据库回滚库存
+                    LambdaUpdateWrapper<TicketType> updateWrapper = new LambdaUpdateWrapper<>();
+                    updateWrapper.eq(TicketType::getId, ticketTypeId)
+                            .setSql("available_stock = available_stock + " + count);
+                    ticketTypeService.update(updateWrapper);
+                } finally {
+                    if (lockValue != null) {
+                        distributedLock.unlock(lockKey, lockValue);
+                    }
+                }
+
+                // Redis库存回滚
+                try {
+                    redisStockService.rollbackStock(ticketTypeId, count);
+                } catch (Exception e) {
+                    logger.warn("取消订单Redis库存回滚失败，ticketTypeId={}", ticketTypeId, e);
+                }
             }
 
             LambdaQueryWrapper<OrderSeat> deleteWrapper = new LambdaQueryWrapper<>();
@@ -284,9 +318,9 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
     }
 
     /**
-     * 执行退款逻辑：回滚库存 + 释放座位 + 更新状态
+     * 带分布式锁保护的退款逻辑
      */
-    private void doRefund(Order order) {
+    private void doRefundWithLock(Order order) {
         LambdaQueryWrapper<OrderSeat> osQuery = new LambdaQueryWrapper<>();
         osQuery.eq(OrderSeat::getOrderId, order.getId());
         List<OrderSeat> orderSeats = orderSeatService.list(osQuery);
@@ -296,11 +330,31 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
                     .collect(Collectors.groupingBy(OrderSeat::getTicketTypeId, Collectors.counting()));
 
             for (Map.Entry<Long, Long> entry : ticketTypeCountMap.entrySet()) {
-                LambdaUpdateWrapper<TicketType> updateWrapper = new LambdaUpdateWrapper<>();
-                updateWrapper.eq(TicketType::getId, entry.getKey())
-                        .setSql("available_stock = available_stock + " + entry.getValue());
-                ticketTypeService.update(updateWrapper);
-                logger.info("退款释放座位，订单号：{}，票档数量明细：{}", order.getOrderNo(), ticketTypeCountMap);
+                Long ticketTypeId = entry.getKey();
+                int count = entry.getValue().intValue();
+
+                // 使用分布式锁保护库存回滚
+                String lockKey = "stock:" + order.getShowId() + ":" + ticketTypeId;
+                String lockValue = distributedLock.tryLock(lockKey, 10);
+                try {
+                    // 数据库回滚库存
+                    LambdaUpdateWrapper<TicketType> updateWrapper = new LambdaUpdateWrapper<>();
+                    updateWrapper.eq(TicketType::getId, ticketTypeId)
+                            .setSql("available_stock = available_stock + " + count);
+                    ticketTypeService.update(updateWrapper);
+                    logger.info("退款释放座位，订单号：{}，票档：{}，数量：{}", order.getOrderNo(), ticketTypeId, count);
+                } finally {
+                    if (lockValue != null) {
+                        distributedLock.unlock(lockKey, lockValue);
+                    }
+                }
+
+                // Redis库存回滚
+                try {
+                    redisStockService.rollbackStock(ticketTypeId, count);
+                } catch (Exception e) {
+                    logger.warn("退款Redis库存回滚失败，ticketTypeId={}", ticketTypeId, e);
+                }
             }
 
             LambdaQueryWrapper<OrderSeat> deleteWrapper = new LambdaQueryWrapper<>();

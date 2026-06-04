@@ -1,9 +1,9 @@
 <template>
-  <div class="app-container">
-    <el-card>
-      <div slot="header">
-        <span>我的订单</span>
-        <el-select v-model="statusFilter" placeholder="订单状态" size="small" style="float:right;width:150px;margin-left:10px" clearable @change="fetchData">
+  <div class="my-orders-page">
+    <el-card class="page-card" shadow="never">
+      <div slot="header" class="page-header">
+        <span class="page-title">我的订单</span>
+        <el-select v-model="statusFilter" placeholder="订单状态" size="small" style="width:140px" clearable @change="fetchData">
           <el-option label="全部" :value="null" />
           <el-option label="待支付" :value="0" />
           <el-option label="已支付" :value="1" />
@@ -13,31 +13,44 @@
         </el-select>
       </div>
 
-      <el-table :data="tableData" border v-loading="loading">
-        <el-table-column prop="orderNo" label="订单编号" width="180" show-overflow-tooltip />
-        <el-table-column prop="concertName" label="演唱会" min-width="150" />
-        <el-table-column prop="totalAmount" label="金额" width="100">
-          <template slot-scope="{row}">¥{{ row.totalAmount }}</template>
-        </el-table-column>
-        <el-table-column label="状态" width="90">
-          <template slot-scope="{row}">
-            <el-tag :type="statusTagType(row.status)">{{ statusText(row.status) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="160" />
-        <el-table-column label="操作" width="200" fixed="right">
-          <template slot-scope="{row}">
-            <el-button type="text" size="small" @click="$router.push(`/order/detail/${row.id}`)">详情</el-button>
-            <el-button v-if="row.status === 0" type="text" size="small" style="color:#67C23A" @click="handlePay(row)">支付</el-button>
-            <el-button v-if="row.status === 0" type="text" size="small" style="color:#F56C6C" @click="handleCancel(row)">取消</el-button>
-            <el-button v-if="row.status === 1" type="text" size="small" style="color:#E6A23C" @click="handleRefund(row)">退款</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <div v-if="tableData.length > 0" class="order-list">
+        <div v-for="order in tableData" :key="order.id" class="order-card" @click="$router.push(`/order/detail/${order.id}`)">
+          <div class="order-top">
+            <span class="order-no">订单号：{{ order.orderNo }}</span>
+            <el-tag :type="statusTagType(order.status)" size="small" effect="dark">{{ statusText(order.status) }}</el-tag>
+          </div>
+          <div class="order-body">
+            <div class="order-info">
+              <div class="concert-name">{{ order.concertName || '演唱会' }}</div>
+              <div class="order-meta">
+                <span v-if="order.venueName"><i class="el-icon-location"></i> {{ order.venueName }}</span>
+                <span><i class="el-icon-time"></i> {{ formatTime(order.showTime) }}</span>
+              </div>
+            </div>
+            <div class="order-amount">
+              <span class="amount-label">订单金额</span>
+              <span class="amount-value">¥{{ order.totalAmount }}</span>
+            </div>
+          </div>
+          <div class="order-bottom">
+            <span class="create-time">下单时间：{{ formatTime(order.createTime) }}</span>
+            <div class="order-actions" @click.stop>
+              <el-button v-if="order.status === 0" type="primary" size="mini" round @click="handlePay(order)">立即支付</el-button>
+              <el-button v-if="order.status === 0" size="mini" round @click="handleCancel(order)">取消</el-button>
+              <el-button v-if="order.status === 1" type="warning" size="mini" round plain @click="handleRefund(order)">退款</el-button>
+              <el-button type="text" size="small" @click="$router.push(`/order/detail/${order.id}`)">查看详情 ></el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <el-empty v-else-if="!loading" description="暂无订单">
+        <el-button type="primary" size="small" @click="$router.push('/concert/list')">去看看演出</el-button>
+      </el-empty>
 
       <el-pagination
         v-if="total > 0"
-        style="margin-top:20px;text-align:right"
+        style="margin-top:20px;text-align:center"
         background
         layout="total, prev, pager, next"
         :total="total"
@@ -73,6 +86,10 @@ export default {
   methods: {
     statusText(status) { return STATUS_MAP[status] || '未知' },
     statusTagType(status) { return TAG_MAP[status] || 'info' },
+    formatTime(t) {
+      if (!t) return '-'
+      return t.replace('T', ' ').substring(0, 16)
+    },
     fetchData() {
       this.loading = true
       const params = { page: this.currentPage, size: this.pageSize }
@@ -87,7 +104,7 @@ export default {
       })
     },
     handlePay(row) {
-      this.$confirm('确认支付该订单？', '提示', { type: 'info' }).then(() => {
+      this.$confirm('确认支付该订单？', '支付确认', { type: 'info' }).then(() => {
         payOrder({ orderId: row.id }).then(() => {
           this.$message.success('支付成功')
           this.fetchData()
@@ -95,7 +112,7 @@ export default {
       }).catch(() => {})
     },
     handleCancel(row) {
-      this.$confirm('确认取消该订单？', '提示', { type: 'warning' }).then(() => {
+      this.$confirm('确认取消该订单？取消后座位将释放。', '取消确认', { type: 'warning' }).then(() => {
         cancelOrder({ orderId: row.id }).then(() => {
           this.$message.success('已取消')
           this.fetchData()
@@ -103,7 +120,7 @@ export default {
       }).catch(() => {})
     },
     handleRefund(row) {
-      this.$confirm('确认退款该订单？', '提示', { type: 'warning' }).then(() => {
+      this.$confirm('确认退款？演出前48小时内不可退款。', '退款确认', { type: 'warning' }).then(() => {
         refundOrder({ orderId: row.id }).then(() => {
           this.$message.success('退款成功')
           this.fetchData()
@@ -113,3 +130,121 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.my-orders-page {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+.page-card {
+  border-radius: 12px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .page-title {
+    font-size: 18px;
+    font-weight: bold;
+  }
+}
+
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-card {
+  padding: 16px 20px;
+  border: 1px solid #ebeef5;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    border-color: #409eff;
+    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.1);
+  }
+}
+
+.order-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+
+  .order-no {
+    font-size: 13px;
+    color: #909399;
+    font-family: 'Courier New', monospace;
+  }
+}
+
+.order-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .concert-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #303133;
+    margin-bottom: 6px;
+  }
+
+  .order-meta {
+    font-size: 13px;
+    color: #909399;
+
+    i { margin-right: 2px; }
+    span + span { margin-left: 12px; }
+  }
+
+  .order-amount {
+    text-align: right;
+
+    .amount-label {
+      font-size: 12px;
+      color: #909399;
+    }
+
+    .amount-value {
+      display: block;
+      font-size: 22px;
+      font-weight: bold;
+      color: #f56c6c;
+      margin-top: 4px;
+    }
+  }
+}
+
+.order-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #ebeef5;
+
+  .create-time {
+    font-size: 12px;
+    color: #c0c4cc;
+  }
+
+  .order-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .order-body { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .order-bottom { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+</style>

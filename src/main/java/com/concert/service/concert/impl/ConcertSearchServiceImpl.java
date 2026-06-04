@@ -71,10 +71,10 @@ public class ConcertSearchServiceImpl implements ConcertSearchService {
     }
 
     @Override
-    @Cacheable(value = "concert:list", key = "#keyword + ':' + #city + ':' + #artistName + ':' + #startDate + ':' + #endDate + ':' + #page + ':' + #size",
+    @Cacheable(value = "concert:list", key = "#keyword + ':' + #city + ':' + #artistName + ':' + #startDate + ':' + #endDate + ':' + #sort + ':' + #page + ':' + #size",
                unless = "#result == null || #result.total == 0")
     public PageResponse<ConcertListResponse> searchConcerts(String keyword, String city, String artistName,
-                                                             LocalDate startDate, LocalDate endDate,
+                                                             LocalDate startDate, LocalDate endDate, String sort,
                                                              Integer page, Integer size) {
         LambdaQueryWrapper<Concert> concertQuery = new LambdaQueryWrapper<>();
         concertQuery.in(Concert::getStatus, ConcertStatus.NOT_STARTED, ConcertStatus.IN_PROGRESS);
@@ -168,7 +168,15 @@ public class ConcertSearchServiceImpl implements ConcertSearchService {
             concertQuery.in(Concert::getId, concertIdsByShow);
         }
 
-        concertQuery.orderByDesc(Concert::getId);
+        // 排序逻辑
+        if ("time".equals(sort)) {
+            concertQuery.orderByDesc(Concert::getCreateTime);
+        } else if ("name".equals(sort)) {
+            concertQuery.orderByAsc(Concert::getName);
+        } else {
+            concertQuery.orderByDesc(Concert::getId);
+        }
+
         Page<Concert> concertPage = new Page<>(page, size);
         concertService.page(concertPage, concertQuery);
 
