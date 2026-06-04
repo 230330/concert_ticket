@@ -1,11 +1,11 @@
-// src/icons/index.js
-import SvgIcon from '@/components/SvgIcon/index.vue' // 确保该组件存在
+import SvgIcon from '@/components/SvgIcon/index.vue'
 
-// 导出安装函数，供 main.js 调用
 export default function installSvgIcon(app) {
-  // 全局注册组件
   app.component('svg-icon', SvgIcon)
-  // 加载所有 svg 文件（根据实际路径调整）
-  const svgFiles = import.meta.globEager('./svg/*.svg') // Vite 方式
-  // 或者使用 require.context 的替代方案
+  // Vite 5: 使用 import.meta.glob 替代已移除的 globEager
+  const svgModules = import.meta.glob('./svg/*.svg', { eager: true })
+  // svg 文件会被 vite-plugin-svg-icons 处理，这里只需确保它们被加载
+  Object.keys(svgModules).forEach(() => {
+    // 触发模块加载即可，svg 注册由插件完成
+  })
 }

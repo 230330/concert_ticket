@@ -28,7 +28,9 @@
             placeholder="8-32位，包含字母和数字"
             prefix-icon="el-icon-lock"
           >
-            <i slot="suffix" class="el-icon-view toggle-pwd" @click="showPwd"></i>
+            <template #suffix>
+              <i class="el-icon-view toggle-pwd" @click="showPwd"></i>
+            </template>
           </el-input>
         </el-form-item>
 

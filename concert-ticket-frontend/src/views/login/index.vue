@@ -19,7 +19,6 @@
       >
         <el-form-item prop="phone" label="手机号">
           <el-input
-            ref="phone"
             v-model="loginForm.phone"
             placeholder="请输入手机号"
             name="phone"
@@ -33,16 +32,17 @@
 
         <el-form-item prop="password" label="密码">
           <el-input
-            ref="password"
             v-model="loginForm.password"
             :type="passwordType"
             placeholder="请输入密码"
             name="password"
             tabindex="2"
             prefix-icon="el-icon-lock"
-            @keyup.enter.native="handleLogin"
+            @keyup.enter="handleLogin"
           >
-            <i slot="suffix" class="el-icon-view toggle-pwd" @click="showPwd"></i>
+            <template #suffix>
+              <i class="el-icon-view toggle-pwd" @click="showPwd"></i>
+            </template>
           </el-input>
         </el-form-item>
 
@@ -62,77 +62,72 @@
   </div>
 </template>
 
-<script setup>
-import { ref, watch, nextTick } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useUserStore } from '@/store/modules/user'
+<script>
 import { validPhone, validPassword } from '@/utils/validate'
+import { useUserStore } from '@/store/modules/user'
 
-const router = useRouter()
-const route = useRoute()
-const userStore = useUserStore()
-
-const loginForm = ref({
-  phone: '',
-  password: ''
-})
-
-const loginRules = ref({
-  phone: [{ required: true, trigger: 'blur', validator: validatePhone }],
-  password: [{ required: true, trigger: 'blur', validator: validatePassword }]
-})
-
-const loading = ref(false)
-const passwordType = ref('password')
-const redirect = ref(undefined)
-const loginFormRef = ref(null)
-
-watch(() => route, (newRoute) => {
-  redirect.value = newRoute.query && newRoute.query.redirect
-}, { immediate: true })
-
-function validatePhone(rule, value, callback) {
-  if (!validPhone(value)) {
-    callback(new Error('请输入正确的手机号'))
-  } else {
-    callback()
-  }
-}
-
-function validatePassword(rule, value, callback) {
-  if (!validPassword(value)) {
-    callback(new Error('密码需8-20位，且必须包含字母和数字'))
-  } else {
-    callback()
-  }
-}
-
-function showPwd() {
-  passwordType.value = passwordType.value === 'password' ? '' : 'password'
-  nextTick(() => {
-    passwordInput.value.focus()
-  })
-}
-
-const passwordInput = ref(null)
-
-function handleLogin() {
-  loginFormRef.value.validate((valid) => {
-    if (valid) {
-      loading.value = true
-      userStore.loginAction(loginForm.value)
-        .then(() => {
-          router.push({ path: redirect.value || '/' })
-          loading.value = false
-        })
-        .catch(() => {
-          loading.value = false
-        })
-    } else {
-      console.log('表单验证失败')
-      return false
+export default {
+  name: 'Login',
+  data() {
+    const validatePhone = (rule, value, callback) => {
+      if (!validPhone(value)) {
+        callback(new Error('请输入正确的手机号'))
+      } else {
+        callback()
+      }
     }
-  })
+    const validatePassword = (rule, value, callback) => {
+      if (!validPassword(value)) {
+        callback(new Error('密码需8-20位，且必须包含字母和数字'))
+      } else {
+        callback()
+      }
+    }
+    return {
+      loginForm: {
+        phone: '',
+        password: ''
+      },
+      loginRules: {
+        phone: [{ required: true, trigger: 'blur', validator: validatePhone }],
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+      },
+      loading: false,
+      passwordType: 'password',
+      redirect: undefined
+    }
+  },
+  watch: {
+    $route: {
+      handler(route) {
+        this.redirect = route.query && route.query.redirect
+      },
+      immediate: true
+    }
+  },
+  methods: {
+    showPwd() {
+      this.passwordType = this.passwordType === 'password' ? '' : 'password'
+    },
+    handleLogin() {
+      this.$refs.loginFormRef.validate((valid) => {
+        if (valid) {
+          this.loading = true
+          const userStore = useUserStore()
+          userStore.loginAction(this.loginForm)
+            .then(() => {
+              this.$router.push({ path: this.redirect || '/' })
+              this.loading = false
+            })
+            .catch(() => {
+              this.loading = false
+            })
+        } else {
+          return false
+        }
+      })
+    }
+  }
 }
 </script>
 

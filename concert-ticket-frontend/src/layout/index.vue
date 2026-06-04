@@ -11,29 +11,40 @@
   </div>
 </template>
 
-<script setup>
-import { computed } from 'vue'
+<script>
 import { Navbar, Sidebar, AppMain } from './components'
 import { useAppStore } from '@/store/modules/app'
 import { useSettingsStore } from '@/store/modules/settings'
 import ResizeMixin from './mixin/ResizeHandler'
 
-const appStore = useAppStore()
-const settingsStore = useSettingsStore()
-
-const sidebar = computed(() => appStore.sidebar)
-const device = computed(() => appStore.device)
-const fixedHeader = computed(() => settingsStore.fixedHeader)
-
-const classObj = computed(() => ({
-  hideSidebar: !sidebar.value.opened,
-  openSidebar: sidebar.value.opened,
-  withoutAnimation: sidebar.value.withoutAnimation,
-  mobile: device.value === 'mobile'
-}))
-
-function handleClickOutside() {
-  appStore.closeSideBar({ withoutAnimation: false })
+export default {
+  name: 'Layout',
+  components: { Navbar, Sidebar, AppMain },
+  mixins: [ResizeMixin],
+  computed: {
+    sidebar() {
+      return useAppStore().sidebar
+    },
+    device() {
+      return useAppStore().device
+    },
+    fixedHeader() {
+      return useSettingsStore().fixedHeader
+    },
+    classObj() {
+      return {
+        hideSidebar: !this.sidebar.opened,
+        openSidebar: this.sidebar.opened,
+        withoutAnimation: this.sidebar.withoutAnimation,
+        mobile: this.device === 'mobile'
+      }
+    }
+  },
+  methods: {
+    handleClickOutside() {
+      useAppStore().closeSideBar(false)
+    }
+  }
 }
 </script>
 

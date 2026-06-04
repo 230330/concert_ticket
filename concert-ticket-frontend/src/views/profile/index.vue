@@ -89,6 +89,7 @@
 
 <script>
 import { getInfo, updateInfo, changePassword, uploadAvatar } from '@/api/user'
+import { useUserStore } from '@/store/modules/user'
 
 export default {
   name: 'ProfileIndex',
@@ -207,7 +208,7 @@ export default {
         // 重新获取用户信息以刷新昵称锁定状态
         this.fetchInfo()
         // 更新 store 中的昵称和头像
-        this.$store.dispatch('user/getInfo')
+        useUserStore().getInfoAction()
       }).finally(() => { this.saveLoading = false })
     },
     handleChangePassword() {
@@ -222,7 +223,7 @@ export default {
           this.$message.success('密码修改成功，请重新登录')
           this.resetPasswordForm()
           // 修改密码后退出登录
-          this.$store.dispatch('user/logout').then(() => {
+          useUserStore().logoutAction().then(() => {
             this.$router.push('/login')
           })
         }).finally(() => { this.pwdLoading = false })
