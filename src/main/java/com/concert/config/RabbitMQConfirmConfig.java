@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.ReturnedMessage;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
@@ -19,6 +20,7 @@ import javax.annotation.Resource;
  * @date 2026/05/28
  */
 @Configuration
+@ConditionalOnProperty(name = "concert.mq.enabled", havingValue = "true", matchIfMissing = true)
 public class RabbitMQConfirmConfig implements RabbitTemplate.ConfirmCallback, RabbitTemplate.ReturnsCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(RabbitMQConfirmConfig.class);

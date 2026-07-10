@@ -183,6 +183,8 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.7.18</version>
                 <configuration>
+                    <!-- JVM 参数：强制 UTF-8 编码，解决 Windows 终端中文乱码 -->
+                    <jvmArguments>-Dfile.encoding=UTF-8</jvmArguments>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>

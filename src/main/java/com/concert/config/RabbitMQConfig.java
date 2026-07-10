@@ -1,6 +1,7 @@
 package com.concert.config;
 
 import org.springframework.amqp.core.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,6 +21,7 @@ import org.springframework.context.annotation.Configuration;
  * @date 2026/05/28
  */
 @Configuration
+@ConditionalOnProperty(name = "concert.mq.enabled", havingValue = "true", matchIfMissing = true)
 public class RabbitMQConfig {
 
     // ==================== 交换机 ====================

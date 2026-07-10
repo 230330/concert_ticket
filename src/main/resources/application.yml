@@ -11,6 +11,10 @@ spring:
       max-request-size: 10MB
   application:
     name: concert-ticket
+  # 排除 RabbitMQ 自动配置（RabbitMQ 不可用时启用）
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
 #  # 允许 循环依赖
 #  main:
 #    allow-circular-references: true
@@ -123,6 +127,9 @@ alipay:
 
 # 日志配置
 logging:
+  charset:
+    console: UTF-8
+    file: UTF-8
   level:
     root: info
     com.concert: debug
@@ -136,6 +143,9 @@ logging:
 
 # 演唱会订票系统自定义配置
 concert:
+  # 消息队列开关（RabbitMQ 不可用时设为 false）
+  mq:
+    enabled: false
   # 文件上传配置
   upload:
     path: ./uploads/avatar    # 头像上传存储路径

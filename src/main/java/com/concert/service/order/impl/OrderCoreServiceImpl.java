@@ -16,6 +16,7 @@ import com.concert.mq.MessageProducer;
 import com.concert.utils.DistributedLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -68,7 +69,7 @@ public class OrderCoreServiceImpl implements OrderCoreService {
     @Resource
     private DistributedLock distributedLock;
 
-    @Resource
+    @Autowired(required = false)
     private MessageProducer messageProducer;
 
     @Resource
@@ -193,8 +194,12 @@ public class OrderCoreServiceImpl implements OrderCoreService {
             logger.info("订单创建成功，订单号：{}，用户ID：{}，座位数：{}", order.getOrderNo(), userId, seatIds.size());
 
             // 11. 发送订单超时延迟消息（MQ实现订单自动取消）
-            long delayMs = orderExpireMinutes * 60 * 1000L;
-            messageProducer.sendOrderTimeoutMessage(order.getId(), delayMs);
+            if (messageProducer != null) {
+                long delayMs = orderExpireMinutes * 60 * 1000L;
+                messageProducer.sendOrderTimeoutMessage(order.getId(), delayMs);
+            } else {
+                logger.info("RabbitMQ 已禁用，跳过发送订单超时消息：orderId={}", order.getId());
+            }
 
             return orderQueryService.getOrderDetail(order.getId());
 

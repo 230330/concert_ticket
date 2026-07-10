@@ -17,6 +17,7 @@ import com.concert.service.OrderService;
 import com.concert.service.PaymentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +53,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Resource
     private OrderService orderService;
 
-    @Resource
+    @Autowired(required = false)
     private MessageProducer messageProducer;
 
     @Resource
@@ -139,7 +140,9 @@ public class PaymentServiceImpl implements PaymentService {
                 orderService.updateById(order);
 
                 // 发送支付成功通知
-                messageProducer.sendPaymentNotification(order.getId(), "PAID");
+                if (messageProducer != null) {
+                    messageProducer.sendPaymentNotification(order.getId(), "PAID");
+                }
 
                 logger.info("支付宝回调处理成功：orderNo={}, tradeNo={}", outTradeNo, tradeNo);
             } else {
