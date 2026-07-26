@@ -19,17 +19,17 @@
     <description>演唱会订票系统</description>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>1.8</java.version>  <!-- 推荐升级至 17，Spring Boot 2.7.x 完全支持 Java 17 LTS -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
+        <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <mysql.version>8.0.33</mysql.version>
         <jjwt.version>0.11.5</jjwt.version>
         <aliyun-sms.version>2.0.24</aliyun-sms.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
-        <hutool.version>5.8.18</hutool.version>
+        <hutool.version>5.8.29</hutool.version>
         <!-- 覆盖 Spring Boot Parent BOM 中的默认版本，确保 JUnit 5 测试可被发现 -->
-        <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
     </properties>
 
     <dependencies>
@@ -158,7 +158,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.7.0</version>
+            <version>1.8.0</version>
         </dependency>
 
         <!-- Spring Boot Starter Test -->
@@ -196,7 +196,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.12.1</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -206,11 +206,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.2.5</version>
                 <configuration>
                     <useModulePath>false</useModulePath>
                     <useManifestOnlyJar>false</useManifestOnlyJar>
-                    <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
                 </configuration>
             </plugin>
         </plugins>

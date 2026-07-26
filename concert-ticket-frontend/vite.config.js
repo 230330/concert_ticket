@@ -38,8 +38,8 @@ export default defineConfig(({ mode }) => {
     css: {
       preprocessorOptions: {
         scss: {
-          // Element Plus 主题变量覆盖
-          additionalData: '',
+          // 如需覆盖 Element Plus 主题变量，在此处添加:
+          // additionalData: `@use "@/styles/element-variables.scss" as *;`,
         },
       },
     },

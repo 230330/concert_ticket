@@ -80,8 +80,23 @@ public class UserController {
     @PostMapping("/sendSms")
     @RateLimit(key = "user:sendSms", count = 3, period = 60, limitType = RateLimit.LimitType.IP)
     public Result<Void> sendSms(@RequestBody @Validated SendSmsRequest request) {
-        String phone = request.getPhone();
+        return doSendSms(request.getPhone());
+    }
 
+    /**
+     * 忘记密码-发送重置密码验证码
+     */
+    @Operation(summary = "发送重置密码验证码", description = "向指定手机号发送重置密码用短信验证码")
+    @PostMapping("/sendResetSms")
+    @RateLimit(key = "user:sendResetSms", count = 3, period = 60, limitType = RateLimit.LimitType.IP)
+    public Result<Void> sendResetSms(@RequestBody @Validated SendSmsRequest request) {
+        return doSendSms(request.getPhone());
+    }
+
+    /**
+     * 发送短信验证码通用逻辑（带频率限制与每日上限）
+     */
+    private Result<Void> doSendSms(String phone) {
         // 1. 检查60秒内是否已发送
         String intervalKey = SMS_RATE_PREFIX + phone;
         if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(intervalKey))) {
@@ -98,53 +113,17 @@ public class UserController {
 
         // 3. 发送验证码
         boolean sent = smsVerificationCodeService.sendCode(phone);
-        if (sent) {
-            // 记录60秒间隔
-            stringRedisTemplate.opsForValue().set(intervalKey, "1", SMS_INTERVAL_SECONDS, TimeUnit.SECONDS);
-            // 递增每日计数
-            Long newCount = stringRedisTemplate.opsForValue().increment(dailyKey);
-            if (newCount != null && newCount == 1) {
-                // 第一次发送，设置当天过期
-                stringRedisTemplate.expire(dailyKey, 1, TimeUnit.DAYS);
-            }
-            return Result.success();
-        }
-        return Result.error("验证码发送失败，请稍后重试");
-    }
-
-    /**
-     * 忘记密码-发送重置密码验证码（复用频率限制逻辑）
-     */
-    @Operation(summary = "发送重置密码验证码", description = "向指定手机号发送重置密码用短信验证码")
-    @PostMapping("/sendResetSms")
-    @RateLimit(key = "user:sendResetSms", count = 3, period = 60, limitType = RateLimit.LimitType.IP)
-    public Result<Void> sendResetSms(@RequestBody @Validated SendSmsRequest request) {
-        String phone = request.getPhone();
-
-        // 检查60秒内是否已发送
-        String intervalKey = SMS_RATE_PREFIX + phone;
-        if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(intervalKey))) {
-            return Result.error("发送过于频繁，请60秒后再试");
+        if (!sent) {
+            return Result.error("验证码发送失败，请稍后重试");
         }
 
-        // 检查每日发送上限
-        String dailyKey = SMS_DAILY_PREFIX + phone;
-        String dailyCountStr = stringRedisTemplate.opsForValue().get(dailyKey);
-        int dailyCount = dailyCountStr != null ? Integer.parseInt(dailyCountStr) : 0;
-        if (dailyCount >= SMS_DAILY_LIMIT) {
-            return Result.error("今日验证码发送次数已达上限");
+        // 4. 记录频率限制
+        stringRedisTemplate.opsForValue().set(intervalKey, "1", SMS_INTERVAL_SECONDS, TimeUnit.SECONDS);
+        Long newCount = stringRedisTemplate.opsForValue().increment(dailyKey);
+        if (newCount != null && newCount == 1) {
+            stringRedisTemplate.expire(dailyKey, 1, TimeUnit.DAYS);
         }
-
-        boolean sent = smsVerificationCodeService.sendCode(phone);
-        if (sent) {
-            stringRedisTemplate.opsForValue().set(intervalKey, "1", SMS_INTERVAL_SECONDS, TimeUnit.SECONDS);
-            Long newCount = stringRedisTemplate.opsForValue().increment(dailyKey);
-            if (newCount != null && newCount == 1) {
-                stringRedisTemplate.expire(dailyKey, 1, TimeUnit.DAYS);
-            }
-            return Result.success();
-        }
-        return Result.error("验证码发送失败，请稍后重试");
+        return Result.success();
     }
 
     /**

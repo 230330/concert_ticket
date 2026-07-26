@@ -11,10 +11,8 @@ spring:
       max-request-size: 10MB
   application:
     name: concert-ticket
-  # 排除 RabbitMQ 自动配置（RabbitMQ 不可用时启用）
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+  # RabbitMQ 自动配置通过 RabbitMQConditionalExclusionProcessor 条件化排除
+  # 当 concert.mq.enabled=false 时自动排除，设为 true 时自动启用
 #  # 允许 循环依赖
 #  main:
 #    allow-circular-references: true
@@ -30,7 +28,7 @@ spring:
       maximum-pool-size: 20
       idle-timeout: 30000
       max-lifetime: 1800000
-      connection-timeout: 30000
+      connection-timeout: 30000  # 毫秒，HikariCP 不支持 Duration 风格
       pool-name: ConcertHikariCP
 
   # Redis 配置
@@ -39,7 +37,7 @@ spring:
     port: ${REDIS_PORT:6379}
     password: ${REDIS_PASSWORD:}  # 如有密码请通过环境变量 REDIS_PASSWORD 注入
     database: ${REDIS_DATABASE:0}
-    timeout: 10000ms
+    timeout: 10s
     lettuce:
       pool:
         max-active: 20
@@ -71,7 +69,7 @@ spring:
 
   # Jackson 配置
   jackson:
-    date-format: yyyy-MM-dd HH:mm:ss #date-format 仅对 java.util.Date 类型生效，对 LocalDateTime 不生效。需配合JacksonConfig使用
+    date-format: yyyy-MM-dd HH:mm:ss  # 仅对 java.util.Date 生效，LocalDateTime 由 JacksonConfig#objectMapper 统一处理
     time-zone: GMT+8
     serialization:
       write-dates-as-timestamps: false

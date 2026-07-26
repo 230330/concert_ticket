@@ -8,6 +8,7 @@ import com.alipay.api.request.AlipayTradeQueryRequest;
 import com.alipay.api.request.AlipayTradeRefundRequest;
 import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.alipay.api.response.AlipayTradeRefundResponse;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.concert.config.AlipayProperties;
 import com.concert.entity.Order;
 import com.concert.enums.OrderStatus;
@@ -17,7 +18,6 @@ import com.concert.service.OrderService;
 import com.concert.service.PaymentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -53,7 +53,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Resource
     private OrderService orderService;
 
-    @Autowired(required = false)
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
     private MessageProducer messageProducer;
 
     @Resource
@@ -217,8 +217,7 @@ public class PaymentServiceImpl implements PaymentService {
      * 根据订单编号查找订单
      */
     private Order findOrderByOrderNo(String orderNo) {
-        com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Order> query =
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<>();
+        LambdaQueryWrapper<Order> query = new LambdaQueryWrapper<>();
         query.eq(Order::getOrderNo, orderNo);
         return orderService.getOne(query);
     }
