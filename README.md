@@ -42,6 +42,8 @@ com.concert
 
    CacheConfig：Spring Cache + Redis 缓存管理器配置，启用 @EnableCaching。定义了 6 个缓存空间——用户端 concert:list（10分钟）、concert:detail（30分钟）、show:info（5分钟）、concert:hot（5分钟），管理端看板 dashboard:sales（5分钟）、dashboard:revenue（10分钟），使用 Jackson2JsonRedisSerializer 序列化并禁用 null 值缓存。注意：未在此登记的区域会静默使用 30 分钟默认 TTL，新增缓存区域必须同时在此声明，CacheConfigTest 对此有断言保护。用户端四个区域由 ConcertCacheEvictionAspect 在管理端写入后清理；看板两个区域的数据随订单持续变化，依靠 TTL 过期而非主动清理。
 
+   LoggingCacheErrorHandler：缓存异常处理器，由 CacheConfig 通过 CachingConfigurer 注册（直接声明 Bean 不会被自动识别）。缓存读写失败只记录 WARN 并跳过该次缓存操作，读失败按未命中处理、回落数据库，从而避免 Redis 抖动导致所有带 @Cacheable 的接口返回 500。
+
    RabbitMQConfig：RabbitMQ 交换机、队列和绑定关系配置。定义了 3 个交换机——concert.exchange.topic（Topic 类型，用于短信和支付通知）、concert.exchange.delay（Direct 类型，用于订单超时延迟消息）、concert.exchange.dlx（Direct 类型，死信交换机）。定义了 5 个队列——concert.queue.sms（短信发送）、concert.queue.payment（支付通知）、concert.queue.order.timeout（订单超时处理）、concert.queue.order.timeout.delay（基于 TTL + 死信转发的延迟队列）、concert.queue.dlx（死信队列，消费失败消息的兜底处理）。所有业务队列配置死信转发到 DLX。
 
    RabbitMQConfirmConfig：RabbitMQ 消息可靠性保证配置，实现 RabbitTemplate.ConfirmCallback 和 ReturnsCallback。@PostConstruct 设置回调——消息到达交换机时记录日志，路由失败时记录 warn 日志并触发 ReturnsCallback。
@@ -261,7 +263,7 @@ SecurityConfig.java - /api/admin/** 路径要求 ROLE_ADMIN 角色，开启 @Ena
 | Axios | 1.6.0 | HTTP 客户端 |
 
 三、Redis 在系统中的三种角色
-1. **缓存**：通过 Spring Cache + @Cacheable 注解对高频访问的演唱会列表（10min）、详情（30min）、场次信息（5min）、热门推荐（5min）进行缓存，减少数据库压力；管理端写接口通过 @EvictConcertCache 统一清理上述用户端缓存，避免后台改完数据后用户端最长 30 分钟仍看到旧数据
+1. **缓存**：通过 Spring Cache + @Cacheable 注解对高频访问的演唱会列表（10min）、详情（30min）、场次信息（5min）、热门推荐（5min）进行缓存，减少数据库压力；管理端写接口通过 @EvictConcertCache 统一清理上述用户端缓存，避免后台改完数据后用户端最长 30 分钟仍看到旧数据；Redis 不可用时经 LoggingCacheErrorHandler 降级为直连数据库，接口保持可用
 2. **限流**：通过 @RateLimit 注解 + RateLimitAspect 切面，基于 Redis INCR + EXPIRE 实现固定窗口限流，支持按用户ID或IP限流，保护关键接口（下单5次/分钟、支付5次/分钟、热门30次/分钟、搜索20次/分钟）
 3. **分布式锁**：通过 DistributedLock 工具类，基于 SETNX + Lua 脚本实现，用于库存扣减的并发保护，防止超卖
 

@@ -3,6 +3,8 @@ package com.concert.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.annotation.CachingConfigurer;
+import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -30,7 +32,7 @@ import java.util.Map;
  */
 @Configuration
 @EnableCaching
-public class CacheConfig {
+public class CacheConfig implements CachingConfigurer {
 
     /** 默认缓存过期时间：30分钟 */
     private static final Duration DEFAULT_TTL = Duration.ofMinutes(30);
@@ -63,6 +65,15 @@ public class CacheConfig {
 
     @Resource
     private ObjectMapper redisObjectMapper;
+
+    /**
+     * 注册缓存异常处理器，使缓存故障降级而非向上抛出
+     * 交由 Spring 的 CachingConfigurer 机制生效，直接声明 CacheErrorHandler Bean 不会被自动识别
+     */
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return new LoggingCacheErrorHandler();
+    }
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
