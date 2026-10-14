@@ -60,6 +60,9 @@ class OrderCoreServiceTest {
     @Mock
     private MessageProducer messageProducer;
 
+    @Mock
+    private RedisStockService redisStockService;
+
     @InjectMocks
     private OrderCoreServiceImpl orderCoreService;
 
@@ -71,6 +74,7 @@ class OrderCoreServiceTest {
     void setUp() {
         ReflectionTestUtils.setField(orderCoreService, "orderExpireMinutes", 15);
         ReflectionTestUtils.setField(orderCoreService, "maxTicketsPerOrder", 4);
+        ReflectionTestUtils.setField(orderCoreService, "maxOrdersPerShow", 1);
 
         validShow = new Show();
         validShow.setId(1L);
@@ -106,6 +110,7 @@ class OrderCoreServiceTest {
             when(seatService.listByIds(anyList())).thenReturn(Collections.singletonList(validSeat));
             when(orderService.save(any(Order.class))).thenReturn(true);
             when(orderSeatService.saveBatch(anyList())).thenReturn(true);
+            when(redisStockService.preDeductStock(anyLong(), anyInt())).thenReturn(true);
             when(distributedLock.tryLockWithRetry(anyString(), anyLong(), anyInt(), anyLong())).thenReturn("mock-lock-value");
             when(ticketTypeService.update(any())).thenReturn(true);
 
@@ -142,6 +147,7 @@ class OrderCoreServiceTest {
             when(seatService.listByIds(anyList())).thenReturn(Arrays.asList(validSeat, seat2));
             when(orderService.save(any(Order.class))).thenReturn(true);
             when(orderSeatService.saveBatch(anyList())).thenReturn(true);
+            when(redisStockService.preDeductStock(anyLong(), anyInt())).thenReturn(true);
             when(distributedLock.tryLockWithRetry(anyString(), anyLong(), anyInt(), anyLong())).thenReturn("mock-lock-value");
             when(ticketTypeService.update(any())).thenReturn(true);
             when(orderQueryService.getOrderDetail(any())).thenReturn(new OrderResponse());
@@ -218,6 +224,10 @@ class OrderCoreServiceTest {
 
             when(showService.getById(1L)).thenReturn(validShow);
             when(ticketTypeService.getById(1L)).thenReturn(validTicketType);
+            when(seatService.listByIds(anyList())).thenReturn(Collections.singletonList(validSeat));
+            // Redis 预扣减放行，由数据库层的库存校验兜底（Redis 缓存与数据库不一致的场景）
+            when(redisStockService.preDeductStock(anyLong(), anyInt())).thenReturn(true);
+            when(distributedLock.tryLockWithRetry(anyString(), anyLong(), anyInt(), anyLong())).thenReturn("mock-lock-value");
 
             // When & Then
             BusinessException ex = assertThrows(BusinessException.class,

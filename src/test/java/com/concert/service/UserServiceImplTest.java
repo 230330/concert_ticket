@@ -27,6 +27,8 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 import java.util.Collections;
 import java.util.List;
@@ -59,6 +61,12 @@ class UserServiceImplTest {
 
     @Mock
     private JwtUtil jwtUtil;
+
+    @Mock
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Mock
+    private ValueOperations<String, String> valueOperations;
 
     @Spy
     @InjectMocks
@@ -147,6 +155,9 @@ class UserServiceImplTest {
             request.setPhone("13800138000");
             request.setPassword("password123");
 
+            // 登录流程会先读取 Redis 中的失败计数，此处模拟"无历史失败记录"
+            when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
+
             Authentication authentication = mock(Authentication.class);
             com.concert.config.security.LoginUser loginUser = mock(com.concert.config.security.LoginUser.class);
             when(loginUser.getId()).thenReturn(1L);
@@ -173,6 +184,8 @@ class UserServiceImplTest {
             request.setPhone("13800138000");
             request.setPassword("wrong_password");
 
+            when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
+
             when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                     .thenThrow(new BadCredentialsException("Bad credentials"));
 
@@ -188,6 +201,8 @@ class UserServiceImplTest {
             LoginRequest request = new LoginRequest();
             request.setPhone("13800138000");
             request.setPassword("password123");
+
+            when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
 
             when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                     .thenThrow(new DisabledException("Account disabled"));

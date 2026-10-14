@@ -52,12 +52,16 @@ mvn surefire-report:report
 ### 2. 集成测试 (Integration Test)
 - 测试多个组件的协同工作
 - 加载完整的 Spring 上下文
-- 示例：`UserControllerTest`（使用 MockMvc）
+- 示例：`JwtUtilTest`、`UserServiceTest`（继承 `BaseIntegrationTest`）
+- 注意：这类测试依赖 MySQL、Redis 等外部环境，不适合作为日常回归的主力
 
 ### 3. Controller 层测试
 - 使用 `MockMvc` 模拟 HTTP 请求
 - 测试 API 接口的正确性
 - 验证请求验证、响应格式等
+- 示例：`UserControllerTest`。它只装配 Controller 与 `GlobalExceptionHandler`，业务依赖全部 mock，
+  不加载 Spring Boot 自动配置，因此不依赖 MySQL / Redis / MyBatis，可以随时运行
+- 不要用 `@WebMvcTest`：启动类上的 `@MapperScan` 会连带注册全部 Mapper，缺少 SqlSessionFactory 时上下文起不来
 
 ### 4. Service 层测试
 - 测试业务逻辑

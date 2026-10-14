@@ -14,6 +14,7 @@ import com.concert.mapper.OrderSeatMapper;
 import com.concert.mapper.TicketTypeMapper;
 import com.concert.service.*;
 import com.concert.service.order.impl.OrderCancellationServiceImpl;
+import com.concert.utils.DistributedLock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -63,6 +64,12 @@ class OrderCancellationServiceTest {
 
     @Mock
     private OrderMapper orderMapper;
+
+    @Mock
+    private RedisStockService redisStockService;
+
+    @Mock
+    private DistributedLock distributedLock;
 
     @InjectMocks
     private OrderCancellationServiceImpl orderCancellationService;
@@ -157,6 +164,8 @@ class OrderCancellationServiceTest {
             when(ticketTypeService.update(any())).thenReturn(true);
             when(orderSeatService.remove(any())).thenReturn(true);
             when(orderService.updateById(any(Order.class))).thenReturn(true);
+            // 存在座位记录时库存回滚会走分布式锁保护的分支
+            when(distributedLock.tryLock(anyString(), anyLong())).thenReturn("mock-lock-value");
 
             // When
             orderCancellationService.cancelOrder(100L, 1L);

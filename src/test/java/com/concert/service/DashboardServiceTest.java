@@ -7,6 +7,7 @@ import com.concert.entity.*;
 import com.concert.enums.ConcertStatus;
 import com.concert.enums.OrderStatus;
 import com.concert.enums.ShowStatus;
+import com.concert.mapper.OrderMapper;
 import com.concert.service.impl.DashboardServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -48,6 +49,9 @@ class DashboardServiceTest {
     @Mock
     private UserService userService;
 
+    @Mock
+    private OrderMapper orderMapper;
+
     @InjectMocks
     private DashboardServiceImpl dashboardService;
 
@@ -61,11 +65,21 @@ class DashboardServiceTest {
             // Given
             when(orderService.count()).thenReturn(100L);
             when(orderService.count(any())).thenReturn(30L); // 各状态计数
-            when(orderService.list(any(Wrapper.class))).thenReturn(createPaidOrders());
             when(orderSeatService.count()).thenReturn(200L);
             when(concertService.count(any())).thenReturn(5L);
             when(showService.count(any())).thenReturn(10L);
             when(userService.count()).thenReturn(500L);
+            // 收入指标改为 SQL 聚合，按传入的状态组合区分返回值
+            when(orderMapper.sumAmountByStatuses(any(int[].class))).thenAnswer(invocation -> {
+                int[] statuses = invocation.getArgument(0);
+                if (statuses.length == 2) {
+                    return BigDecimal.valueOf(2990);   // 已支付 + 已完成
+                }
+                if (statuses[0] == OrderStatus.COMPLETED_VALUE) {
+                    return BigDecimal.valueOf(1990);   // 已完成
+                }
+                return BigDecimal.valueOf(100);        // 已退款
+            });
 
             // When
             DashboardSalesResponse response = dashboardService.getSalesOverview();
@@ -77,6 +91,9 @@ class DashboardServiceTest {
             assertEquals(500L, response.getTotalUsers());
             assertEquals(5L, response.getActiveConcerts());
             assertEquals(10L, response.getActiveShows());
+            assertEquals(BigDecimal.valueOf(2990), response.getTotalRevenue());
+            assertEquals(BigDecimal.valueOf(1990), response.getActualRevenue());
+            assertEquals(BigDecimal.valueOf(100), response.getRefundAmount());
         }
 
         @Test
@@ -85,11 +102,11 @@ class DashboardServiceTest {
             // Given
             when(orderService.count()).thenReturn(0L);
             when(orderService.count(any())).thenReturn(0L);
-            when(orderService.list(any(Wrapper.class))).thenReturn(Collections.emptyList());
             when(orderSeatService.count()).thenReturn(0L);
             when(concertService.count(any())).thenReturn(0L);
             when(showService.count(any())).thenReturn(0L);
             when(userService.count()).thenReturn(0L);
+            // 未打桩时 mapper 返回 null，用于覆盖实现中的 null 归一化为 0 分支
 
             // When
             DashboardSalesResponse response = dashboardService.getSalesOverview();
@@ -162,7 +179,10 @@ class DashboardServiceTest {
             refundOrder.setTotalAmount(BigDecimal.valueOf(100));
             refundOrder.setCreateTime(today.atStartOfDay().plusHours(10));
 
-            when(orderService.list(any(Wrapper.class))).thenReturn(Arrays.asList(refundOrder));
+            // getRevenueReport 依次查询收入、退款、当日订单三组数据，mock 按调用顺序返回
+            when(orderService.list(any(Wrapper.class)))
+                    .thenReturn(Collections.emptyList())
+                    .thenReturn(Arrays.asList(refundOrder));
 
             // When
             List<DashboardRevenueResponse> result = dashboardService.getRevenueReport(today, today);
@@ -173,17 +193,4 @@ class DashboardServiceTest {
         }
     }
 
-    private List<Order> createPaidOrders() {
-        Order o1 = new Order();
-        o1.setId(1L);
-        o1.setStatus(OrderStatus.PAID);
-        o1.setTotalAmount(BigDecimal.valueOf(299));
-
-        Order o2 = new Order();
-        o2.setId(2L);
-        o2.setStatus(OrderStatus.COMPLETED);
-        o2.setTotalAmount(BigDecimal.valueOf(599));
-
-        return Arrays.asList(o1, o2);
-    }
 }
