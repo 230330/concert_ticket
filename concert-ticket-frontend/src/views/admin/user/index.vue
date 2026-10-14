@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-card>
-      <div slot="header"><span>用户管理</span></div>
+      <template #header><span>用户管理</span></template>
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item label="手机号"><el-input v-model="searchForm.phone" placeholder="手机号" clearable /></el-form-item>
         <el-form-item><el-button type="primary" @click="fetchData">搜索</el-button></el-form-item>

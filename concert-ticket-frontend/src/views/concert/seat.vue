@@ -101,10 +101,10 @@
           <span class="price total-price">¥{{ totalPrice }}</span>
         </div>
       </div>
-      <div slot="footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitting" @click="confirmOrder">确认支付</el-button>
-      </div>
+      <template #footer>
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="confirmOrder">确认支付</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>

@@ -17,29 +17,29 @@
 
     <!-- 收入报表 -->
     <el-card class="report-card" shadow="never">
-      <div slot="header" class="report-header">
-        <span class="report-title">收入报表</span>
-        <div class="report-actions">
-          <el-radio-group v-model="quickDate" size="small" @change="handleQuickDate">
-            <el-radio-button label="today">今日</el-radio-button>
-            <el-radio-button label="week">本周</el-radio-button>
-            <el-radio-button label="month">本月</el-radio-button>
-            <el-radio-button label="custom">自定义</el-radio-button>
-          </el-radio-group>
-          <el-date-picker
-            v-if="quickDate === 'custom'"
-            v-model="dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            value-format="yyyy-MM-dd"
-            size="small"
-            style="margin-left: 12px"
-          />
-          <el-button type="primary" size="small" icon="el-icon-search" @click="fetchRevenue" style="margin-left:8px">查询</el-button>
-        </div>
-      </div>
+      <template #header>
+          <span class="report-title">收入报表</span>
+          <div class="report-actions">
+            <el-radio-group v-model="quickDate" size="small" @change="handleQuickDate">
+              <el-radio-button label="today">今日</el-radio-button>
+              <el-radio-button label="week">本周</el-radio-button>
+              <el-radio-button label="month">本月</el-radio-button>
+              <el-radio-button label="custom">自定义</el-radio-button>
+            </el-radio-group>
+            <el-date-picker
+              v-if="quickDate === 'custom'"
+              v-model="dateRange"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              value-format="yyyy-MM-dd"
+              size="small"
+              style="margin-left: 12px"
+            />
+            <el-button type="primary" size="small" icon="el-icon-search" @click="fetchRevenue" style="margin-left:8px">查询</el-button>
+          </div>
+      </template>
 
       <!-- 收入汇总卡片 -->
       <el-row :gutter="16" class="revenue-summary" v-if="revenueList.length > 0">

@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <el-card>
-      <div slot="header">
-        <span>票种管理</span>
-        <el-button type="primary" size="small" style="float:right" @click="handleAdd">新增票种</el-button>
-      </div>
+      <template #header>
+          <span>票种管理</span>
+          <el-button type="primary" size="small" style="float:right" @click="handleAdd">新增票种</el-button>
+      </template>
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item label="场次ID"><el-input v-model="searchForm.showId" placeholder="场次ID" clearable /></el-form-item>
         <el-form-item><el-button type="primary" @click="fetchData">搜索</el-button></el-form-item>
@@ -37,7 +37,7 @@
         <el-form-item label="价格"><el-input-number v-model="form.price" :min="0" :precision="2" /></el-form-item>
         <el-form-item label="总库存"><el-input-number v-model="form.totalStock" :min="1" /></el-form-item>
       </el-form>
-      <div slot="footer"><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" @click="handleSubmit">确定</el-button></div>
+      <template #footer><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" @click="handleSubmit">确定</el-button></template>
     </el-dialog>
 
     <el-dialog title="库存调整" v-model="stockVisible" width="400px">
@@ -47,7 +47,7 @@
           <el-input-number v-model="stockForm.adjustQuantity" :min="-1000" :max="1000" />
         </el-form-item>
       </el-form>
-      <div slot="footer"><el-button @click="stockVisible=false">取消</el-button><el-button type="primary" @click="handleStockSubmit">确定</el-button></div>
+      <template #footer><el-button @click="stockVisible=false">取消</el-button><el-button type="primary" @click="handleStockSubmit">确定</el-button></template>
     </el-dialog>
   </div>
 </template>

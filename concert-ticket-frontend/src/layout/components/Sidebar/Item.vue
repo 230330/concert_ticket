@@ -2,7 +2,7 @@
   <span>
     <i v-if="icon && icon.includes('el-icon')" :class="[icon, 'sub-el-icon']" />
     <svg-icon v-else-if="icon" :icon-class="icon" />
-    <span v-if="title" slot="title">{{ title }}</span>
+    <span v-if="title">{{ title }}</span>
   </span>
 </template>
 

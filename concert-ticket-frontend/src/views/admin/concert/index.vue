@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <el-card>
-      <div slot="header">
-        <span>演唱会管理</span>
-        <el-button type="primary" size="small" style="float:right" @click="handleAdd">新增演唱会</el-button>
-      </div>
+      <template #header>
+          <span>演唱会管理</span>
+          <el-button type="primary" size="small" style="float:right" @click="handleAdd">新增演唱会</el-button>
+      </template>
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item label="名称">
           <el-input v-model="searchForm.name" placeholder="演唱会名称" clearable />
@@ -46,10 +46,10 @@
         <el-form-item label="海报URL"><el-input v-model="form.poster" /></el-form-item>
         <el-form-item label="描述"><el-input v-model="form.description" type="textarea" :rows="3" /></el-form-item>
       </el-form>
-      <div slot="footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
-      </div>
+      <template #footer>
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleSubmit">确定</el-button>
+      </template>
     </el-dialog>
 
     <!-- 状态变更对话框 -->
@@ -64,10 +64,10 @@
           </el-select>
         </el-form-item>
       </el-form>
-      <div slot="footer">
-        <el-button @click="statusDialogVisible = false">取消</el-button>
-        <el-button type="primary" :disabled="targetStatus === '' || targetStatus === null" @click="handleSubmitStatus">确认变更</el-button>
-      </div>
+      <template #footer>
+          <el-button @click="statusDialogVisible = false">取消</el-button>
+          <el-button type="primary" :disabled="targetStatus === '' || targetStatus === null" @click="handleSubmitStatus">确认变更</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>

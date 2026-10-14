@@ -49,7 +49,7 @@
 
       <!-- 订单信息 -->
       <el-card class="detail-card" shadow="never">
-        <div slot="header"><span>订单信息</span></div>
+        <template #header><span>订单信息</span></template>
         <el-descriptions :column="2" border size="medium">
           <el-descriptions-item label="订单编号">
             <span class="order-no">{{ order.orderNo }}</span>
@@ -68,7 +68,7 @@
 
       <!-- 座位信息 -->
       <el-card class="detail-card" shadow="never" v-if="order.seats && order.seats.length > 0">
-        <div slot="header"><span>座位信息</span></div>
+        <template #header><span>座位信息</span></template>
         <div class="seat-list">
           <div v-for="seat in order.seats" :key="seat.seatId" class="seat-item">
             <div class="seat-main">

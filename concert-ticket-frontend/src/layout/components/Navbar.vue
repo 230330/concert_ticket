@@ -11,19 +11,21 @@
           <img v-else src="/default-avatar.svg" class="user-avatar">
           <i class="el-icon-caret-bottom" />
         </div>
-        <el-dropdown-menu slot="dropdown" class="user-dropdown">
-          <router-link to="/profile/index">
-            <el-dropdown-item>
-              个人中心
+        <template #dropdown>
+          <el-dropdown-menu class="user-dropdown">
+            <router-link to="/profile/index">
+              <el-dropdown-item>
+                个人中心
+              </el-dropdown-item>
+            </router-link>
+            <router-link to="/order/my">
+              <el-dropdown-item>我的订单</el-dropdown-item>
+            </router-link>
+            <el-dropdown-item divided @click="logout">
+              <span style="display:block;">退出登录</span>
             </el-dropdown-item>
-          </router-link>
-          <router-link to="/order/my">
-            <el-dropdown-item>我的订单</el-dropdown-item>
-          </router-link>
-          <el-dropdown-item divided @click.native="logout">
-            <span style="display:block;">退出登录</span>
-          </el-dropdown-item>
-        </el-dropdown-menu>
+          </el-dropdown-menu>
+        </template>
       </el-dropdown>
     </div>
   </div>

@@ -1,10 +1,10 @@
 <template>
   <div class="ticket-page" v-loading="loading">
     <el-card class="page-card" shadow="never">
-      <div slot="header" class="page-header">
-        <span class="page-title">我的取票码</span>
-        <el-button type="text" icon="el-icon-refresh" @click="fetchData">刷新</el-button>
-      </div>
+      <template #header>
+          <span class="page-title">我的取票码</span>
+          <el-button type="text" icon="el-icon-refresh" @click="fetchData">刷新</el-button>
+      </template>
 
       <div v-if="ticketList.length > 0" class="ticket-list">
         <div v-for="item in ticketList" :key="item.id" class="ticket-card">

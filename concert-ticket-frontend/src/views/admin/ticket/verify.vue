@@ -1,9 +1,9 @@
 <template>
   <div class="verify-page">
     <el-card shadow="never" class="verify-card">
-      <div slot="header">
-        <span style="font-size:18px;font-weight:bold">取票码核销</span>
-      </div>
+      <template #header>
+          <span style="font-size:18px;font-weight:bold">取票码核销</span>
+      </template>
 
       <div class="verify-input-section">
         <el-input
@@ -13,7 +13,7 @@
           clearable
           prefix-icon="el-icon-ticket"
           class="code-input"
-          @keyup.enter.native="handleVerify"
+                @keyup.enter="handleVerify"
         />
         <el-button
           type="primary"

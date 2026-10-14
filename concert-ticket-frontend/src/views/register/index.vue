@@ -65,7 +65,7 @@
           </div>
         </el-form-item>
 
-        <el-button :loading="loading" type="primary" class="register-btn" @click.native.prevent="handleRegister">注 册</el-button>
+            <el-button :loading="loading" type="primary" class="register-btn" @click.prevent="handleRegister">注 册</el-button>
 
         <div class="register-footer">
           <span>已有账号？<el-link type="primary" @click="$router.push('/login')">立即登录</el-link></span>

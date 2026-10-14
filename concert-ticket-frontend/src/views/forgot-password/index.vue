@@ -86,7 +86,7 @@
         </span>
       </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px" @click.native.prevent="handleReset">重置密码</el-button>
+            <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px" @click.prevent="handleReset">重置密码</el-button>
 
       <div class="tips">
         <span>想起密码？<el-link type="primary" @click="$router.push('/login')">返回登录</el-link></span>

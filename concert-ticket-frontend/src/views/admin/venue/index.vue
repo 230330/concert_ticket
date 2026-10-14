@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <el-card>
-      <div slot="header">
-        <span>场馆管理</span>
-        <el-button type="primary" size="small" style="float:right" @click="handleAdd">新增场馆</el-button>
-      </div>
+      <template #header>
+          <span>场馆管理</span>
+          <el-button type="primary" size="small" style="float:right" @click="handleAdd">新增场馆</el-button>
+      </template>
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item label="名称"><el-input v-model="searchForm.name" placeholder="场馆名称" clearable /></el-form-item>
         <el-form-item label="城市"><el-input v-model="searchForm.city" placeholder="城市" clearable /></el-form-item>
@@ -33,7 +33,7 @@
         <el-form-item label="地址"><el-input v-model="form.address" /></el-form-item>
         <el-form-item label="容量"><el-input-number v-model="form.capacity" :min="1" /></el-form-item>
       </el-form>
-      <div slot="footer"><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" @click="handleSubmit">确定</el-button></div>
+      <template #footer><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" @click="handleSubmit">确定</el-button></template>
     </el-dialog>
   </div>
 </template>

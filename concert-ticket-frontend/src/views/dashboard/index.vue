@@ -3,10 +3,10 @@
     <el-row :gutter="20">
       <el-col :span="8">
         <el-card shadow="hover">
-          <div slot="header" class="clearfix">
-            <span>热门演唱会</span>
-            <el-button style="float: right; padding: 3px 0" type="text" @click="$router.push('/concert/list')">查看更多</el-button>
-          </div>
+          <template #header>
+              <span>热门演唱会</span>
+              <el-button style="float: right; padding: 3px 0" type="text" @click="$router.push('/concert/list')">查看更多</el-button>
+          </template>
           <div v-if="hotList.length === 0" class="text-muted">暂无数据</div>
           <div v-for="item in hotList" :key="item.id" class="concert-item" @click="$router.push(`/concert/detail/${item.id}`)">
             <span>{{ item.name }}</span>
@@ -15,10 +15,10 @@
       </el-col>
       <el-col :span="8">
         <el-card shadow="hover">
-          <div slot="header" class="clearfix">
-            <span>即将开始</span>
-            <el-button style="float: right; padding: 3px 0" type="text" @click="$router.push('/concert/list')">查看更多</el-button>
-          </div>
+          <template #header>
+              <span>即将开始</span>
+              <el-button style="float: right; padding: 3px 0" type="text" @click="$router.push('/concert/list')">查看更多</el-button>
+          </template>
           <div v-if="upcomingList.length === 0" class="text-muted">暂无数据</div>
           <div v-for="item in upcomingList" :key="item.id" class="concert-item" @click="$router.push(`/concert/detail/${item.id}`)">
             <span>{{ item.name }}</span>
@@ -27,9 +27,9 @@
       </el-col>
       <el-col :span="8">
         <el-card shadow="hover">
-          <div slot="header" class="clearfix">
-            <span>快捷入口</span>
-          </div>
+          <template #header>
+              <span>快捷入口</span>
+          </template>
           <el-button type="primary" style="width:100%;margin-bottom:10px" @click="$router.push('/order/my')">我的订单</el-button>
           <el-button type="success" style="width:100%;margin-bottom:10px" @click="$router.push('/ticket/my-codes')">我的取票码</el-button>
           <el-button type="info" style="width:100%" @click="$router.push('/profile/index')">个人中心</el-button>

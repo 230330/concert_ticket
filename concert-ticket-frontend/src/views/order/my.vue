@@ -1,17 +1,17 @@
 <template>
   <div class="my-orders-page">
     <el-card class="page-card" shadow="never">
-      <div slot="header" class="page-header">
-        <span class="page-title">我的订单</span>
-        <el-select v-model="statusFilter" placeholder="订单状态" size="small" style="width:140px" clearable @change="fetchData">
-          <el-option label="全部" :value="null" />
-          <el-option label="待支付" :value="0" />
-          <el-option label="已支付" :value="1" />
-          <el-option label="已取消" :value="2" />
-          <el-option label="已退款" :value="3" />
-          <el-option label="已完成" :value="4" />
-        </el-select>
-      </div>
+      <template #header>
+          <span class="page-title">我的订单</span>
+          <el-select v-model="statusFilter" placeholder="订单状态" size="small" style="width:140px" clearable @change="fetchData">
+            <el-option label="全部" :value="null" />
+            <el-option label="待支付" :value="0" />
+            <el-option label="已支付" :value="1" />
+            <el-option label="已取消" :value="2" />
+            <el-option label="已退款" :value="3" />
+            <el-option label="已完成" :value="4" />
+          </el-select>
+      </template>
 
       <div v-if="tableData.length > 0" class="order-list">
         <div v-for="order in tableData" :key="order.id" class="order-card" @click="$router.push(`/order/detail/${order.id}`)">

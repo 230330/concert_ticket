@@ -1,9 +1,9 @@
 <template>
   <div class="admin-order-page">
     <el-card shadow="never" class="page-card">
-      <div slot="header" class="page-header">
-        <span class="page-title">订单管理</span>
-      </div>
+      <template #header>
+          <span class="page-title">订单管理</span>
+      </template>
 
       <!-- 搜索 -->
       <el-form :inline="true" :model="searchForm" size="small" class="search-form">

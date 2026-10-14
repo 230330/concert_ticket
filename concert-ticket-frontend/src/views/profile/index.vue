@@ -2,9 +2,9 @@
   <div class="app-container" v-loading="loading">
     <!-- 个人信息卡片 -->
     <el-card>
-      <div slot="header">
-        <span>个人信息</span>
-      </div>
+      <template #header>
+          <span>个人信息</span>
+      </template>
       <el-form :model="profileForm" label-width="100px" style="max-width:500px">
         <el-form-item label="手机号">
           <el-input v-model="profileForm.phone" disabled />
@@ -44,9 +44,9 @@
 
     <!-- 修改密码卡片 -->
     <el-card style="margin-top:20px">
-      <div slot="header">
-        <span>修改密码</span>
-      </div>
+      <template #header>
+          <span>修改密码</span>
+      </template>
       <el-form
         ref="passwordForm"
         :model="passwordForm"
