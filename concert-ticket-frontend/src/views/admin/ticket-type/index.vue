@@ -15,10 +15,10 @@
         <el-table-column prop="name" label="票种名称" min-width="100" />
         <el-table-column prop="price" label="价格" width="80" />
         <el-table-column label="库存" width="130">
-          <template slot-scope="{row}">{{ row.availableStock }} / {{ row.totalStock }}</template>
+          <template #default="{ row }">{{ row.availableStock }} / {{ row.totalStock }}</template>
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <el-button type="text" size="small" @click="handleEdit(row)">编辑</el-button>
             <el-button type="text" size="small" @click="handleStock(row)">调库存</el-button>
             <el-button type="text" size="small" style="color:#F56C6C" @click="handleDelete(row)">删除</el-button>

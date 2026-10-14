@@ -31,13 +31,13 @@
         <el-table-column prop="venueName" label="场馆" width="150" />
         <!-- 修改部分：状态列（新增映射逻辑） -->
         <el-table-column label="状态" width="100">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <!-- 操作列：按钮禁用条件保持不变（仅状态为1时可用） -->
         <el-table-column label="操作" width="120">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <el-button type="primary" size="small" :disabled="row.status !== 1" @click="$router.push(`/concert/seat/${row.id}`)">
               选座购票
             </el-button>

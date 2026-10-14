@@ -17,7 +17,7 @@
         <el-table-column prop="address" label="地址" min-width="200" show-overflow-tooltip />
         <el-table-column prop="capacity" label="容量" width="80" />
         <el-table-column label="操作" width="150" fixed="right">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <el-button type="text" size="small" @click="handleEdit(row)">编辑</el-button>
             <el-button type="text" size="small" style="color:#F56C6C" @click="handleDelete(row)">删除</el-button>
           </template>

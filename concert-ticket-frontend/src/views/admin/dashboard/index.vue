@@ -74,18 +74,18 @@
         <el-table-column prop="date" label="日期" width="120" />
         <el-table-column prop="orderCount" label="订单数" width="90" align="center" />
         <el-table-column prop="revenue" label="收入" align="right">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <span style="color:#67C23A;font-weight:bold">¥{{ row.revenue }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="refundAmount" label="退款" align="right">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <span style="color:#F56C6C">¥{{ row.refundAmount }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="ticketCount" label="售票数" width="90" align="center" />
         <el-table-column label="净收入" align="right">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <span style="color:#409EFF;font-weight:bold">¥{{ (parseFloat(row.revenue || 0) - parseFloat(row.refundAmount || 0)).toFixed(2) }}</span>
           </template>
         </el-table-column>

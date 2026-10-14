@@ -148,7 +148,7 @@ export default {
   created() {
     this.fetchDetail()
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.timer) clearInterval(this.timer)
   },
   methods: {

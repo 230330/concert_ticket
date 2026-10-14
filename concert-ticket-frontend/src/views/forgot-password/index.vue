@@ -144,7 +144,7 @@ export default {
       confirmPasswordType: 'password'
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.smsTimer) {
       clearInterval(this.smsTimer)
     }

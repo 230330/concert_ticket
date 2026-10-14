@@ -13,13 +13,13 @@
         <el-table-column prop="nickname" label="昵称" min-width="120" />
         <el-table-column prop="orderCount" label="订单数" width="80" />
         <el-table-column label="状态" width="80">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <el-tag :type="userStatusTag(row.status)">{{ userStatusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="注册时间" width="160" />
         <el-table-column label="操作" width="150" fixed="right">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <el-button v-if="row.status!==0" type="text" size="small" style="color:#F56C6C" @click="handleBan(row)">封禁</el-button>
             <el-button v-if="row.status===0" type="text" size="small" style="color:#67C23A" @click="handleUnban(row)">解封</el-button>
           </template>

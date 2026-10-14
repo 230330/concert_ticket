@@ -28,27 +28,27 @@
       <el-table :data="tableData" border v-loading="loading" size="medium" class="order-table">
         <el-table-column prop="id" label="ID" width="60" align="center" />
         <el-table-column prop="orderNo" label="订单编号" width="170" show-overflow-tooltip>
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <span class="order-no-link" @click="viewDetail(row)">{{ row.orderNo }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="userPhone" label="用户手机" width="120" align="center" />
         <el-table-column prop="concertName" label="演唱会" min-width="140" show-overflow-tooltip />
         <el-table-column prop="totalAmount" label="金额" width="90" align="right">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <span style="color:#f56c6c;font-weight:bold">¥{{ row.totalAmount }}</span>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="90" align="center">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <el-tag :type="statusTag(row.status)" size="small" effect="dark">{{ statusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="160">
-          <template slot-scope="{row}">{{ formatTime(row.createTime) }}</template>
+          <template #default="{ row }">{{ formatTime(row.createTime) }}</template>
         </el-table-column>
         <el-table-column label="操作" width="180" fixed="right" align="center">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <el-button type="text" size="small" icon="View" @click="viewDetail(row)">详情</el-button>
             <el-button v-if="row.status===0" type="text" size="small" style="color:#F56C6C" @click="handleAdminCancel(row)">取消</el-button>
             <el-button v-if="row.status===1||row.status===4" type="text" size="small" style="color:#E6A23C" @click="handleAdminRefund(row)">退款</el-button>

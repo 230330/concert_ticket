@@ -24,12 +24,12 @@
         <el-table-column prop="name" label="演唱会名称" min-width="150" />
         <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
         <el-table-column label="状态" width="100">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <el-tag :type="statusTagType(row.status)">{{ statusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
-          <template slot-scope="{row}">
+          <template #default="{ row }">
             <el-button type="text" size="small" @click="handleEdit(row)">编辑</el-button>
             <el-button type="text" size="small" @click="handleChangeStatus(row)">变更状态</el-button>
             <el-button type="text" size="small" style="color:#F56C6C" @click="handleDelete(row)">删除</el-button>

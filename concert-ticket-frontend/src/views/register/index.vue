@@ -123,7 +123,7 @@ export default {
       passwordType: 'password'
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.smsTimer) {
       clearInterval(this.smsTimer)
     }
