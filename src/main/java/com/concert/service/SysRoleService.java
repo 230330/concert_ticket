@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.concert.entity.SysRole;
 
 import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @description:    系统角色服务接口
@@ -28,4 +30,13 @@ public interface SysRoleService extends IService<SysRole> {
      * @return 角色信息
      */
     SysRole getByRoleCode(String roleCode);
+
+    /**
+     * 批量查询多个用户的角色编码（列表场景使用，避免逐个用户查询）
+     * 统计口径与 getRolesByUserId 一致：只返回状态正常的角色
+     *
+     * @param userIds 用户ID集合
+     * @return 用户ID -> 角色编码列表，没有角色的用户不会出现在结果中
+     */
+    Map<Long, List<String>> getRoleCodesByUserIds(Collection<Long> userIds);
 }

@@ -53,8 +53,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 ? Collections.emptyList()
                 : roles.stream().map(SysRole::getRoleCode).collect(Collectors.toList());
 
-        // 加载用户权限
-        List<String> permissionCodes = sysPermissionService.getPermissionCodesByUserId(user.getId());
+        // 加载用户权限：复用上面已查出的角色，避免 getPermissionCodesByUserId 内部再查一次角色
+        List<Long> roleIds = roles.stream().map(SysRole::getId).collect(Collectors.toList());
+        List<String> permissionCodes = sysPermissionService.getPermissionCodesByRoleIds(roleIds);
 
         // 构建 LoginUser 对象
         return new LoginUser(

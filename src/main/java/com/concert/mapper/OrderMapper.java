@@ -6,7 +6,9 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @description:    订单表 Mapper 接口
@@ -46,4 +48,13 @@ public interface OrderMapper extends BaseMapper<Order> {
      * @return 金额总和
      */
     BigDecimal sumAmountByStatuses(@Param("statuses") int[] statuses);
+
+    /**
+     * 按用户批量统计订单数量（供列表场景使用，避免逐个用户查询）
+     * 返回的每行包含 userId 与 orderCount 两个键
+     *
+     * @param userIds 用户ID集合
+     * @return 每个用户一行的统计结果，没有订单的用户不会出现
+     */
+    List<Map<String, Object>> countOrdersByUserIds(@Param("userIds") Collection<Long> userIds);
 }

@@ -1,9 +1,12 @@
 package com.concert.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.concert.dto.request.ChangePasswordRequest;
 import com.concert.dto.request.LoginRequest;
 import com.concert.dto.request.RegisterRequest;
+import com.concert.dto.response.AdminUserResponse;
 import com.concert.dto.response.LoginResponse;
+import com.concert.dto.response.PageResponse;
 import com.concert.dto.response.UserInfoResponse;
 import com.concert.entity.SysRole;
 import com.concert.entity.User;
@@ -32,6 +35,7 @@ import org.springframework.data.redis.core.ValueOperations;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -325,6 +329,55 @@ class UserServiceImplTest {
 
             // When & Then
             assertThrows(NotFoundException.class, () -> userService.updateUserStatus(999L, UserStatus.DISABLED));
+        }
+    }
+
+    @Nested
+    @DisplayName("管理端用户列表")
+    class ListUsersForAdmin {
+
+        @Test
+        @DisplayName("角色与订单数按批量接口查询，不逐用户查询")
+        void testListUsersForAdmin_BatchesRoleAndOrderQueries() {
+            // Given
+            User first = new User();
+            first.setId(1L);
+            first.setPhone("13800000001");
+            User second = new User();
+            second.setId(2L);
+            second.setPhone("13800000002");
+
+            doAnswer(invocation -> {
+                Page<User> page = invocation.getArgument(0);
+                page.setRecords(Arrays.asList(first, second));
+                page.setTotal(2L);
+                return page;
+            }).when(userService).page(any(), any());
+
+            when(sysRoleService.getRoleCodesByUserIds(any()))
+                    .thenReturn(Collections.singletonMap(1L, Collections.singletonList("ADMIN")));
+            when(orderService.countByUserIds(any()))
+                    .thenReturn(Collections.singletonMap(1L, 3L));
+
+            // When
+            PageResponse<AdminUserResponse> response = userService.listUsersForAdmin(1, 10, null, null);
+
+            // Then
+            assertEquals(2, response.getRecords().size());
+            AdminUserResponse firstResp = response.getRecords().get(0);
+            assertEquals(Collections.singletonList("ADMIN"), firstResp.getRoles());
+            assertEquals(3L, firstResp.getOrderCount());
+
+            // 第二个用户没有角色与订单，取默认值
+            AdminUserResponse secondResp = response.getRecords().get(1);
+            assertEquals(Collections.emptyList(), secondResp.getRoles());
+            assertEquals(0L, secondResp.getOrderCount());
+
+            // 批量接口各调用一次，且不再出现逐用户的角色/订单查询
+            verify(sysRoleService, times(1)).getRoleCodesByUserIds(any());
+            verify(orderService, times(1)).countByUserIds(any());
+            verify(sysRoleService, never()).getRolesByUserId(any());
+            verify(orderService, never()).count(any());
         }
     }
 }

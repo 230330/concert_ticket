@@ -12,7 +12,6 @@ import com.concert.dto.response.AdminUserResponse;
 import com.concert.dto.response.LoginResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.dto.response.UserInfoResponse;
-import com.concert.entity.Order;
 import com.concert.entity.SysRole;
 import com.concert.entity.User;
 import com.concert.enums.UserStatus;
@@ -38,6 +37,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -337,8 +338,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     userPage.getTotal(), Collections.emptyList());
         }
 
+        // 批量取角色与订单数，避免逐个用户各查一次（N+1）
+        List<Long> userIds = users.stream().map(User::getId).collect(Collectors.toList());
+        Map<Long, List<String>> roleCodeMap = sysRoleService.getRoleCodesByUserIds(userIds);
+        Map<Long, Long> orderCountMap = orderService.countByUserIds(userIds);
+
         List<AdminUserResponse> responseList = users.stream()
-                .map(this::convertToAdminUserResponse)
+                .map(user -> convertToAdminUserResponse(user, roleCodeMap, orderCountMap))
                 .collect(Collectors.toList());
 
         return new PageResponse<>(userPage.getCurrent(), userPage.getSize(),
@@ -351,7 +357,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user == null) {
             throw new NotFoundException("用户不存在");
         }
-        return convertToAdminUserResponse(user);
+        List<Long> singleId = Collections.singletonList(userId);
+        return convertToAdminUserResponse(user,
+                sysRoleService.getRoleCodesByUserIds(singleId),
+                orderService.countByUserIds(singleId));
     }
 
     @Override
@@ -366,8 +375,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 将 User 实体转换为 AdminUserResponse（含角色和订单统计）
+     * 角色与订单数由调用方批量查好后传入，避免逐个用户查询
+     *
+     * @param user         用户实体
+     * @param roleCodeMap  用户ID -> 角色编码列表
+     * @param orderCountMap 用户ID -> 订单数量
      */
-    private AdminUserResponse convertToAdminUserResponse(User user) {
+    private AdminUserResponse convertToAdminUserResponse(User user,
+                                                        Map<Long, List<String>> roleCodeMap,
+                                                        Map<Long, Long> orderCountMap) {
         AdminUserResponse resp = new AdminUserResponse();
         resp.setId(user.getId());
         resp.setPhone(user.getPhone());
@@ -377,14 +393,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         resp.setCreateTime(user.getCreateTime());
         resp.setUpdateTime(user.getUpdateTime());
 
-        // 查询角色
-        List<SysRole> roles = sysRoleService.getRolesByUserId(user.getId());
-        resp.setRoles(roles.stream().map(SysRole::getRoleCode).collect(Collectors.toList()));
-
-        // 查询订单数
-        LambdaQueryWrapper<Order> orderQuery = new LambdaQueryWrapper<>();
-        orderQuery.eq(Order::getUserId, user.getId());
-        resp.setOrderCount(orderService.count(orderQuery));
+        resp.setRoles(roleCodeMap.getOrDefault(user.getId(), Collections.emptyList()));
+        resp.setOrderCount(orderCountMap.getOrDefault(user.getId(), 0L));
 
         return resp;
     }

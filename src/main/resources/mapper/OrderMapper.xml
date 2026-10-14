@@ -46,4 +46,15 @@
         </foreach>
     </select>
 
+    <!-- 按用户批量统计订单数量（列别名即 Map 的键，Java 侧按 userId / orderCount 读取） -->
+    <select id="countOrdersByUserIds" resultType="java.util.Map">
+        SELECT user_id AS userId, COUNT(*) AS orderCount
+        FROM `order`
+        WHERE user_id IN
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+        GROUP BY user_id
+    </select>
+
 </mapper>

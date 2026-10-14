@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @description: 订单服务实现类（门面模式，委托给子服务）
@@ -115,5 +117,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Override
     public void adminRefundOrder(Long orderId) {
         orderCancellationService.adminRefundOrder(orderId);
+    }
+
+    @Override
+    public Map<Long, Long> countByUserIds(Collection<Long> userIds) {
+        return orderQueryService.countByUserIds(userIds);
     }
 }

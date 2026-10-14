@@ -8,6 +8,8 @@ import com.concert.dto.response.PageResponse;
 import com.concert.entity.Order;
 
 import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @description:    订单服务接口
@@ -143,4 +145,12 @@ public interface OrderService extends IService<Order> {
      * @param orderId 订单ID
      */
     void adminRefundOrder(Long orderId);
+
+    /**
+     * 按用户批量统计订单数量（列表场景使用，避免逐个用户查询）
+     *
+     * @param userIds 用户ID集合
+     * @return 用户ID -> 订单数量，没有订单的用户不会出现在结果中
+     */
+    Map<Long, Long> countByUserIds(Collection<Long> userIds);
 }

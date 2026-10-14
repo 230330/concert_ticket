@@ -377,4 +377,23 @@ public class OrderQueryServiceImpl implements OrderQueryService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, Long> countByUserIds(Collection<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        // 用一条分组统计 SQL 代替逐个用户 count，避免列表场景的 N+1 查询
+        Map<Long, Long> result = new HashMap<>();
+        for (Map<String, Object> row : orderMapper.countOrdersByUserIds(userIds)) {
+            Object userId = row.get("userId");
+            Object orderCount = row.get("orderCount");
+            if (userId != null && orderCount != null) {
+                result.put(((Number) userId).longValue(), ((Number) orderCount).longValue());
+            }
+        }
+        return result;
+    }
 }
