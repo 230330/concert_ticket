@@ -77,7 +77,7 @@
 </template>
 
 <script>
-import { getOrderList, adminRefund } from '@/api/admin/order'
+import { getOrderList, adminRefund, adminCancel } from '@/api/admin/order'
 
 const S_MAP = { 0: '待支付', 1: '已支付', 2: '已取消', 3: '已退款', 4: '已完成' }
 const T_MAP = { 0: 'warning', 1: 'success', 2: 'info', 3: 'danger', 4: 'success' }
@@ -123,9 +123,10 @@ export default {
     },
     handleAdminCancel(row) {
       this.$confirm('确认取消该订单？库存将回滚。', '取消确认', { type: 'warning' }).then(() => {
-        // 复用admin cancel接口
-        this.$message.success('已取消')
-        this.fetchData()
+        adminCancel(row.id).then(() => {
+          this.$message.success('已取消')
+          this.fetchData()
+        })
       }).catch(() => {})
     },
     handleAdminRefund(row) {
