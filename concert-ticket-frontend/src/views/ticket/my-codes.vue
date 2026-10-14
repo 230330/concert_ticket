@@ -12,7 +12,7 @@
             <div class="ticket-code-section">
               <div class="ticket-label">取票码</div>
               <div class="ticket-code">{{ item.pickupCode }}</div>
-              <el-button type="text" size="mini" @click="copyCode(item.pickupCode)">
+              <el-button type="text" size="small" @click="copyCode(item.pickupCode)">
                 <i class="el-icon-document-copy"></i> 复制
               </el-button>
             </div>

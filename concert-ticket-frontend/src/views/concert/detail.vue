@@ -38,7 +38,7 @@
         <!-- 操作列：按钮禁用条件保持不变（仅状态为1时可用） -->
         <el-table-column label="操作" width="120">
           <template slot-scope="{row}">
-            <el-button type="primary" size="mini" :disabled="row.status !== 1" @click="$router.push(`/concert/seat/${row.id}`)">
+            <el-button type="primary" size="small" :disabled="row.status !== 1" @click="$router.push(`/concert/seat/${row.id}`)">
               选座购票
             </el-button>
           </template>

@@ -68,7 +68,7 @@
         :total="total"
         :page-sizes="[10, 20, 50]"
         :page-size="pageSize"
-        :current-page.sync="currentPage"
+        v-model:current-page="currentPage"
         @size-change="handleSizeChange"
         @current-change="fetchData"
       />

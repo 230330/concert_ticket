@@ -14,5 +14,8 @@ module.exports = {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'vue/multi-word-component-names': 'off',
+    // plugin:vue/essential 是 Vue 2 的规则集，该规则禁止 v-model 带参数；
+    // 本项目为 Vue 3，v-model:current-page 等带参数写法是正确用法，故关闭
+    'vue/no-v-model-argument': 'off',
   },
 }

@@ -82,7 +82,7 @@
     </div>
 
     <!-- 购买确认弹窗 -->
-    <el-dialog title="确认订单" :visible.sync="dialogVisible" width="420px" center>
+    <el-dialog title="确认订单" v-model="dialogVisible" width="420px" center>
       <div class="confirm-order">
         <div class="confirm-item">
           <span class="label">区域</span>

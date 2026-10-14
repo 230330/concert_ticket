@@ -48,7 +48,7 @@
         <div class="card-body">
           <h3 class="card-title">{{ item.name }}</h3>
           <div class="card-artists" v-if="item.artistNames && item.artistNames.length > 0">
-            <el-tag size="mini" type="info" v-for="name in item.artistNames.slice(0,3)" :key="name" style="margin-right:4px">{{ name }}</el-tag>
+            <el-tag size="small" type="info" v-for="name in item.artistNames.slice(0,3)" :key="name" style="margin-right:4px">{{ name }}</el-tag>
           </div>
           <div class="card-meta">
             <span v-if="item.city"><i class="el-icon-location"></i> {{ item.city }}</span>
@@ -73,7 +73,7 @@
         layout="total, prev, pager, next"
         :total="total"
         :page-size="pageSize"
-        :current-page.sync="currentPage"
+        v-model:current-page="currentPage"
         @current-change="fetchData"
       />
     </div>

@@ -37,10 +37,10 @@
         </el-table-column>
       </el-table>
       <el-pagination v-if="total>0" style="margin-top:20px;text-align:right" background layout="total,prev,pager,next"
-        :total="total" :page-size="pageSize" :current-page.sync="currentPage" @current-change="fetchData" />
+        :total="total" :page-size="pageSize" v-model:current-page="currentPage" @current-change="fetchData" />
     </el-card>
 
-    <el-dialog :title="isEdit ? '编辑演唱会' : '新增演唱会'" :visible.sync="dialogVisible" width="500px">
+    <el-dialog :title="isEdit ? '编辑演唱会' : '新增演唱会'" v-model="dialogVisible" width="500px">
       <el-form :model="form" label-width="80px">
         <el-form-item label="名称"><el-input v-model="form.name" /></el-form-item>
         <el-form-item label="海报URL"><el-input v-model="form.poster" /></el-form-item>
@@ -53,7 +53,7 @@
     </el-dialog>
 
     <!-- 状态变更对话框 -->
-    <el-dialog title="变更演唱会状态" :visible.sync="statusDialogVisible" width="420px">
+    <el-dialog title="变更演唱会状态" v-model="statusDialogVisible" width="420px">
       <el-form label-width="80px">
         <el-form-item label="当前状态">
           <el-tag :type="statusTagType(currentConcertStatus)">{{ statusLabel(currentConcertStatus) }}</el-tag>

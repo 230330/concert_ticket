@@ -26,10 +26,10 @@
         </el-table-column>
       </el-table>
       <el-pagination v-if="total>0" style="margin-top:20px;text-align:right" background layout="total,prev,pager,next"
-        :total="total" :page-size="pageSize" :current-page.sync="currentPage" @current-change="fetchData" />
+        :total="total" :page-size="pageSize" v-model:current-page="currentPage" @current-change="fetchData" />
     </el-card>
 
-    <el-dialog :title="isEdit?'编辑票种':'新增票种'" :visible.sync="dialogVisible" width="500px">
+    <el-dialog :title="isEdit?'编辑票种':'新增票种'" v-model="dialogVisible" width="500px">
       <el-form :model="form" label-width="80px">
         <el-form-item label="场次ID"><el-input v-model="form.showId" /></el-form-item>
         <el-form-item label="区域ID"><el-input v-model="form.areaId" /></el-form-item>
@@ -40,7 +40,7 @@
       <div slot="footer"><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" @click="handleSubmit">确定</el-button></div>
     </el-dialog>
 
-    <el-dialog title="库存调整" :visible.sync="stockVisible" width="400px">
+    <el-dialog title="库存调整" v-model="stockVisible" width="400px">
       <el-form label-width="80px">
         <el-form-item label="当前库存">{{ stockForm.availableStock }} / {{ stockForm.totalStock }}</el-form-item>
         <el-form-item label="调整数量">

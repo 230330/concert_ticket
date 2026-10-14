@@ -35,9 +35,9 @@
           <div class="order-bottom">
             <span class="create-time">下单时间：{{ formatTime(order.createTime) }}</span>
             <div class="order-actions" @click.stop>
-              <el-button v-if="order.status === 0" type="primary" size="mini" round @click="handlePay(order)">立即支付</el-button>
-              <el-button v-if="order.status === 0" size="mini" round @click="handleCancel(order)">取消</el-button>
-              <el-button v-if="order.status === 1" type="warning" size="mini" round plain @click="handleRefund(order)">退款</el-button>
+              <el-button v-if="order.status === 0" type="primary" size="small" round @click="handlePay(order)">立即支付</el-button>
+              <el-button v-if="order.status === 0" size="small" round @click="handleCancel(order)">取消</el-button>
+              <el-button v-if="order.status === 1" type="warning" size="small" round plain @click="handleRefund(order)">退款</el-button>
               <el-button type="text" size="small" @click="$router.push(`/order/detail/${order.id}`)">查看详情 ></el-button>
             </div>
           </div>
@@ -55,7 +55,7 @@
         layout="total, prev, pager, next"
         :total="total"
         :page-size="pageSize"
-        :current-page.sync="currentPage"
+        v-model:current-page="currentPage"
         @current-change="fetchData"
       />
     </el-card>

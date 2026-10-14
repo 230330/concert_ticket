@@ -26,7 +26,7 @@
         </el-table-column>
       </el-table>
       <el-pagination v-if="total>0" style="margin-top:20px;text-align:right" background layout="total,prev,pager,next"
-        :total="total" :page-size="pageSize" :current-page.sync="currentPage" @current-change="fetchData" />
+        :total="total" :page-size="pageSize" v-model:current-page="currentPage" @current-change="fetchData" />
     </el-card>
   </div>
 </template>
