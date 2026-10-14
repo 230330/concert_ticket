@@ -1,5 +1,6 @@
 package com.concert.service.concert;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.concert.dto.response.ConcertDetailResponse;
 import com.concert.entity.*;
 import com.concert.enums.ConcertStatus;
@@ -98,9 +99,9 @@ class ConcertCoreServiceTest {
         void testGetConcertDetail_WithArtistsAndShows() {
             // Given
             when(concertService.getById(1L)).thenReturn(testConcert);
-            when(concertArtistService.list(any())).thenReturn(Collections.singletonList(testConcertArtist));
+            when(concertArtistService.list(any(Wrapper.class))).thenReturn(Collections.singletonList(testConcertArtist));
             when(artistService.listByIds(Collections.singletonList(10L))).thenReturn(Collections.singletonList(testArtist));
-            when(showService.list(any())).thenReturn(Collections.singletonList(testShow));
+            when(showService.list(any(Wrapper.class))).thenReturn(Collections.singletonList(testShow));
             when(venueService.listByIds(Collections.singletonList(200L))).thenReturn(Collections.singletonList(testVenue));
 
             // When
@@ -121,8 +122,8 @@ class ConcertCoreServiceTest {
         void testGetConcertDetail_NoArtists() {
             // Given
             when(concertService.getById(1L)).thenReturn(testConcert);
-            when(concertArtistService.list(any())).thenReturn(Collections.emptyList());
-            when(showService.list(any())).thenReturn(Collections.emptyList());
+            when(concertArtistService.list(any(Wrapper.class))).thenReturn(Collections.emptyList());
+            when(showService.list(any(Wrapper.class))).thenReturn(Collections.emptyList());
 
             // When
             ConcertDetailResponse response = concertCoreService.getConcertDetail(1L);
@@ -174,9 +175,9 @@ class ConcertCoreServiceTest {
             show2.setStatus(ShowStatus.ON_SALE);
 
             when(concertService.getById(1L)).thenReturn(testConcert);
-            when(concertArtistService.list(any())).thenReturn(Arrays.asList(testConcertArtist, ca2));
+            when(concertArtistService.list(any(Wrapper.class))).thenReturn(Arrays.asList(testConcertArtist, ca2));
             when(artistService.listByIds(anyList())).thenReturn(Arrays.asList(testArtist, artist2));
-            when(showService.list(any())).thenReturn(Arrays.asList(testShow, show2));
+            when(showService.list(any(Wrapper.class))).thenReturn(Arrays.asList(testShow, show2));
             when(venueService.listByIds(anyList())).thenReturn(Collections.singletonList(testVenue));
 
             // When
@@ -192,8 +193,8 @@ class ConcertCoreServiceTest {
         void testGetConcertDetail_VenueNotFound_NoCrash() {
             // Given
             when(concertService.getById(1L)).thenReturn(testConcert);
-            when(concertArtistService.list(any())).thenReturn(Collections.emptyList());
-            when(showService.list(any())).thenReturn(Collections.singletonList(testShow));
+            when(concertArtistService.list(any(Wrapper.class))).thenReturn(Collections.emptyList());
+            when(showService.list(any(Wrapper.class))).thenReturn(Collections.singletonList(testShow));
             when(venueService.listByIds(anyList())).thenReturn(Collections.emptyList());
 
             // When

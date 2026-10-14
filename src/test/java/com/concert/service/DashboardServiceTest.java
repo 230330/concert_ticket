@@ -1,5 +1,6 @@
 package com.concert.service;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.concert.dto.response.DashboardRevenueResponse;
 import com.concert.dto.response.DashboardSalesResponse;
 import com.concert.entity.*;
@@ -60,7 +61,7 @@ class DashboardServiceTest {
             // Given
             when(orderService.count()).thenReturn(100L);
             when(orderService.count(any())).thenReturn(30L); // 各状态计数
-            when(orderService.list(any())).thenReturn(createPaidOrders());
+            when(orderService.list(any(Wrapper.class))).thenReturn(createPaidOrders());
             when(orderSeatService.count()).thenReturn(200L);
             when(concertService.count(any())).thenReturn(5L);
             when(showService.count(any())).thenReturn(10L);
@@ -84,7 +85,7 @@ class DashboardServiceTest {
             // Given
             when(orderService.count()).thenReturn(0L);
             when(orderService.count(any())).thenReturn(0L);
-            when(orderService.list(any())).thenReturn(Collections.emptyList());
+            when(orderService.list(any(Wrapper.class))).thenReturn(Collections.emptyList());
             when(orderSeatService.count()).thenReturn(0L);
             when(concertService.count(any())).thenReturn(0L);
             when(showService.count(any())).thenReturn(0L);
@@ -117,7 +118,7 @@ class DashboardServiceTest {
             paidOrder.setTotalAmount(BigDecimal.valueOf(299));
             paidOrder.setCreateTime(today.atStartOfDay().plusHours(10));
 
-            when(orderService.list(any())).thenReturn(Arrays.asList(paidOrder));
+            when(orderService.list(any(Wrapper.class))).thenReturn(Arrays.asList(paidOrder));
             when(orderSeatService.count(any())).thenReturn(1L);
 
             // When
@@ -137,7 +138,7 @@ class DashboardServiceTest {
             // Given
             LocalDate start = LocalDate.of(2026, 1, 1);
             LocalDate end = LocalDate.of(2026, 1, 1);
-            when(orderService.list(any())).thenReturn(Collections.emptyList());
+            when(orderService.list(any(Wrapper.class))).thenReturn(Collections.emptyList());
 
             // When
             List<DashboardRevenueResponse> result = dashboardService.getRevenueReport(start, end);
@@ -161,7 +162,7 @@ class DashboardServiceTest {
             refundOrder.setTotalAmount(BigDecimal.valueOf(100));
             refundOrder.setCreateTime(today.atStartOfDay().plusHours(10));
 
-            when(orderService.list(any())).thenReturn(Arrays.asList(refundOrder));
+            when(orderService.list(any(Wrapper.class))).thenReturn(Arrays.asList(refundOrder));
 
             // When
             List<DashboardRevenueResponse> result = dashboardService.getRevenueReport(today, today);

@@ -1,5 +1,6 @@
 package com.concert.service.order;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.concert.dto.response.OrderResponse;
 import com.concert.entity.Order;
 import com.concert.entity.OrderSeat;
@@ -108,7 +109,7 @@ class OrderCancellationServiceTest {
         void testCancelOrder_Success() {
             // Given
             when(orderService.getById(1L)).thenReturn(pendingOrder);
-            when(orderSeatService.list(any())).thenReturn(Collections.emptyList());
+            when(orderSeatService.list(any(Wrapper.class))).thenReturn(Collections.emptyList());
             when(orderService.updateById(any(Order.class))).thenReturn(true);
 
             // When
@@ -152,7 +153,7 @@ class OrderCancellationServiceTest {
             os2.setTicketTypeId(1L);
 
             when(orderService.getById(1L)).thenReturn(pendingOrder);
-            when(orderSeatService.list(any())).thenReturn(Arrays.asList(os1, os2));
+            when(orderSeatService.list(any(Wrapper.class))).thenReturn(Arrays.asList(os1, os2));
             when(ticketTypeService.update(any())).thenReturn(true);
             when(orderSeatService.remove(any())).thenReturn(true);
             when(orderService.updateById(any(Order.class))).thenReturn(true);
@@ -179,7 +180,7 @@ class OrderCancellationServiceTest {
         @DisplayName("过期待支付订单被成功取消")
         void testCancelExpiredOrder_Success() {
             when(orderService.getById(1L)).thenReturn(pendingOrder);
-            when(orderSeatService.list(any())).thenReturn(Collections.emptyList());
+            when(orderSeatService.list(any(Wrapper.class))).thenReturn(Collections.emptyList());
             when(orderService.updateById(any(Order.class))).thenReturn(true);
 
             orderCancellationService.cancelExpiredOrder(1L);
@@ -220,7 +221,7 @@ class OrderCancellationServiceTest {
         void testRefundOrder_Success() {
             when(orderService.getById(2L)).thenReturn(paidOrder);
             when(showService.getById(10L)).thenReturn(futureShow);
-            when(orderSeatService.list(any())).thenReturn(Collections.emptyList());
+            when(orderSeatService.list(any(Wrapper.class))).thenReturn(Collections.emptyList());
             when(orderService.updateById(any(Order.class))).thenReturn(true);
             when(orderQueryService.getOrderDetail(2L)).thenReturn(new OrderResponse());
 
@@ -280,7 +281,7 @@ class OrderCancellationServiceTest {
         @DisplayName("管理员退款已支付订单成功")
         void testAdminRefund_PaidOrder_Success() {
             when(orderService.getById(2L)).thenReturn(paidOrder);
-            when(orderSeatService.list(any())).thenReturn(Collections.emptyList());
+            when(orderSeatService.list(any(Wrapper.class))).thenReturn(Collections.emptyList());
             when(orderService.updateById(any(Order.class))).thenReturn(true);
 
             orderCancellationService.adminRefundOrder(2L);
@@ -300,7 +301,7 @@ class OrderCancellationServiceTest {
             completedOrder.setSeatInfo("1");
 
             when(orderService.getById(3L)).thenReturn(completedOrder);
-            when(orderSeatService.list(any())).thenReturn(Collections.emptyList());
+            when(orderSeatService.list(any(Wrapper.class))).thenReturn(Collections.emptyList());
             when(orderService.updateById(any(Order.class))).thenReturn(true);
 
             orderCancellationService.adminRefundOrder(3L);
@@ -342,7 +343,7 @@ class OrderCancellationServiceTest {
         @Test
         @DisplayName("无符合条件订单返回0")
         void testBatchCancel_NoMatchingOrders_ReturnsZero() {
-            when(orderService.list(any())).thenReturn(Collections.emptyList());
+            when(orderService.list(any(Wrapper.class))).thenReturn(Collections.emptyList());
 
             int result = orderCancellationService.batchCancelExpiredOrders(Arrays.asList(1L, 2L));
             assertEquals(0, result);
