@@ -326,8 +326,10 @@ SecurityConfig.java - /api/admin/** 路径要求 ROLE_ADMIN 角色，开启 @Ena
 
 使用步骤
 
-1. 执行 src/main/resources/sql/ 下的 SQL 脚本初始化数据库和 RBAC 数据
-2. 安装并启动 Redis、RabbitMQ 服务
+1. 初始化数据库：先创建空库 concert_ticket，再导入 src/main/resources/sql/backup.sql（完整表结构与初始数据，含 RBAC 角色权限）。
+   该脚本不含建库语句，需指定目标库执行，例如：mysql -u root -p concert_ticket < src/main/resources/sql/backup.sql
+   sql/DDL.sql 只记录建库之后的增量结构变更，仅在已有库上升级时执行。
+2. 安装并启动 Redis（缓存、限流、分布式锁都依赖它）。RabbitMQ 可选：默认关闭（concert.mq.enabled=false），未安装也能正常启动，需要异步下单超时消息时再开启。
 3. 修改 application.yml 中的数据库、Redis、RabbitMQ、支付宝等配置（生产环境通过环境变量注入）
 4. 启动后端服务：mvn spring-boot:run
 5. 进入 concert-ticket-frontend 目录，执行 npm install && npm run dev 启动前端

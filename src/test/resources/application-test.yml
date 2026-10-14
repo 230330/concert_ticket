@@ -1,8 +1,9 @@
 # 测试环境配置
 spring:
   datasource:
-    # 使用 H2 内存数据库进行测试（可选）
-    # 或者使用测试环境的 MySQL
+    # 测试连接目标，可用环境变量 MYSQL_URL 覆盖
+    # 说明：现有测试不发起真实查询（Controller 测试用 mock 依赖、其余为 Mockito 单测），
+    # 因此测试套件不需要预先准备该库；如需连接真实库请自行创建 concert_ticket_test
     url: ${MYSQL_URL:jdbc:mysql://localhost:3306/concert_ticket_test?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false}
     username: ${MYSQL_USERNAME:root}
     password: ${MYSQL_PASSWORD:root}
