@@ -10,7 +10,7 @@
             :class="['step', { active: index <= currentStepIndex, current: index === currentStepIndex }]"
           >
             <div class="step-icon">
-              <i :class="step.icon"></i>
+              <el-icon><component :is="step.icon" /></el-icon>
             </div>
             <div class="step-label">{{ step.label }}</div>
           </div>
@@ -30,8 +30,8 @@
         <div class="concert-info">
           <div class="concert-name">{{ order.concertName || '演唱会' }}</div>
           <div class="concert-meta">
-            <span><i class="el-icon-location"></i> {{ order.venueName || '-' }}</span>
-            <span><i class="el-icon-time"></i> {{ formatTime(order.showTime) }}</span>
+            <span><el-icon><Location /></el-icon> {{ order.venueName || '-' }}</span>
+            <span><el-icon><Clock /></el-icon> {{ formatTime(order.showTime) }}</span>
           </div>
         </div>
       </el-card>
@@ -42,7 +42,7 @@
           <div class="pickup-label">取票码</div>
           <div class="pickup-code">{{ order.pickupCode }}</div>
           <el-button type="text" size="small" @click="copyCode" style="margin-top:8px">
-            <i class="el-icon-document-copy"></i> 复制取票码
+            <el-icon><DocumentCopy /></el-icon> 复制取票码
           </el-button>
         </div>
       </el-card>
@@ -103,28 +103,28 @@ const STATUS_MAP = { 0: '待支付', 1: '已支付', 2: '已取消', 3: '已退�
 const TAG_MAP = { 0: 'warning', 1: 'success', 2: 'info', 3: 'danger', 4: 'success' }
 const STATUS_STEPS_MAP = {
   0: [
-    { label: '提交订单', icon: 'el-icon-edit' },
-    { label: '支付订单', icon: 'el-icon-bank-card' },
-    { label: '购票成功', icon: 'el-icon-circle-check' }
+    { label: '提交订单', icon: 'Edit' },
+    { label: '支付订单', icon: 'CreditCard' },
+    { label: '购票成功', icon: 'CircleCheck' }
   ],
   1: [
-    { label: '提交订单', icon: 'el-icon-edit' },
-    { label: '支付成功', icon: 'el-icon-bank-card' },
-    { label: '取票入场', icon: 'el-icon-circle-check' }
+    { label: '提交订单', icon: 'Edit' },
+    { label: '支付成功', icon: 'CreditCard' },
+    { label: '取票入场', icon: 'CircleCheck' }
   ],
   4: [
-    { label: '提交订单', icon: 'el-icon-edit' },
-    { label: '支付成功', icon: 'el-icon-bank-card' },
-    { label: '已完成', icon: 'el-icon-circle-check' }
+    { label: '提交订单', icon: 'Edit' },
+    { label: '支付成功', icon: 'CreditCard' },
+    { label: '已完成', icon: 'CircleCheck' }
   ],
   2: [
-    { label: '提交订单', icon: 'el-icon-edit' },
-    { label: '已取消', icon: 'el-icon-circle-close' }
+    { label: '提交订单', icon: 'Edit' },
+    { label: '已取消', icon: 'CircleClose' }
   ],
   3: [
-    { label: '提交订单', icon: 'el-icon-edit' },
-    { label: '支付成功', icon: 'el-icon-bank-card' },
-    { label: '已退款', icon: 'el-icon-circle-close' }
+    { label: '提交订单', icon: 'Edit' },
+    { label: '支付成功', icon: 'CreditCard' },
+    { label: '已退款', icon: 'CircleClose' }
   ]
 }
 const STEP_INDEX_MAP = { 0: 0, 1: 2, 2: 1, 3: 2, 4: 2 }

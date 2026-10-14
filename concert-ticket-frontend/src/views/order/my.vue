@@ -23,8 +23,8 @@
             <div class="order-info">
               <div class="concert-name">{{ order.concertName || '演唱会' }}</div>
               <div class="order-meta">
-                <span v-if="order.venueName"><i class="el-icon-location"></i> {{ order.venueName }}</span>
-                <span><i class="el-icon-time"></i> {{ formatTime(order.showTime) }}</span>
+                <span v-if="order.venueName"><el-icon><Location /></el-icon> {{ order.venueName }}</span>
+                <span><el-icon><Clock /></el-icon> {{ formatTime(order.showTime) }}</span>
               </div>
             </div>
             <div class="order-amount">

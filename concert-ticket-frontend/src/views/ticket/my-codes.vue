@@ -3,7 +3,7 @@
     <el-card class="page-card" shadow="never">
       <template #header>
           <span class="page-title">我的取票码</span>
-          <el-button type="text" icon="el-icon-refresh" @click="fetchData">刷新</el-button>
+          <el-button type="text" icon="Refresh" @click="fetchData">刷新</el-button>
       </template>
 
       <div v-if="ticketList.length > 0" class="ticket-list">
@@ -13,7 +13,7 @@
               <div class="ticket-label">取票码</div>
               <div class="ticket-code">{{ item.pickupCode }}</div>
               <el-button type="text" size="small" @click="copyCode(item.pickupCode)">
-                <i class="el-icon-document-copy"></i> 复制
+                <el-icon><DocumentCopy /></el-icon> 复制
               </el-button>
             </div>
             <div class="ticket-info">

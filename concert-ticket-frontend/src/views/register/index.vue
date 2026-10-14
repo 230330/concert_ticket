@@ -5,7 +5,7 @@
     </div>
     <div class="register-card">
       <div class="register-header">
-        <div class="logo-icon"><i class="el-icon-headset"></i></div>
+        <div class="logo-icon"><el-icon><Headset /></el-icon></div>
         <h2 class="register-title">用户注册</h2>
         <p class="register-subtitle">注册账号，畅享精彩演出</p>
       </div>
@@ -16,7 +16,7 @@
             v-model="registerForm.phone"
             placeholder="请输入手机号"
             maxlength="11"
-            prefix-icon="el-icon-mobile-phone"
+            prefix-icon="Iphone"
             clearable
           />
         </el-form-item>
@@ -26,10 +26,10 @@
             v-model="registerForm.password"
             :type="passwordType"
             placeholder="8-32位，包含字母和数字"
-            prefix-icon="el-icon-lock"
+            prefix-icon="Lock"
           >
             <template #suffix>
-              <i class="el-icon-view toggle-pwd" @click="showPwd"></i>
+              <el-icon class="toggle-pwd" @click="showPwd"><View /></el-icon>
             </template>
           </el-input>
         </el-form-item>
@@ -39,7 +39,7 @@
             v-model="registerForm.confirmPassword"
             type="password"
             placeholder="请再次输入密码"
-            prefix-icon="el-icon-lock"
+            prefix-icon="Lock"
           />
         </el-form-item>
 
@@ -49,7 +49,7 @@
               v-model="registerForm.code"
               placeholder="请输入验证码"
               maxlength="6"
-              prefix-icon="el-icon-message"
+              prefix-icon="Message"
               style="flex:1"
             />
             <el-button

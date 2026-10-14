@@ -5,7 +5,7 @@
       <el-col :xs="12" :sm="6" v-for="card in statCards" :key="card.key">
         <div class="stat-card" :style="{ borderTopColor: card.color }">
           <div class="stat-icon" :style="{ background: card.color + '18', color: card.color }">
-            <i :class="card.icon"></i>
+            <el-icon><component :is="card.icon" /></el-icon>
           </div>
           <div class="stat-content">
             <div class="stat-value">{{ card.value }}</div>
@@ -37,7 +37,7 @@
               size="small"
               style="margin-left: 12px"
             />
-            <el-button type="primary" size="small" icon="el-icon-search" @click="fetchRevenue" style="margin-left:8px">查询</el-button>
+            <el-button type="primary" size="small" icon="Search" @click="fetchRevenue" style="margin-left:8px">查询</el-button>
           </div>
       </template>
 
@@ -104,10 +104,10 @@ export default {
       loading: false,
       salesData: null,
       statCards: [
-        { key: 'totalOrders', label: '总订单数', value: 0, icon: 'el-icon-s-order', color: '#409EFF' },
-        { key: 'totalRevenue', label: '总销售额', value: '¥0', icon: 'el-icon-s-finance', color: '#67C23A' },
-        { key: 'activeConcerts', label: '活跃演唱会', value: 0, icon: 'el-icon-headset', color: '#E6A23C' },
-        { key: 'totalUsers', label: '注册用户', value: 0, icon: 'el-icon-user-solid', color: '#F56C6C' }
+        { key: 'totalOrders', label: '总订单数', value: 0, icon: 'Tickets', color: '#409EFF' },
+        { key: 'totalRevenue', label: '总销售额', value: '¥0', icon: 'Money', color: '#67C23A' },
+        { key: 'activeConcerts', label: '活跃演唱会', value: 0, icon: 'Headset', color: '#E6A23C' },
+        { key: 'totalUsers', label: '注册用户', value: 0, icon: 'UserFilled', color: '#F56C6C' }
       ],
       quickDate: 'month',
       dateRange: [],

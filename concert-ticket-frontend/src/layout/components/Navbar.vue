@@ -9,7 +9,7 @@
         <div class="avatar-wrapper">
           <img v-if="avatarUrl" :src="avatarUrl" class="user-avatar">
           <img v-else src="/default-avatar.svg" class="user-avatar">
-          <i class="el-icon-caret-bottom" />
+          <el-icon><CaretBottom /></el-icon>
         </div>
         <template #dropdown>
           <el-dropdown-menu class="user-dropdown">
@@ -135,7 +135,7 @@ export default {
           border-radius: 10px;
         }
 
-        .el-icon-caret-bottom {
+        .el-icon {
           cursor: pointer;
           position: absolute;
           right: -20px;

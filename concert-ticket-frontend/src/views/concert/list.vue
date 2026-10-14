@@ -4,7 +4,7 @@
     <el-card class="search-card" shadow="never">
       <el-form :inline="true" :model="searchForm" size="medium">
         <el-form-item>
-          <el-input v-model="searchForm.keyword" placeholder="搜索演唱会名称" clearable prefix-icon="el-icon-search" style="width:200px" />
+          <el-input v-model="searchForm.keyword" placeholder="搜索演唱会名称" clearable prefix-icon="Search" style="width:200px" />
         </el-form-item>
         <el-form-item>
           <el-input v-model="searchForm.city" placeholder="城市" clearable style="width:120px" />
@@ -20,7 +20,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
+          <el-button type="primary" icon="Search" @click="handleSearch">搜索</el-button>
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -41,7 +41,7 @@
         <div class="card-poster">
           <el-image v-if="item.poster" :src="item.poster" fit="cover" class="poster-img" />
           <div v-else class="poster-placeholder">
-            <i class="el-icon-headset"></i>
+            <el-icon><Headset /></el-icon>
           </div>
           <div class="card-price" v-if="item.minPrice">{{ item.minPrice }}起</div>
         </div>
@@ -51,11 +51,11 @@
             <el-tag size="small" type="info" v-for="name in item.artistNames.slice(0,3)" :key="name" style="margin-right:4px">{{ name }}</el-tag>
           </div>
           <div class="card-meta">
-            <span v-if="item.city"><i class="el-icon-location"></i> {{ item.city }}</span>
-            <span v-if="item.venueName"><i class="el-icon-office-building"></i> {{ item.venueName }}</span>
+            <span v-if="item.city"><el-icon><Location /></el-icon> {{ item.city }}</span>
+            <span v-if="item.venueName"><el-icon><OfficeBuilding /></el-icon> {{ item.venueName }}</span>
           </div>
           <div class="card-meta" v-if="item.nearestShowTime">
-            <span><i class="el-icon-time"></i> {{ formatTime(item.nearestShowTime) }}</span>
+            <span><el-icon><Clock /></el-icon> {{ formatTime(item.nearestShowTime) }}</span>
           </div>
         </div>
       </div>

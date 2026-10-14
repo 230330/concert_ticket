@@ -5,7 +5,7 @@
     </div>
     <div class="login-card">
       <div class="login-header">
-        <div class="logo-icon"><i class="el-icon-headset"></i></div>
+        <div class="logo-icon"><el-icon><Headset /></el-icon></div>
         <h2 class="login-title">演唱会售票系统</h2>
         <p class="login-subtitle">精彩演出，触手可及</p>
       </div>
@@ -25,7 +25,7 @@
             type="text"
             tabindex="1"
             maxlength="11"
-            prefix-icon="el-icon-mobile-phone"
+            prefix-icon="Iphone"
             clearable
           />
         </el-form-item>
@@ -37,11 +37,11 @@
             placeholder="请输入密码"
             name="password"
             tabindex="2"
-            prefix-icon="el-icon-lock"
+            prefix-icon="Lock"
             @keyup.enter="handleLogin"
           >
             <template #suffix>
-              <i class="el-icon-view toggle-pwd" @click="showPwd"></i>
+              <el-icon class="toggle-pwd" @click="showPwd"><View /></el-icon>
             </template>
           </el-input>
         </el-form-item>

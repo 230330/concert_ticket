@@ -11,14 +11,14 @@
           placeholder="请输入取票码"
           size="large"
           clearable
-          prefix-icon="el-icon-ticket"
+          prefix-icon="Ticket"
           class="code-input"
                 @keyup.enter="handleVerify"
         />
         <el-button
           type="primary"
           size="medium"
-          icon="el-icon-check"
+          icon="Check"
           :loading="verifying"
           :disabled="!pickupCode.trim()"
           @click="handleVerify"

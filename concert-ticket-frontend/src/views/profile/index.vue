@@ -31,7 +31,7 @@
               accept=".jpg,.jpeg,.png"
             >
               <img v-if="profileForm.avatar" :src="avatarFullUrl" class="avatar-preview" />
-              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+              <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
             </el-upload>
             <div class="avatar-tip">支持JPG、PNG格式，大小不超过10MB</div>
           </div>

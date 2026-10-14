@@ -23,7 +23,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="fetchData">搜索</el-button>
+          <el-button type="primary" icon="Search" @click="fetchData">搜索</el-button>
           <el-button @click="resetSearch">重置</el-button>
         </el-form-item>
       </el-form>
@@ -53,7 +53,7 @@
         </el-table-column>
         <el-table-column label="操作" width="180" fixed="right" align="center">
           <template slot-scope="{row}">
-            <el-button type="text" size="small" icon="el-icon-view" @click="viewDetail(row)">详情</el-button>
+            <el-button type="text" size="small" icon="View" @click="viewDetail(row)">详情</el-button>
             <el-button v-if="row.status===0" type="text" size="small" style="color:#F56C6C" @click="handleAdminCancel(row)">取消</el-button>
             <el-button v-if="row.status===1||row.status===4" type="text" size="small" style="color:#E6A23C" @click="handleAdminRefund(row)">退款</el-button>
           </template>
