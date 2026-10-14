@@ -17,9 +17,20 @@
 | 测试（必须全绿） | `mvn test` |
 | 全量构建 | `mvn verify` |
 | 启动后端 | `mvn spring-boot:run` |
-| 启动前端 | `cd concert-ticket-frontend && npm install && npm run dev` |
+| 前端安装依赖 | `cd concert-ticket-frontend && npm install` |
+| 前端代码检查（必须通过） | `cd concert-ticket-frontend && npm run lint` |
+| 前端构建 | `cd concert-ticket-frontend && npm run build` |
+| 启动前端开发服务 | `cd concert-ticket-frontend && npm run dev` |
 
 测试不得依赖 MySQL、Redis、RabbitMQ 等外部环境，必须能在裸环境下直接运行。
+CI（`.github/workflows/ci.yml`）会并行执行后端 `mvn verify` 与前端 `npm run lint` + `npm run build`，提交前请本地先跑通对应命令。
+
+## 前端代码风格
+
+1. eslint 配置在 `concert-ticket-frontend/.eslintrc.js`，解析链使用 eslint 自带的 espree 与 vue-eslint-parser，**不要**改回 `@babel/eslint-parser`（会读取仍引用 Vue CLI preset 的 `babel.config.js` 导致全量解析失败）。
+2. 提交前必须保证 `npm run lint` 无输出通过。
+3. `src/` 下新增接口调用统一走 `src/api/`，不要在页面里直接调 `request`。
+4. 页面状态映射等常量提取到模块顶层，不要在模板里散写魔法值。
 
 ## 后端代码风格
 
