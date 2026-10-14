@@ -15,11 +15,7 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="searchForm.status" placeholder="状态" clearable style="width:120px">
-            <el-option label="待支付" :value="0" />
-            <el-option label="已支付" :value="1" />
-            <el-option label="已取消" :value="2" />
-            <el-option label="已退款" :value="3" />
-            <el-option label="已完成" :value="4" />
+            <el-option v-for="opt in statusOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -78,15 +74,14 @@
 
 <script>
 import { getOrderList, adminRefund, adminCancel } from '@/api/admin/order'
-
-const S_MAP = { 0: '待支付', 1: '已支付', 2: '已取消', 3: '已退款', 4: '已完成' }
-const T_MAP = { 0: 'warning', 1: 'success', 2: 'info', 3: 'danger', 4: 'success' }
+import { ORDER_STATUS_MAP, resolveStatusLabel, resolveStatusTagType, toStatusOptions } from '@/constants/status'
 
 export default {
   name: 'AdminOrder',
   data() {
     return {
       searchForm: { orderNo: '', userId: '', status: '' },
+      statusOptions: toStatusOptions(ORDER_STATUS_MAP),
       tableData: [],
       loading: false,
       currentPage: 1,
@@ -96,8 +91,8 @@ export default {
   },
   created() { this.fetchData() },
   methods: {
-    statusText(s) { return S_MAP[s] || '未知' },
-    statusTag(s) { return T_MAP[s] || 'info' },
+    statusText(s) { return resolveStatusLabel(ORDER_STATUS_MAP, s) },
+    statusTag(s) { return resolveStatusTagType(ORDER_STATUS_MAP, s) },
     formatTime(t) {
       if (!t) return '-'
       return t.replace('T', ' ').substring(0, 19)

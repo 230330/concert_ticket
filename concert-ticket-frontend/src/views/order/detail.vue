@@ -98,9 +98,7 @@
 
 <script>
 import { getOrderDetail, payOrder, cancelOrder, refundOrder } from '@/api/order'
-
-const STATUS_MAP = { 0: '待支付', 1: '已支付', 2: '已取消', 3: '已退款', 4: '已完成' }
-const TAG_MAP = { 0: 'warning', 1: 'success', 2: 'info', 3: 'danger', 4: 'success' }
+import { ORDER_STATUS_MAP, resolveStatusLabel, resolveStatusTagType } from '@/constants/status'
 const STATUS_STEPS_MAP = {
   0: [
     { label: '提交订单', icon: 'Edit' },
@@ -154,8 +152,8 @@ export default {
     if (this.timer) clearInterval(this.timer)
   },
   methods: {
-    statusText(s) { return STATUS_MAP[s] || '未知' },
-    statusTagType(s) { return TAG_MAP[s] || 'info' },
+    statusText(s) { return resolveStatusLabel(ORDER_STATUS_MAP, s) },
+    statusTagType(s) { return resolveStatusTagType(ORDER_STATUS_MAP, s) },
     formatTime(t) {
       if (!t) return '-'
       return t.replace('T', ' ').substring(0, 19)

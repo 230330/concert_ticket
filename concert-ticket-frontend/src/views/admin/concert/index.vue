@@ -74,14 +74,7 @@
 
 <script>
 import { getConcertList, addConcert, updateConcert, deleteConcert, updateConcertStatus } from '@/api/admin/concert'
-
-// 演唱会状态枚举映射（与后端 ConcertStatus 一致）
-const STATUS_MAP = {
-  0: { label: '未开始', tagType: 'info' },
-  1: { label: '进行中', tagType: 'warning' },
-  2: { label: '已结束', tagType: 'success' },
-  3: { label: '已取消', tagType: 'danger' }
-}
+import { CONCERT_STATUS_MAP as STATUS_MAP } from '@/constants/status'
 
 // 状态转换规则：当前状态 → 允许的目标状态列表
 const STATUS_TRANSITIONS = {

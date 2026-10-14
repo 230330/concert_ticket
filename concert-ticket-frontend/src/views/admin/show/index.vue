@@ -76,15 +76,7 @@
 
 <script>
 import { getShowList, addShow, updateShow, deleteShow, updateShowStatus } from '@/api/admin/show'
-
-// 场次状态枚举映射（与后端 ShowStatus 一致）
-const STATUS_MAP = {
-  0: { label: '未开售', tagType: 'info' },
-  1: { label: '售票中', tagType: 'warning' },
-  2: { label: '已售罄', tagType: 'danger' },
-  3: { label: '已结束', tagType: 'success' },
-  4: { label: '已取消', tagType: 'info' }
-}
+import { SHOW_STATUS_MAP as STATUS_MAP } from '@/constants/status'
 
 // 状态转换规则：当前状态 → 允许的目标状态列表
 const STATUS_TRANSITIONS = {

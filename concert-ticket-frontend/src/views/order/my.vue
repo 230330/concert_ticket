@@ -5,11 +5,7 @@
           <span class="page-title">我的订单</span>
           <el-select v-model="statusFilter" placeholder="订单状态" size="small" style="width:140px" clearable @change="fetchData">
             <el-option label="全部" :value="null" />
-            <el-option label="待支付" :value="0" />
-            <el-option label="已支付" :value="1" />
-            <el-option label="已取消" :value="2" />
-            <el-option label="已退款" :value="3" />
-            <el-option label="已完成" :value="4" />
+            <el-option v-for="opt in statusOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
       </template>
 
@@ -64,15 +60,14 @@
 
 <script>
 import { getMyOrders, payOrder, cancelOrder, refundOrder } from '@/api/order'
-
-const STATUS_MAP = { 0: '待支付', 1: '已支付', 2: '已取消', 3: '已退款', 4: '已完成' }
-const TAG_MAP = { 0: 'warning', 1: 'success', 2: 'info', 3: 'danger', 4: 'success' }
+import { ORDER_STATUS_MAP, resolveStatusLabel, resolveStatusTagType, toStatusOptions } from '@/constants/status'
 
 export default {
   name: 'MyOrders',
   data() {
     return {
       statusFilter: null,
+      statusOptions: toStatusOptions(ORDER_STATUS_MAP),
       tableData: [],
       loading: false,
       currentPage: 1,
@@ -84,8 +79,8 @@ export default {
     this.fetchData()
   },
   methods: {
-    statusText(status) { return STATUS_MAP[status] || '未知' },
-    statusTagType(status) { return TAG_MAP[status] || 'info' },
+    statusText(status) { return resolveStatusLabel(ORDER_STATUS_MAP, status) },
+    statusTagType(status) { return resolveStatusTagType(ORDER_STATUS_MAP, status) },
     formatTime(t) {
       if (!t) return '-'
       return t.replace('T', ' ').substring(0, 16)

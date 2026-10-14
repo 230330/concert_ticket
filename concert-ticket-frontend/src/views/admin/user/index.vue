@@ -14,7 +14,7 @@
         <el-table-column prop="orderCount" label="订单数" width="80" />
         <el-table-column label="状态" width="80">
           <template slot-scope="{row}">
-            <el-tag :type="row.status===0?'danger':'success'">{{ row.status===0?'已封禁':'正常' }}</el-tag>
+            <el-tag :type="userStatusTag(row.status)">{{ userStatusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="注册时间" width="160" />
@@ -33,6 +33,7 @@
 
 <script>
 import { getUserList, banUser, unbanUser } from '@/api/admin/user'
+import { USER_STATUS_MAP, resolveStatusLabel, resolveStatusTagType } from '@/constants/status'
 
 export default {
   name: 'AdminUser',
@@ -44,6 +45,8 @@ export default {
   },
   created() { this.fetchData() },
   methods: {
+    userStatusLabel(status) { return resolveStatusLabel(USER_STATUS_MAP, status) },
+    userStatusTag(status) { return resolveStatusTagType(USER_STATUS_MAP, status) },
     fetchData() {
       this.loading = true
       getUserList({ page: this.currentPage, size: this.pageSize, ...this.searchForm }).then(res => {
