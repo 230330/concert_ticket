@@ -70,7 +70,7 @@ export default {
       if (!this.pickupCode.trim()) return
       this.verifying = true
       this.result = null
-      verifyTicketCode(this.pickupCode.trim()).then(res => {
+      verifyTicketCode(this.pickupCode.trim()).then(() => {
         this.result = true
         this.$message.success('核销成功')
         this.pickupCode = ''

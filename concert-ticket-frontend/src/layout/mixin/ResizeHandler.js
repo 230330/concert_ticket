@@ -5,7 +5,7 @@ const WIDTH = 992
 
 export default {
   watch: {
-    $route(route) {
+    $route() {
       const appStore = useAppStore()
       if (appStore.device === 'mobile' && appStore.sidebar.opened) {
         appStore.closeSideBar(false)

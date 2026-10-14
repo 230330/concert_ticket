@@ -11,9 +11,6 @@ NProgress.configure({ showSpinner: false })
 
 const whiteList = ['/login', '/register', '/forgot-password']
 
-// 是否已经生成过动态路由
-let hasRoles = false
-
 router.beforeEach(async(to, from, next) => {
   NProgress.start()
 
@@ -44,11 +41,9 @@ router.beforeEach(async(to, from, next) => {
             router.addRoute(route)
           })
 
-          hasRoles = true
           next({ ...to, replace: true })
         } catch (error) {
           // 移除 token 并跳转到登录页
-          hasRoles = false
           await userStore.resetTokenAction()
           ElMessage.error(error || '获取用户信息失败')
           next(`/login?redirect=${to.path}`)
@@ -57,7 +52,6 @@ router.beforeEach(async(to, from, next) => {
       }
     }
   } else {
-    hasRoles = false
     if (whiteList.indexOf(to.path) !== -1) {
       next()
     } else {
