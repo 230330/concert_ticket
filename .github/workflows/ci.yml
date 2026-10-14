@@ -33,3 +33,32 @@ jobs:
           name: surefire-reports
           path: target/surefire-reports/
           if-no-files-found: ignore
+
+  frontend:
+    name: 前端 lint 与构建
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: concert-ticket-frontend
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: concert-ticket-frontend/package.json
+
+      # 仓库尚未提交 package-lock.json（前端 .gitignore 中忽略了它），因此只能 install
+      - name: 安装依赖
+        run: npm install --no-audit --no-fund
+
+      - name: 代码检查
+        run: npm run lint
+
+      - name: 构建
+        run: npm run build
