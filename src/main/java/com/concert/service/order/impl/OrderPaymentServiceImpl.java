@@ -14,6 +14,7 @@ import com.concert.service.order.OrderQueryService;
 import com.concert.utils.SecureRandomUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -31,6 +32,13 @@ import java.time.LocalDateTime;
 public class OrderPaymentServiceImpl implements OrderPaymentService {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderPaymentServiceImpl.class);
+
+    /**
+     * 模拟支付开关：关闭后该接口不再可用，只能走支付宝真实支付通道
+     * 默认 false，避免配置缺失时误开通；开发环境在 application.yml 中显式开启
+     */
+    @Value("${concert.order.mock-pay-enabled:false}")
+    private boolean mockPayEnabled;
 
     @Resource
     private OrderService orderService;
@@ -50,6 +58,11 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public OrderResponse payOrder(Long userId, Long orderId) {
+        // 0. 模拟支付开关校验：生产环境必须关闭，避免绕过真实支付通道
+        if (!mockPayEnabled) {
+            throw new BusinessException("模拟支付功能已禁用，请使用支付宝完成支付");
+        }
+
         // 1. 查询订单
         Order order = orderService.getById(orderId);
         if (order == null) {

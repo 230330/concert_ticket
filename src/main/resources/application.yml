@@ -153,6 +153,7 @@ concert:
     expire-minutes: 15  # 订单超时时间（分钟）
     max-tickets-per-order: 4  # 单笔订单最大购票数
     refund-before-hours: 48  # 退款截止时间（演出前多少小时可退）
+    mock-pay-enabled: ${MOCK_PAY_ENABLED:true}  # 模拟支付开关，仅用于开发/测试；生产环境必须设为 false（由 ProductionSafetyValidator 强制校验）
   # 验证码配置
   captcha:
     expire-minutes: 5  # 验证码过期时间（分钟）

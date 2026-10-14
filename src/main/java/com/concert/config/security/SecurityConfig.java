@@ -109,6 +109,8 @@ public class SecurityConfig {
                         "/api/pay/alipay/notify",
                         "/api/pay/alipay/return"
                 ).permitAll()
+                // 取票码核销：仅管理员（工作人员账号需授予 ADMIN 角色）
+                .antMatchers("/api/ticket/verify").hasRole("ADMIN")
                 // 管理端接口：需要 ADMIN 角色
                 .antMatchers("/api/admin/**").hasRole("ADMIN")
                 // 其他所有请求需要认证

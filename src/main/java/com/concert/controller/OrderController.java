@@ -45,7 +45,7 @@ public class OrderController {
         return Result.success(response);
     }
 
-    @Operation(summary = "支付订单", description = "模拟支付待支付订单，支付成功后生成取票码")
+    @Operation(summary = "支付订单", description = "模拟支付待支付订单，支付成功后生成取票码；仅开发/测试环境可用，生产环境由 concert.order.mock-pay-enabled 关闭")
     @PostMapping("/pay")
     @RateLimit(key = "order:pay", count = 5, period = 60)
     public Result<OrderResponse> payOrder(@RequestBody @Validated PayOrderRequest request) {

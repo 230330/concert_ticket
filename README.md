@@ -61,7 +61,7 @@ com.concert
 
    ShowController (/api/show)：查询某演唱会下的场次列表（含票价、库存、区域信息），以及场次座位图（按区域→排→座组织，标记已售状态）。
 
-   OrderController (/api/order)：需登录访问，提供创建订单、模拟支付、取消订单、退款订单、查看订单详情、我的订单列表等接口。创建订单和支付接口分别添加了 @RateLimit(key="order:create", count=5, period=60) 和 @RateLimit(key="order:pay", count=5, period=60) 限流保护，防止恶意刷单。
+   OrderController (/api/order)：需登录访问，提供创建订单、模拟支付、取消订单、退款订单、查看订单详情、我的订单列表等接口。创建订单和支付接口分别添加了 @RateLimit(key="order:create", count=5, period=60) 和 @RateLimit(key="order:pay", count=5, period=60) 限流保护，防止恶意刷单。其中模拟支付接口仅限开发/测试环境使用，生产环境由 concert.order.mock-pay-enabled 开关关闭（见文末"生产环境安全加固"）。
 
    PaymentController (/api/pay)：支付宝支付控制器，提供 4 个接口——POST /alipay/create（发起支付，需登录，@RateLimit 5/60s）、POST /alipay/notify（异步通知回调，公开接口，支付宝服务器主动调用）、GET /alipay/return（同步跳转，公开接口）、GET /alipay/status（查询支付状态，@RateLimit 20/60s）。创建支付时验证订单归属和状态，异步回调通过 AlipaySignature.rsaCheckV1 验签后更新订单。
 
@@ -128,7 +128,7 @@ com.concert
 
     order 子包（4 个接口 + 4 个实现）：
     - OrderCoreService：订单核心流程（创建订单）。createOrder 使用分布式锁（DistributedLock.tryLockWithRetry）保护库存扣减防止超卖，事务内完成校验→创建订单→锁定座位→扣减库存→发送MQ延迟消息（messageProducer.sendOrderTimeoutMessage）实现订单自动取消
-    - OrderPaymentService：订单支付（模拟支付，生成取票码）
+    - OrderPaymentService：订单支付（模拟支付，生成取票码；受 concert.order.mock-pay-enabled 开关控制，生产环境必须关闭）
     - OrderCancellationService：订单取消/退款/批量过期处理/批量完成处理
     - OrderQueryService：订单查询（详情、列表、取票码查询）
 
@@ -190,11 +190,13 @@ com.concert
 四、支付流程（支付宝集成）
 用户在 15 分钟内调用 POST /api/pay/alipay/create 发起支付，后端验证订单归属和状态后调用 PaymentServiceImpl.createAlipayOrder()，该方法先通过 Redis SETNX（key = pay:idempotent:{orderId}）实现支付幂等性检查（防止重复提交），然后构建 AlipayTradePagePayRequest 调用支付宝电脑网站支付 API，返回支付表单 HTML 供前端跳转。用户在支付宝完成支付后，支付宝服务器异步调用 POST /api/pay/alipay/notify，后端通过 AlipaySignature.rsaCheckV1 验证签名后根据交易状态（TRADE_SUCCESS/TRADE_FINISHED）更新订单为已支付并生成取票码。前端可通过 GET /api/pay/alipay/status 轮询支付状态。
 
+与支付宝通道并存的还有 POST /api/order/pay（模拟支付），它不做任何支付凭证校验即把订单置为已支付。该接口仅供开发/测试环境联调使用，由 concert.order.mock-pay-enabled 控制：默认关闭，开发环境的 application.yml 显式开启，prod profile 下 ProductionSafetyValidator 会强制要求其为 false。
+
 五、退款流程
 已支付订单的买家可在规定时效内调用 PUT /api/order/refund 申请退款。如已对接支付宝，可通过 PaymentServiceImpl.alipayRefund() 调用 AlipayTradeRefundRequest 向支付宝发起退款请求。管理端可进行不受时限的强制退款。
 
 六、取票核验流程
-支付成功后生成的取票码可通过 GET /api/ticket/my-codes 查询当前用户的取票码列表；线下工作人员通过 POST /api/ticket/verify?pickupCode=xxx 核销取票码，核销后订单状态更新为已完成。
+支付成功后生成的取票码可通过 GET /api/ticket/my-codes 查询当前用户的取票码列表；线下工作人员通过 POST /api/ticket/verify?pickupCode=xxx 核销取票码，核销后订单状态更新为已完成。核销接口在 SecurityConfig 中要求 ROLE_ADMIN 角色（工作人员账号需授予 ADMIN 角色），普通登录用户调用返回 403。
 
 七、我的订单
 用户可通过 GET /api/order/my?status=&page=&size= 分页查询自己的订单，支持按状态筛选（待支付/已支付/已取消/已退款/已完成）。
@@ -327,3 +329,29 @@ SecurityConfig.java - /api/admin/** 路径要求 ROLE_ADMIN 角色，开启 @Ena
 7. 在数据库中执行 INSERT INTO sys_user_role (user_id, role_id) VALUES (<管理员用户ID>, 1); 赋予超级管理员角色
 8. 使用管理员账号登录后即可访问 /api/admin/** 下所有接口
 9. API 文档访问：http://localhost:8090/swagger-ui.html
+
+---
+
+生产环境安全加固
+
+一、必须显式声明 prod profile
+生产部署需设置环境变量 SPRING_PROFILES_ACTIVE=prod。启动时 ProductionSafetyValidator 会在容器初始化阶段校验下列配置，任一项不合规即抛出 IllegalStateException 并中断启动（一次性列出全部违规项）：
+
+| 配置项 | 生产环境要求 |
+|--------|--------------|
+| jwt.secret | 通过 JWT_SECRET 注入，不得为开发默认值，长度 >= 32 位 |
+| spring.datasource.password | 通过 MYSQL_PASSWORD 注入，不得为开发默认值 123456 |
+| cors.allowed-origins | 通过 CORS_ALLOWED_ORIGINS 配置实际域名，不得含 localhost 或 * |
+| concert.order.mock-pay-enabled | 必须为 false，模拟支付会绕过真实支付通道 |
+| alipay.app-id / private-key / public-key | 必须全部通过环境变量注入 |
+| alipay.notify-url / return-url | 不得指向 localhost，需为外网可访问地址 |
+
+注意：该校验依赖显式声明 prod profile，未声明时按本地开发环境对待并跳过校验。
+
+二、模拟支付开关
+concert.order.mock-pay-enabled（环境变量 MOCK_PAY_ENABLED）默认为 false，即开关缺失时模拟支付不可用；开发环境在 application.yml 中显式设为 true。开启时 POST /api/order/pay 会直接置订单为已支付并生成取票码，仅用于联调。
+
+三、发布前自检
+1. 以 prod profile 启动一次，确认日志出现"生产环境安全配置校验通过"，且未中断启动；
+2. 在缺少 prod profile 声明或配置未注入的情况下，确认启动被拒绝并给出违规清单；
+3. 用普通用户 Token 调用 POST /api/ticket/verify，确认返回 403；用管理员 Token 调用，确认不再返回 403。
