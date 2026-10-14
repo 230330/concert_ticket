@@ -26,8 +26,12 @@ com.concert
 2. annotation — 自定义注解
    @RateLimit：接口限流注解，支持 key（限流标识）、count（次数上限）、period（时间窗口/秒）、limitType（USER/IP 两种模式）。标记在 Controller 方法上，由 RateLimitAspect 切面拦截处理，基于 Redis INCR + EXPIRE 实现固定窗口限流，超限抛出 BusinessException("操作过于频繁，请稍后再试")。
 
+   @EvictConcertCache：缓存失效注解，标记在管理端写接口上，由 ConcertCacheEvictionAspect 在方法正常返回后清空用户端演唱会相关缓存（concert:list、concert:detail、concert:hot、show:info）。
+
 3. aspect — AOP 切面
    RateLimitAspect：限流切面，处理 @RateLimit 注解。从 SecurityContext 获取用户ID（USER 模式）或从 HttpServletRequest 获取客户端IP（IP 模式）作为限流标识，使用 StringRedisTemplate.opsForValue().increment() + expire 实现固定窗口计数，超限抛出 BusinessException。
+
+   ConcertCacheEvictionAspect：缓存清理切面，处理 @EvictConcertCache 注解。目标方法正常返回后逐个清空受影响的四个缓存区域；写入失败（方法抛出异常、事务回滚）时不清理；清理过程本身失败只记录 WARN 日志，不让 Redis 不可用连带拖垮管理端写操作。
 
 4. config — 配置层
    这一层负责框架级别的基础设施配置，分为十个部分：
@@ -36,7 +40,7 @@ com.concert
 
    RedisConfig：配置 RedisTemplate<String, Object>，使用 Jackson 序列化 value，支持 Java 8 时间类型。主要被短信验证码服务、分布式锁和缓存管理使用。
 
-   CacheConfig：Spring Cache + Redis 缓存管理器配置，启用 @EnableCaching。定义了 4 个缓存空间——concert:list（10分钟）、concert:detail（30分钟）、show:info（5分钟）、concert:hot（5分钟），使用 Jackson2JsonRedisSerializer 序列化并禁用 null 值缓存。对高频访问的演唱会列表、详情、场次信息、热门推荐接口提供缓存策略。
+   CacheConfig：Spring Cache + Redis 缓存管理器配置，启用 @EnableCaching。定义了 6 个缓存空间——用户端 concert:list（10分钟）、concert:detail（30分钟）、show:info（5分钟）、concert:hot（5分钟），管理端看板 dashboard:sales（5分钟）、dashboard:revenue（10分钟），使用 Jackson2JsonRedisSerializer 序列化并禁用 null 值缓存。注意：未在此登记的区域会静默使用 30 分钟默认 TTL，新增缓存区域必须同时在此声明，CacheConfigTest 对此有断言保护。用户端四个区域由 ConcertCacheEvictionAspect 在管理端写入后清理；看板两个区域的数据随订单持续变化，依靠 TTL 过期而非主动清理。
 
    RabbitMQConfig：RabbitMQ 交换机、队列和绑定关系配置。定义了 3 个交换机——concert.exchange.topic（Topic 类型，用于短信和支付通知）、concert.exchange.delay（Direct 类型，用于订单超时延迟消息）、concert.exchange.dlx（Direct 类型，死信交换机）。定义了 5 个队列——concert.queue.sms（短信发送）、concert.queue.payment（支付通知）、concert.queue.order.timeout（订单超时处理）、concert.queue.order.timeout.delay（基于 TTL + 死信转发的延迟队列）、concert.queue.dlx（死信队列，消费失败消息的兜底处理）。所有业务队列配置死信转发到 DLX。
 
@@ -257,7 +261,7 @@ SecurityConfig.java - /api/admin/** 路径要求 ROLE_ADMIN 角色，开启 @Ena
 | Axios | 1.6.0 | HTTP 客户端 |
 
 三、Redis 在系统中的三种角色
-1. **缓存**：通过 Spring Cache + @Cacheable 注解对高频访问的演唱会列表（10min）、详情（30min）、场次信息（5min）、热门推荐（5min）进行缓存，减少数据库压力
+1. **缓存**：通过 Spring Cache + @Cacheable 注解对高频访问的演唱会列表（10min）、详情（30min）、场次信息（5min）、热门推荐（5min）进行缓存，减少数据库压力；管理端写接口通过 @EvictConcertCache 统一清理上述用户端缓存，避免后台改完数据后用户端最长 30 分钟仍看到旧数据
 2. **限流**：通过 @RateLimit 注解 + RateLimitAspect 切面，基于 Redis INCR + EXPIRE 实现固定窗口限流，支持按用户ID或IP限流，保护关键接口（下单5次/分钟、支付5次/分钟、热门30次/分钟、搜索20次/分钟）
 3. **分布式锁**：通过 DistributedLock 工具类，基于 SETNX + Lua 脚本实现，用于库存扣减的并发保护，防止超卖
 

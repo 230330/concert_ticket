@@ -3,6 +3,7 @@ package com.concert.controller.admin;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.concert.annotation.EvictConcertCache;
 import com.concert.common.Result;
 import com.concert.dto.request.StockAdjustRequest;
 import com.concert.dto.request.TicketTypeRequest;
@@ -79,6 +80,7 @@ public class AdminTicketTypeController {
     /**
      * 新增票种
      */
+    @EvictConcertCache
     @PostMapping("/add")
     public Result<Void> add(@RequestBody @Validated TicketTypeRequest request) {
         TicketType ticketType = new TicketType();
@@ -99,6 +101,7 @@ public class AdminTicketTypeController {
      *
      * @param id 票种ID
      */
+    @EvictConcertCache
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id, @RequestBody @Validated TicketTypeRequest request) {
         TicketType ticketType = ticketTypeService.getById(id);
@@ -124,6 +127,7 @@ public class AdminTicketTypeController {
      *
      * @param id 票种ID
      */
+    @EvictConcertCache
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         TicketType ticketType = ticketTypeService.getById(id);
@@ -143,6 +147,7 @@ public class AdminTicketTypeController {
     /**
      * 库存调整（增减库存）
      */
+    @EvictConcertCache
     @PutMapping("/stock/adjust")
     public Result<TicketType> adjustStock(@RequestBody @Validated StockAdjustRequest request) {
         TicketType ticketType = ticketTypeService.getById(request.getTicketTypeId());

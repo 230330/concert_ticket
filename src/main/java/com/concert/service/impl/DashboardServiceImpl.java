@@ -1,6 +1,7 @@
 package com.concert.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.concert.config.CacheConfig;
 import com.concert.dto.response.DashboardRevenueResponse;
 import com.concert.dto.response.DashboardSalesResponse;
 import com.concert.entity.*;
@@ -51,7 +52,7 @@ public class DashboardServiceImpl implements DashboardService {
     private OrderSeatMapper orderSeatMapper;
 
     @Override
-    @Cacheable(value = "dashboard:sales", unless = "#result == null")
+    @Cacheable(value = CacheConfig.CACHE_DASHBOARD_SALES, unless = "#result == null")
     public DashboardSalesResponse getSalesOverview() {
         DashboardSalesResponse response = new DashboardSalesResponse();
 
@@ -99,7 +100,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    @Cacheable(value = "dashboard:revenue", key = "#startDate + ':' + #endDate", unless = "#result == null || #result.isEmpty()")
+    @Cacheable(value = CacheConfig.CACHE_DASHBOARD_REVENUE, key = "#startDate + ':' + #endDate", unless = "#result == null || #result.isEmpty()")
     public List<DashboardRevenueResponse> getRevenueReport(LocalDate startDate, LocalDate endDate) {
         List<DashboardRevenueResponse> result = new ArrayList<>();
 

@@ -2,6 +2,7 @@ package com.concert.controller.admin;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.concert.annotation.EvictConcertCache;
 import com.concert.common.Result;
 import com.concert.dto.request.ArtistRequest;
 import com.concert.dto.response.PageResponse;
@@ -75,6 +76,7 @@ public class AdminArtistController {
     /**
      * 新增艺人
      */
+    @EvictConcertCache
     @PostMapping("/add")
     public Result<Void> add(@RequestBody @Validated ArtistRequest request) {
         Artist artist = new Artist();
@@ -91,6 +93,7 @@ public class AdminArtistController {
      *
      * @param id 艺人ID
      */
+    @EvictConcertCache
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id, @RequestBody @Validated ArtistRequest request) {
         Artist artist = artistService.getById(id);
@@ -111,6 +114,7 @@ public class AdminArtistController {
      *
      * @param id 艺人ID
      */
+    @EvictConcertCache
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         Artist artist = artistService.getById(id);

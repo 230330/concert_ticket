@@ -1,12 +1,12 @@
 package com.concert.service.concert.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.concert.config.CacheConfig;
 import com.concert.dto.response.ConcertDetailResponse;
 import com.concert.entity.*;
 import com.concert.exception.NotFoundException;
 import com.concert.service.*;
 import com.concert.service.concert.ConcertCoreService;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +39,7 @@ public class ConcertCoreServiceImpl implements ConcertCoreService {
     private VenueService venueService;
 
     @Override
-    @Cacheable(value = "concert:detail", key = "#id", unless = "#result == null")
+    @Cacheable(value = CacheConfig.CACHE_CONCERT_DETAIL, key = "#id", unless = "#result == null")
     public ConcertDetailResponse getConcertDetail(Long id) {
         Concert concert = concertService.getById(id);
         if (concert == null) {

@@ -2,6 +2,7 @@ package com.concert.service.concert.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.concert.config.CacheConfig;
 import com.concert.dto.response.ConcertListResponse;
 import com.concert.dto.response.PageResponse;
 import com.concert.entity.*;
@@ -48,7 +49,7 @@ public class ConcertShowServiceImpl implements ConcertShowService {
     private TicketTypeService ticketTypeService;
 
     @Override
-    @Cacheable(value = "show:info", key = "'upcoming:' + #page + ':' + #size",
+    @Cacheable(value = CacheConfig.CACHE_SHOW_INFO, key = "'upcoming:' + #page + ':' + #size",
                unless = "#result == null || #result.total == 0")
     public PageResponse<ConcertListResponse> getUpcomingConcerts(Integer page, Integer size) {
         LocalDateTime now = LocalDateTime.now();

@@ -2,6 +2,7 @@ package com.concert.controller.admin;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.concert.annotation.EvictConcertCache;
 import com.concert.common.Result;
 import com.concert.dto.request.ConcertRequest;
 import com.concert.dto.request.ConcertStatusRequest;
@@ -90,6 +91,7 @@ public class AdminConcertController {
     /**
      * 新增演唱会
      */
+    @EvictConcertCache
     @PostMapping("/add")
     public Result<Void> add(@RequestBody @Validated ConcertRequest request) {
         Concert concert = new Concert();
@@ -113,6 +115,7 @@ public class AdminConcertController {
      *
      * @param id 演唱会ID
      */
+    @EvictConcertCache
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id, @RequestBody @Validated ConcertRequest request) {
         Concert concert = concertService.getById(id);
@@ -147,6 +150,7 @@ public class AdminConcertController {
      * @param id      演唱会ID
      * @param request 状态变更请求
      */
+    @EvictConcertCache
     @PutMapping("/{id}/status")
     public Result<Void> updateStatus(@PathVariable Long id, @RequestBody @Validated ConcertStatusRequest request) {
         Concert concert = concertService.getById(id);
@@ -206,6 +210,7 @@ public class AdminConcertController {
      *
      * @param id 演唱会ID
      */
+    @EvictConcertCache
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         Concert concert = concertService.getById(id);

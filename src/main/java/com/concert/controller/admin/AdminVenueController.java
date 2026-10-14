@@ -2,6 +2,7 @@ package com.concert.controller.admin;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.concert.annotation.EvictConcertCache;
 import com.concert.common.Result;
 import com.concert.dto.request.VenueRequest;
 import com.concert.dto.response.PageResponse;
@@ -80,6 +81,7 @@ public class AdminVenueController {
     /**
      * 新增场馆
      */
+    @EvictConcertCache
     @PostMapping("/add")
     public Result<Void> add(@RequestBody @Validated VenueRequest request) {
         Venue venue = new Venue();
@@ -97,6 +99,7 @@ public class AdminVenueController {
      *
      * @param id 场馆ID
      */
+    @EvictConcertCache
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id, @RequestBody @Validated VenueRequest request) {
         Venue venue = venueService.getById(id);
@@ -118,6 +121,7 @@ public class AdminVenueController {
      *
      * @param id 场馆ID
      */
+    @EvictConcertCache
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         Venue venue = venueService.getById(id);

@@ -2,6 +2,7 @@ package com.concert.controller.admin;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.concert.annotation.EvictConcertCache;
 import com.concert.common.Result;
 import com.concert.dto.request.ShowRequest;
 import com.concert.dto.request.ShowStatusRequest;
@@ -83,6 +84,7 @@ public class AdminShowController {
     /**
      * 新增场次
      */
+    @EvictConcertCache
     @PostMapping("/add")
     public Result<Void> add(@RequestBody @Validated ShowRequest request) {
         // 业务校验：时间逻辑
@@ -109,6 +111,7 @@ public class AdminShowController {
      *
      * @param id 场次ID
      */
+    @EvictConcertCache
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id, @RequestBody @Validated ShowRequest request) {
         Show show = showService.getById(id);
@@ -142,6 +145,7 @@ public class AdminShowController {
      * @param id      场次ID
      * @param request 状态变更请求
      */
+    @EvictConcertCache
     @PutMapping("/{id}/status")
     public Result<Void> updateStatus(@PathVariable Long id, @RequestBody @Validated ShowStatusRequest request) {
         Show show = showService.getById(id);
@@ -206,6 +210,7 @@ public class AdminShowController {
      *
      * @param id 场次ID
      */
+    @EvictConcertCache
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         Show show = showService.getById(id);
