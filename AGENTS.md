@@ -96,3 +96,61 @@ CI（`.github/workflows/ci.yml`）会并行执行后端 `mvn verify` 与前端 `
 - 提交信息格式：`@hzf@<中文摘要>`，正文分段说明「问题 / 方案 / 自测结果 / 未覆盖项」。
 - 提交前必须执行 `mvn test` 并保证全绿。
 - 一个提交只做一件事，便于回溯与回滚。
+
+## 推送与网络排障
+
+本机在国内网络环境下推送 GitHub 的实测结论与排查顺序，`git push` 失败时按下面顺序走一遍即可。
+
+### 通道选择：优先 SSH，HTTPS 需要代理
+
+| 通道 | 直连表现 | 是否需要代理 |
+|------|----------|--------------|
+| **SSH 走 22 端口**（本仓库当前 remote 用的就是它） | 实测可直连：`ssh -T git@github.com` 能返回 `Hi <用户名>!` | **不需要**，也不受 Windows 系统代理影响 |
+| HTTPS（`https://github.com/...`） | 实测被阻断：等待约 21 秒超时，或报连接被重置 | **需要**代理；且命令行不读 Windows 系统代理，必须显式设 `HTTP_PROXY`/`HTTPS_PROXY` |
+
+本仓库 remote 为 `git@github.com:230330/concert_ticket.git`。切回 HTTPS：`git remote set-url origin https://github.com/230330/concert_ticket.git`。
+
+### 判断「通不通」的唯一可信判据
+
+```powershell
+git ls-remote origin                                    # 能列出引用即通
+curl -s -o NUL -w "%{http_code}`n" https://github.com   # 返回 200 即通
+```
+
+⚠️ 在 TUN（假 IP）模式下**不能**用这两条判断：`nslookup github.com` 会返回 `198.18.x.x`（假 IP，属正常机制而非 DNS 污染），`Test-NetConnection github.com -Port 443` 会显示 FlClash 虚拟网卡且 `TcpTestSucceeded` 恒为 True（它连的是本机虚拟网卡，不代表能到 GitHub）。
+
+### 排查顺序
+
+1. `ssh -T git@github.com` → 回 `Hi <用户名>!` 说明 22 端口通，直接 `git push`，不需要任何代理。
+2. 22 不通 → 试 `ssh -T -p 443 git@ssh.github.com`；通则新建 `%USERPROFILE%\.ssh\config`，remote 无需改动：
+
+   ```
+   Host github.com
+     HostName ssh.github.com
+     Port 443
+     User git
+   ```
+
+3. SSH 两条都不通 → 开代理（FlClash：TUN 模式或混合端口 7890），并**先确认节点能到 GitHub**（上面 curl 返回 200）；报 reset 或 000 即节点问题，换节点。
+4. 走 HTTP 代理方式时命令行必须显式指定（浏览器能上 ≠ git 能上）：
+
+   ```powershell
+   $env:HTTP_PROXY='http://127.0.0.1:7890'; $env:HTTPS_PROXY='http://127.0.0.1:7890'
+   ```
+
+5. 兜底：换网络（手机热点）直连 SSH 试一次；或把仓库镜像到 Gitee。
+
+### 报错对照表
+
+| 报错 | 含义 | 处理 |
+|------|------|------|
+| `Connection was reset` / `schannel: failed to receive handshake` | 连上了但握手被掐断，节点出口到 GitHub 不通 | 换节点 |
+| `Failed to connect ... after N ms`（超时） | 根本没走到代理 | 检查 TUN 是否开启、代理端口是否在监听 |
+| `Failed to connect to 127.0.0.1 port 9` | 自动化/沙箱环境注入的黑洞代理，不是本机代理故障 | 在沙箱外执行并清空 `HTTP_PROXY` 等变量 |
+| `Permission denied (publickey)` | 密钥未加载或未加入 GitHub 账号 | 用 `ssh -T git@github.com` 复现并检查密钥 |
+
+### 代理模式速查（FlClash）
+
+- **出站模式**：直连 / 规则（日常首选，国内直连、外网走代理）/ 全局（排查期首选，排除规则干扰）。**「聚合」不是出站模式**，而是把多个节点放进一个组的策略（延迟自动选、故障切换、负载均衡）。
+- **系统代理**：只影响读 Windows 代理设置的程序（浏览器、Electron、部分 .NET），**命令行不生效**；开关开着但端口没监听会导致浏览器断网。
+- **虚拟网卡（TUN）**：在网络层接管，**所有程序含命令行都自动走**；代价是修改路由与 DNS，可能影响内网、NAS、VPN、Docker/WSL。只在命令行访问外网时优先用 TUN；访问国内或内网时建议关掉。
