@@ -51,11 +51,11 @@ jobs:
         with:
           node-version: '20'
           cache: npm
-          cache-dependency-path: concert-ticket-frontend/package.json
+          cache-dependency-path: concert-ticket-frontend/package-lock.json
 
-      # 仓库尚未提交 package-lock.json（前端 .gitignore 中忽略了它），因此只能 install
+      # lock 已纳入版本管理，用 npm ci 严格按 lock 安装，保证 CI 与本地依赖完全一致
       - name: 安装依赖
-        run: npm install --no-audit --no-fund
+        run: npm ci
 
       - name: 代码检查
         run: npm run lint

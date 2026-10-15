@@ -31,6 +31,8 @@ CI（`.github/workflows/ci.yml`）会并行执行后端 `mvn verify` 与前端 `
 2. 提交前必须保证 `npm run lint` 无输出通过。
 3. `src/` 下新增接口调用统一走 `src/api/`，不要在页面里直接调 `request`。
 4. 状态映射统一从 `@/constants/status` 导入（订单/演唱会/场次/用户四套，含 `resolveStatusLabel`、`resolveStatusTagType`、`toStatusOptions`），不要各页面再复制一份，也不要在模板里散写状态值与文案。
+5. 依赖变更必须连同 `package-lock.json` 一起提交（lock 已纳入版本管理，CI 用 `npm ci` 严格安装）。
+   lock 中的 `resolved` 指向 `registry.npmmirror.com`：本地 `npm ci` 直接走镜像、速度稳定，也不会出现"官方源与镜像源混杂"的地址抖动；GitHub runner 同样能拉到。若将来需要改回官方源，删除 lock 与 `node_modules` 后执行 `npm install --registry=https://registry.npmjs.org` 重新生成。
 5. Element Plus 图标用组件形式：模板内 `<el-icon><Search /></el-icon>`，或作为属性传组件名 `<el-button icon="Search" />`（EP2 通过 resolveDynamicComponent 解析名字，字符串即可）。
    新增图标登记在 `src/icons/element-plus.js`（main.js 统一全局注册）。**不要**再使用 `el-icon-xxx` 这类字体图标，EP2 已移除、写了也不显示。
 6. 定时器、事件监听等清理逻辑必须写在 `beforeUnmount` 里。Vue 3 没有 `beforeDestroy`，写了不会执行，定时器与监听会泄漏。
