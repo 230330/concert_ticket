@@ -26,6 +26,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -124,6 +125,19 @@ class SecurityAuthorizationTest {
             mockMvc.perform(get("/api/concert/upcoming").param("page", "1").param("size", "5"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
+        }
+
+        @Test
+        @DisplayName("支付宝回调无需登录，且未签名/签名错误的回调不会改动订单")
+        void testAlipayNotify_Anonymous_RejectedBySignature() throws Exception {
+            // 支付宝服务器主动调用，因此必须在白名单里；
+            // 但验签不通过时会返回 failure（支付宝要求的应答），订单不会被更新
+            mockMvc.perform(post("/api/pay/alipay/notify")
+                            .param("out_trade_no", "NOT_EXIST_ORDER")
+                            .param("trade_status", "TRADE_SUCCESS")
+                            .param("sign", "forged-signature"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string("failure"));
         }
     }
 
