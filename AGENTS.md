@@ -30,7 +30,27 @@ CI（`.github/workflows/ci.yml`）会并行执行后端 `mvn verify` 与前端 `
 1. eslint 配置在 `concert-ticket-frontend/.eslintrc.js`，解析链使用 eslint 自带的 espree 与 vue-eslint-parser，**不要**改回 `@babel/eslint-parser`（会读取仍引用 Vue CLI preset 的 `babel.config.js` 导致全量解析失败）。
 2. 提交前必须保证 `npm run lint` 无输出通过。
 3. `src/` 下新增接口调用统一走 `src/api/`，不要在页面里直接调 `request`。
-4. 页面状态映射等常量提取到模块顶层，不要在模板里散写魔法值。
+4. 状态映射统一从 `@/constants/status` 导入（订单/演唱会/场次/用户四套，含 `resolveStatusLabel`、`resolveStatusTagType`、`toStatusOptions`），不要各页面再复制一份，也不要在模板里散写状态值与文案。
+5. Element Plus 图标用组件形式：模板内 `<el-icon><Search /></el-icon>`，或作为属性传组件名 `<el-button icon="Search" />`（EP2 通过 resolveDynamicComponent 解析名字，字符串即可）。
+   新增图标登记在 `src/icons/element-plus.js`（main.js 统一全局注册）。**不要**再使用 `el-icon-xxx` 这类字体图标，EP2 已移除、写了也不显示。
+6. 定时器、事件监听等清理逻辑必须写在 `beforeUnmount` 里。Vue 3 没有 `beforeDestroy`，写了不会执行，定时器与监听会泄漏。
+
+### Vue 2 → Vue 3 迁移检查清单
+
+以下写法在 Vue 3 中**静默失效**（不报错、但功能不可用），改动模板或页面时对照检查：
+
+| 失效写法 | 正确写法 | 失效后果 |
+|----------|----------|----------|
+| `slot-scope="{row}"` | `#default="{ row }"` | 内容被塞进不渲染的 `<template>`，表格自定义列（状态标签、操作按钮）全都不显示 |
+| `slot="header"` / `slot="footer"` | `#header` / `#footer` | 具名插槽未填充，卡片头部与弹窗按钮不显示 |
+| `:visible.sync="x"` | `v-model="x"` | EP2 对话框没有 `visible` prop，弹窗打不开 |
+| `:current-page.sync="x"` | `v-model:current-page="x"` | 分页页码无法回写 |
+| `@click.native` / `@keyup.enter.native` | `@click` / `@keyup.enter` | 监听器不触发（如退出登录、注册按钮无响应） |
+| `beforeDestroy` | `beforeUnmount` | 清理逻辑不执行 |
+| `el-submenu`（Element UI） | `el-sub-menu`（Element Plus 2） | 组件不存在，多级菜单不渲染 |
+| `size="mini"` | `size="small"` | 不是合法尺寸值 |
+
+排查顺序建议：先用 `npm run lint` + `npm run build` 过一遍，再对上述写法各 grep 一次（除本文档与 `src/icons/element-plus.js` 注释里的说明文字外，应全部为 0）。
 
 ## 后端代码风格
 
@@ -43,6 +63,8 @@ CI（`.github/workflows/ci.yml`）会并行执行后端 `mvn verify` 与前端 `
 7. 枚举必须带 `@EnumValue` + `@JsonValue` + `@JsonCreator`，并提供 `XXX_VALUE` 编译期常量，供注解里的 SQL 引用（注解属性不能用方法调用）。
 8. 配置一律外部化：密钥类用 `${ENV_VAR:默认值}`，业务阈值放 `concert.*` 并用 `@Value` 读取。
 9. 业务错误按语义抛 `BusinessException` / `NotFoundException` / `ForbiddenException`，不要直接抛 RuntimeException。
+10. 列表与批量场景不要逐条查库：关联数据用 `listByIds` 批量取后再内存装配，统计类用一条分组 SQL（如 `OrderMapper.countOrdersByUserIds`），禁止 for 循环里执行查询。
+11. 认证链每请求都会执行，改动 `UserDetailsServiceImpl` 时注意角色只查一次并复用给权限计算；不要调用会重复查询角色的 `SysPermissionService.getPermissionCodesByUserId`。
 
 ## 缓存约定
 
