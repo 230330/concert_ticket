@@ -168,6 +168,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Spring Security 测试支持：@WithMockUser、authentication() 等，用于验证授权规则 -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Spring Boot Configuration Processor -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
