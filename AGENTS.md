@@ -67,6 +67,7 @@ CI（`.github/workflows/ci.yml`）会并行执行后端 `mvn verify` 与前端 `
 9. 业务错误按语义抛 `BusinessException` / `NotFoundException` / `ForbiddenException`，不要直接抛 RuntimeException。
 10. 列表与批量场景不要逐条查库：关联数据用 `listByIds` 批量取后再内存装配，统计类用一条分组 SQL（如 `OrderMapper.countOrdersByUserIds`），禁止 for 循环里执行查询。
 11. 认证链每请求都会执行，改动 `UserDetailsServiceImpl` 时注意角色只查一次并复用给权限计算；不要调用会重复查询角色的 `SysPermissionService.getPermissionCodesByUserId`。
+12. 认证链**刻意不做缓存**（每请求 5 条查询：用户行 + 角色 2 条 + 权限 2 条，打的是小表并走 `uk_phone` 唯一索引）。不缓存才能保证**封禁/撤权立即生效**；加缓存会让这类变更延迟到 TTL 才生效，属于安全语义退化。若将来有量化证据（慢查询日志、DB QPS、接口 p99）表明它确为瓶颈，按「合并 SQL（用户+角色+权限 JOIN）→ 只缓存 RBAC、用户行仍实时查 → 全缓存」的顺序推进，不要一上来就全缓存。
 
 ## 缓存约定
 
