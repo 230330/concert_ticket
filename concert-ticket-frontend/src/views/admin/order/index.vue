@@ -45,7 +45,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="160">
-          <template #default="{ row }">{{ formatTime(row.createTime) }}</template>
+          <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
         </el-table-column>
         <el-table-column label="操作" width="180" fixed="right" align="center">
           <template #default="{ row }">
@@ -75,6 +75,7 @@
 <script>
 import { getOrderList, adminRefund, adminCancel } from '@/api/admin/order'
 import { ORDER_STATUS_MAP, resolveStatusLabel, resolveStatusTagType, toStatusOptions } from '@/constants/status'
+import { formatDateTime } from '@/utils/format'
 
 export default {
   name: 'AdminOrder',
@@ -93,10 +94,7 @@ export default {
   methods: {
     statusText(s) { return resolveStatusLabel(ORDER_STATUS_MAP, s) },
     statusTag(s) { return resolveStatusTagType(ORDER_STATUS_MAP, s) },
-    formatTime(t) {
-      if (!t) return '-'
-      return t.replace('T', ' ').substring(0, 19)
-    },
+    formatDateTime,
     fetchData() {
       this.loading = true
       getOrderList({ page: this.currentPage, size: this.pageSize, ...this.searchForm }).then(res => {

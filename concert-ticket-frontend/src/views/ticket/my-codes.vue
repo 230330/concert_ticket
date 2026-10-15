@@ -27,7 +27,7 @@
               </div>
               <div class="info-row">
                 <span class="info-label">下单时间</span>
-                <span class="info-value">{{ formatTime(item.createTime) }}</span>
+                <span class="info-value">{{ formatDateTime(item.createTime) }}</span>
               </div>
             </div>
           </div>
@@ -48,6 +48,7 @@
 
 <script>
 import { getMyTicketCodes } from '@/api/ticket'
+import { formatDateTime } from '@/utils/format'
 
 export default {
   name: 'MyTicketCodes',
@@ -61,10 +62,7 @@ export default {
     this.fetchData()
   },
   methods: {
-    formatTime(t) {
-      if (!t) return '-'
-      return t.replace('T', ' ').substring(0, 19)
-    },
+    formatDateTime,
     fetchData() {
       this.loading = true
       getMyTicketCodes().then(res => {

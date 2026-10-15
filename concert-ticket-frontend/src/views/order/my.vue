@@ -20,7 +20,7 @@
               <div class="concert-name">{{ order.concertName || '演唱会' }}</div>
               <div class="order-meta">
                 <span v-if="order.venueName"><el-icon><Location /></el-icon> {{ order.venueName }}</span>
-                <span><el-icon><Clock /></el-icon> {{ formatTime(order.showTime) }}</span>
+                <span><el-icon><Clock /></el-icon> {{ formatDateTime(order.showTime) }}</span>
               </div>
             </div>
             <div class="order-amount">
@@ -29,7 +29,7 @@
             </div>
           </div>
           <div class="order-bottom">
-            <span class="create-time">下单时间：{{ formatTime(order.createTime) }}</span>
+            <span class="create-time">下单时间：{{ formatDateTime(order.createTime) }}</span>
             <div class="order-actions" @click.stop>
               <el-button v-if="order.status === 0" type="primary" size="small" round @click="handlePay(order)">立即支付</el-button>
               <el-button v-if="order.status === 0" size="small" round @click="handleCancel(order)">取消</el-button>
@@ -61,6 +61,7 @@
 <script>
 import { getMyOrders, payOrder, cancelOrder, refundOrder } from '@/api/order'
 import { ORDER_STATUS_MAP, resolveStatusLabel, resolveStatusTagType, toStatusOptions } from '@/constants/status'
+import { formatDateTime } from '@/utils/format'
 
 export default {
   name: 'MyOrders',
@@ -81,10 +82,7 @@ export default {
   methods: {
     statusText(status) { return resolveStatusLabel(ORDER_STATUS_MAP, status) },
     statusTagType(status) { return resolveStatusTagType(ORDER_STATUS_MAP, status) },
-    formatTime(t) {
-      if (!t) return '-'
-      return t.replace('T', ' ').substring(0, 16)
-    },
+    formatDateTime,
     fetchData() {
       this.loading = true
       const params = { page: this.currentPage, size: this.pageSize }

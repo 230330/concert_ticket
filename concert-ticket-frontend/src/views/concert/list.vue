@@ -55,7 +55,7 @@
             <span v-if="item.venueName"><el-icon><OfficeBuilding /></el-icon> {{ item.venueName }}</span>
           </div>
           <div class="card-meta" v-if="item.nearestShowTime">
-            <span><el-icon><Clock /></el-icon> {{ formatTime(item.nearestShowTime) }}</span>
+            <span><el-icon><Clock /></el-icon> {{ formatDateTime(item.nearestShowTime) }}</span>
           </div>
         </div>
       </div>
@@ -82,6 +82,7 @@
 
 <script>
 import { getHotConcerts, getUpcomingConcerts, searchConcerts } from '@/api/concert'
+import { formatDateTime } from '@/utils/format'
 
 export default {
   name: 'ConcertList',
@@ -101,10 +102,7 @@ export default {
     this.fetchData()
   },
   methods: {
-    formatTime(t) {
-      if (!t) return ''
-      return t.replace('T', ' ').substring(0, 16)
-    },
+    formatDateTime,
     fetchData() {
       this.loading = true
       let apiCall

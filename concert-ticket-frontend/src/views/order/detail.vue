@@ -31,7 +31,7 @@
           <div class="concert-name">{{ order.concertName || '演唱会' }}</div>
           <div class="concert-meta">
             <span><el-icon><Location /></el-icon> {{ order.venueName || '-' }}</span>
-            <span><el-icon><Clock /></el-icon> {{ formatTime(order.showTime) }}</span>
+            <span><el-icon><Clock /></el-icon> {{ formatDateTime(order.showTime) }}</span>
           </div>
         </div>
       </el-card>
@@ -60,9 +60,9 @@
           <el-descriptions-item label="订单金额">
             <span class="amount">¥{{ order.totalAmount }}</span>
           </el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ formatTime(order.createTime) }}</el-descriptions-item>
-          <el-descriptions-item label="支付时间">{{ formatTime(order.payTime) }}</el-descriptions-item>
-          <el-descriptions-item label="过期时间">{{ formatTime(order.expireTime) }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ formatDateTime(order.createTime) }}</el-descriptions-item>
+          <el-descriptions-item label="支付时间">{{ formatDateTime(order.payTime) }}</el-descriptions-item>
+          <el-descriptions-item label="过期时间">{{ formatDateTime(order.expireTime) }}</el-descriptions-item>
         </el-descriptions>
       </el-card>
 
@@ -99,6 +99,7 @@
 <script>
 import { getOrderDetail, payOrder, cancelOrder, refundOrder } from '@/api/order'
 import { ORDER_STATUS_MAP, resolveStatusLabel, resolveStatusTagType } from '@/constants/status'
+import { formatDateTime } from '@/utils/format'
 const STATUS_STEPS_MAP = {
   0: [
     { label: '提交订单', icon: 'Edit' },
@@ -154,10 +155,7 @@ export default {
   methods: {
     statusText(s) { return resolveStatusLabel(ORDER_STATUS_MAP, s) },
     statusTagType(s) { return resolveStatusTagType(ORDER_STATUS_MAP, s) },
-    formatTime(t) {
-      if (!t) return '-'
-      return t.replace('T', ' ').substring(0, 19)
-    },
+    formatDateTime,
     fetchDetail() {
       this.loading = true
       getOrderDetail(this.$route.params.id).then(res => {
